@@ -87,7 +87,8 @@ export type MockProfile = {
   };
   suggested_budgets: {
     overall_budget: string;
-    buffer_bucket: string;
+    buffer_bucket: string; // Keep as string for compatibility, but represents single buffer
+    buffer_remaining?: string; // Optional: current remaining buffer
     categories: Array<{
       name: string;
       budget: string;
@@ -168,7 +169,8 @@ export const weekendBallerProfile: MockProfile = {
   ],
   suggested_budgets: {
     overall_budget: "₹45k",
-    buffer_bucket: "₹3k",
+    buffer_bucket: "₹3k", // Total buffer amount (single buffer concept)
+    buffer_remaining: "₹2k", // Current remaining buffer
     categories: [
       { name: "Food & Delivery", budget: "₹8k" },
       { name: "Shopping", budget: "₹5k" },
@@ -311,13 +313,13 @@ export const weekendBallerProfile: MockProfile = {
       id: "goal-2",
       type: "goal",
       message: "You're on pace for the quit-job fund. Keep the weekends chill and you'll stay there.",
-      chips: ["Boost goal", "Progress", "Find leaks"],
+      chips: ["Boost goal", "Progress", "Rate my spends"],
     },
     {
       id: "goal-3",
       type: "goal",
       message: "If you keep this pace, you'll hit your goal ~3 weeks early.",
-      chips: ["Lock it in", "Progress", "Power-ups"],
+      chips: ["Lock it in", "Progress", "Understand my money"],
     },
     // Risk (3)
     {
@@ -330,7 +332,7 @@ export const weekendBallerProfile: MockProfile = {
       id: "risk-2",
       type: "risk",
       message: "Weekend spike incoming. Keep a buffer so Monday doesn't sting.",
-      chips: ["Set buffer", "Find leaks", "Worth it?"],
+      chips: ["Set buffer", "Can I afford…", "Rate my spends"],
     },
     {
       id: "risk-3",
@@ -349,7 +351,7 @@ export const weekendBallerProfile: MockProfile = {
       id: "behavior-2",
       type: "behavior",
       message: "You've ordered after 10pm three times this week. Worth it?",
-      chips: ["Worth it?", "Find leaks", "Mute"],
+      chips: ["Rate my spends", "Can I afford…", "Mute"],
     },
     {
       id: "behavior-3",
@@ -381,13 +383,13 @@ export const weekendBallerProfile: MockProfile = {
       id: "play-1",
       type: "playful",
       message: "Tea ☕ Your food spends are in a committed relationship with Friday night.",
-      chips: ["Find leaks", "Worth it?", "Mute this"],
+      chips: ["Rate my spends", "Can I afford…", "Mute this"],
     },
     {
       id: "play-2",
       type: "playful",
       message: "Your wallet says: \"I can quit the job\" — your UPI says: \"order dessert.\"",
-      chips: ["Worth it?", "Progress", "Power-ups"],
+      chips: ["Rate my spends", "Progress", "Understand my money"],
     },
   ],
 };
