@@ -27,7 +27,7 @@ export default function WrappedCarousel({
   const isLastSlide = index === slides.length - 1;
   const slide = slides[Math.min(index, slides.length - 1)];
 
-  // Auto-advance logic - 4 seconds per slide
+  // Auto-advance logic - 7 seconds per slide
   useEffect(() => {
     if (isPaused) return;
 
@@ -54,7 +54,7 @@ export default function WrappedCarousel({
 
         return next;
       });
-    }, 40);
+    }, 70);
 
     return () => clearInterval(interval);
   }, [isPaused, isLastSlide, onComplete, index]);
@@ -188,12 +188,12 @@ export default function WrappedCarousel({
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          <div className="space-y-8 animate-slide-up" key={index}>
+          <div className="space-y-6 animate-slide-up" key={index}>
             {/* Headline */}
             <h1
-              className="text-[3.5rem] font-bold leading-[0.95] tracking-tight text-white max-w-[90%]"
+              className="text-[3rem] font-bold leading-[1.05] tracking-tight text-white"
               style={{
-                textShadow: '0 4px 60px rgba(0, 0, 0, 0.5)',
+                textShadow: '0 4px 40px rgba(0, 0, 0, 0.6)',
               }}
             >
               {slide.headline}
@@ -201,8 +201,8 @@ export default function WrappedCarousel({
 
             {/* Punchline */}
             <p
-              className="text-xl leading-relaxed text-white/90 font-normal max-w-[85%]"
-              style={{ textShadow: '0 2px 30px rgba(0, 0, 0, 0.4)' }}
+              className="text-[1.125rem] leading-[1.5] text-white/95 font-normal max-w-[88%]"
+              style={{ textShadow: '0 2px 20px rgba(0, 0, 0, 0.5)' }}
             >
               {slide.punchline}
             </p>
@@ -211,27 +211,22 @@ export default function WrappedCarousel({
             {slide.stat && (
               <div className="pt-8">
                 {/* Stat number */}
-                <div className="mb-6">
+                <div className="mb-3">
                   <div
-                    className="text-[6.5rem] font-black leading-none tracking-tighter text-white inline-block animate-count-up"
+                    className="text-[5rem] font-black leading-none tracking-tight text-white inline-block animate-count-up"
                     style={{
-                      textShadow: '0 8px 50px rgba(0, 0, 0, 0.4)',
-                      letterSpacing: '-0.05em',
+                      textShadow: '0 6px 40px rgba(0, 0, 0, 0.5)',
+                      letterSpacing: '-0.03em',
                     }}
                   >
                     {slide.stat.value}
                   </div>
                 </div>
 
-                {/* Labels */}
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-[0.15em] text-white/60 font-bold">
-                    {slide.stat.label}
-                  </p>
-                  <p className="text-lg text-white/95 font-medium">
-                    {slide.stat.caption}
-                  </p>
-                </div>
+                {/* Caption only */}
+                <p className="text-lg text-white/80 font-medium">
+                  {slide.stat.caption}
+                </p>
               </div>
             )}
           </div>

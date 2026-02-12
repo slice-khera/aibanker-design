@@ -74,6 +74,7 @@ export type MockProfile = {
     savings_gap_pct: string;
     is_on_track: boolean;
     days_ahead_behind: string;
+    accumulated_savings: string;
   };
   action: {
     suggested_cut_amount_month: string;
@@ -149,6 +150,7 @@ export const weekendBallerProfile: MockProfile = {
     savings_gap_pct: "+10%",
     is_on_track: false,
     days_ahead_behind: "~3 days ahead",
+    accumulated_savings: "₹25k",
   },
   action: {
     suggested_cut_amount_month: "~₹2,000",
@@ -184,9 +186,9 @@ export const weekendBallerProfile: MockProfile = {
       id: "aggressive",
       label: "Aggressive",
       required_monthly_cut: "₹10k",
-      pace_window: "3–6 months",
+      pace_window: "3 months",
       feasibility_note:
-        "This is a fast track. You’d need to cut hard each month to make it realistic.",
+        "This is a fast track. You'd need to cut hard each month to make it realistic.",
       lever_examples: [
         "Trim Food & Delivery by ₹4k",
         "Trim Shopping by ₹3k",
@@ -194,16 +196,16 @@ export const weekendBallerProfile: MockProfile = {
       ],
       recommended_product: {
         type: "RD",
-        label: "RD at month start",
+        label: "Start a ₹10k RD at month start",
         copy:
-          "Start an RD at the beginning of the month so the money disappears before you spend it.",
+          "Lock in ₹10k with an RD at the start of each month. The money disappears before you can spend it.",
       },
     },
     {
       id: "balanced",
       label: "Balanced",
       required_monthly_cut: "₹5k",
-      pace_window: "9–12 months",
+      pace_window: "6 months",
       feasibility_note:
         "This is doable with a few tweaks and a small system to stay consistent.",
       lever_examples: [
@@ -213,27 +215,27 @@ export const weekendBallerProfile: MockProfile = {
       ],
       recommended_product: {
         type: "RD",
-        label: "Smaller RD + light cuts",
+        label: "Start a ₹5k RD + light cuts",
         copy:
-          "Pair a smaller RD with lightweight cuts so it doesn’t feel painful.",
+          "Lock in ₹5k at the start of each month with an RD. Pair it with small cuts (₹2k food, ₹2k shopping) so it doesn't feel harsh.",
       },
     },
     {
       id: "relaxed",
       label: "Relaxed",
       required_monthly_cut: "₹2k",
-      pace_window: "12–18 months",
+      pace_window: "1 year",
       feasibility_note:
-        "You’re already close to this pace. The key is not overspending.",
+        "You're already close to this pace. The key is not overspending.",
       lever_examples: [
         "Auto‑save daily to protect the goal",
         "Keep weekends steady with a buffer bucket",
       ],
       recommended_product: {
         type: "Autosave",
-        label: "Daily autosave",
+        label: "Auto-save ₹70/day",
         copy:
-          "Automate a small daily save so it builds up without effort.",
+          "Set up ₹70/day auto-save. It quietly builds up (~₹2k/month) without you noticing.",
       },
     },
   ],
@@ -276,27 +278,27 @@ export const weekendBallerProfile: MockProfile = {
     {
       paceId: "aggressive",
       productType: "RD",
-      headline: "Start an RD at month start",
+      headline: "Start a ₹10k RD + make cuts",
       copy:
-        "If this goal is urgent, an RD at the start of the month keeps you from spending the money first.",
+        "With this finalized budget, you'll have to cut ₹10k/month (₹4k food, ₹3k shopping, ₹3k weekend spikes).\n\nOne way to make this easier: park ₹10k in an RD at month start. The money's locked away before you can spend it.",
       primary_cta: "Start RD ₹10k",
       secondary_cta: "Make it smaller",
     },
     {
       paceId: "balanced",
       productType: "RD",
-      headline: "Pair a smaller RD with light cuts",
+      headline: "Start a ₹5k RD + light cuts",
       copy:
-        "A smaller RD plus a couple of trims makes this pace realistic without feeling harsh.",
+        "With this finalized budget, you'll have to cut ₹5k/month (₹2k food, ₹2k shopping, ₹1k subscriptions).\n\nOne way to stay on track: park ₹5k in an RD at month start. Small cuts plus automatic savings makes this pace feel doable.",
       primary_cta: "Start RD ₹5k",
       secondary_cta: "Show other amounts",
     },
     {
       paceId: "relaxed",
       productType: "Autosave",
-      headline: "Set a daily autosave",
+      headline: "Auto-save ₹70/day",
       copy:
-        "You’re already close to this pace. A small daily autosave will protect your progress.",
+        "You're already close to this pace — no major cuts needed.\n\nOne way to protect your progress: set up ₹70/day auto-save. It quietly builds up (₹2k/month) without you noticing.",
       primary_cta: "Turn on ₹70/day",
       secondary_cta: "Make it smaller",
     },
@@ -403,14 +405,26 @@ export function getRealityCheckText(profile: MockProfile, userResponses: {
 }): string {
   const savingsGuess = userResponses.savingsGuess || profile.persona.user_guess_savings_pct;
   const personaGuess = userResponses.personaGuess || profile.persona.persona_guess;
-  
-  return `Alright. Reality check time 👀\nHere's how close you were:
 
-• You guessed savings: ${savingsGuess} → actual is ${profile.persona.actual_savings_pct} (gap: ${profile.persona.savings_gap})
-• You guessed ${profile.wrapped.top_category_label}: ${profile.persona.user_guess_category_pct} → actual is ${profile.persona.actual_category_pct} (gap: ${profile.persona.category_gap})
-• You guessed persona: ${personaGuess} → reality: ${profile.persona.persona_actual} 😅
+  return `Reality check time 👀
 
-Good news: you're not 'bad with money' — your money just has habits.`;
+Here's how close you were:
+
+Savings
+Your guess: ${savingsGuess}  →  Actual: ${profile.persona.actual_savings_pct}
+Gap: ${profile.persona.savings_gap}
+
+${profile.wrapped.top_category_label}
+Your guess: ${profile.persona.user_guess_category_pct}  →  Actual: ${profile.persona.actual_category_pct}
+Gap: ${profile.persona.category_gap}
+
+Persona
+Your guess: ${personaGuess}  →  Reality: ${profile.persona.persona_actual} 😅
+
+━━━━━━━━━━━━━━━━━━━
+
+Good news: you're not "bad with money."
+Your money just has habits.`;
 }
 
 export function getPacePreset(

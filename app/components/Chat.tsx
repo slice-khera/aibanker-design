@@ -203,14 +203,13 @@ export default function Chat({
         {messages.map((message, idx) => {
           const isVisible = visibleMessages.includes(message.id);
           const animationClass = message.role === "user" ? "animate-slide-in-right" : "animate-slide-in-left";
-          
+
           return (
             <div
               key={message.id}
               className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} ${
                 isVisible ? animationClass : "opacity-0"
               }`}
-              style={{ animationDelay: `${idx * 50}ms` }}
             >
               <div
                 className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${getMessageStyle(message)}`}

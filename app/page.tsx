@@ -139,6 +139,16 @@ export default function Home() {
     parseInt(profile.suggested_budgets.buffer_bucket.replace(/[₹,k]/g, "")) * 1000
   );
 
+  // Category spending tracking (mock data - in real app would track actual spending)
+  const [categorySpending] = useState<Record<string, number>>({
+    "Food & Delivery": 6000, // ₹6k spent out of ₹8k budget (₹2k remaining)
+    "Shopping": 4000, // ₹4k spent out of ₹5k budget (₹1k remaining)
+    "Entertainment": 1500, // ₹1.5k spent out of ₹2k budget (₹0.5k remaining)
+    "Transport": 2000, // ₹2k spent out of ₹3k budget (₹1k remaining)
+    "Subscriptions": 1500, // ₹1.5k spent out of ₹1.5k budget (fully used)
+    "Other": 0, // ₹0 spent, uses buffer directly
+  });
+
   // Message management - use a ref counter to guarantee unique IDs
   const msgIdRef = { current: 0 };
 
@@ -163,29 +173,17 @@ export default function Home() {
   const getPaceSummary = (paceId: "aggressive" | "balanced" | "relaxed") => {
     const preset = getPacePreset(profile, paceId);
     return (
-      `Pace: ${preset.label} (${preset.pace_window})\n` +
-      `To make this real, you'd need to cut about ${preset.required_monthly_cut}/month.\n\n` +
+      `${preset.label} pace — ${preset.pace_window}\n\n` +
+      `You'd need to cut ~${preset.required_monthly_cut}/month.\n` +
       `${preset.feasibility_note}\n\n` +
-      `Top ways to pull it off:\n` +
-      preset.lever_examples.map((item) => `• ${item}`).join("\n") +
-      `\n\nSuggested action: ${preset.recommended_product.label}\n` +
-      preset.recommended_product.copy
-    );
-  };
-
-
-  const getLeverReviewText = (paceId: "aggressive" | "balanced" | "relaxed") => {
-    const preset = getPacePreset(profile, paceId);
-    const goalName = goalDraft.name || profile.goal.goal_name;
-    return (
-      `If you want the ${preset.label.toLowerCase()} pace for ${goalName}, here are the most realistic levers:\n` +
+      `Ways to do it:\n` +
       preset.lever_examples.map((item) => `• ${item}`).join("\n")
     );
   };
 
   const getGoalProductText = (paceId: "aggressive" | "balanced" | "relaxed") => {
     const action = getGoalCompletionAction(profile, paceId);
-    return `${action.headline}\n${action.copy}`;
+    return action.copy;
   };
 
 
@@ -195,7 +193,7 @@ export default function Home() {
       { id: "product-primary", label: action.primary_cta, variant: "success" },
       { id: "product-secondary", label: action.secondary_cta },
       { id: "product-change-pace", label: "Change pace" },
-      { id: "product-skip", label: "Skip for now" },
+      { id: "product-skip", label: "I'll monitor it myself" },
     ];
   };
 
@@ -261,30 +259,84 @@ export default function Home() {
 
   // Helper: Get full picture for Can I Afford
   const getAffordFullPicture = (amount: number, category: string) => {
-    const impact = calculateGoalImpact(amount);
-    const pattern = detectSpendingPattern(category, amount);
-    const newBuffer = bufferRemaining - amount;
     const upcomingBills = profile.action.bill_risk_event;
 
+    const formatAmount = (amt: number) => {
+      const k = amt / 1000;
+      return k % 1 === 0 ? `₹${k}k` : `₹${k.toFixed(1)}k`;
+    };
+
+    // Special handling for "Other" category - comes directly from buffer
+    if (category === "Other") {
+      const newBuffer = bufferRemaining - amount;
+      let status: "safe" | "tight" | "risky";
+
+      if (amount <= bufferRemaining * 0.5) {
+        status = "safe";
+      } else if (amount <= bufferRemaining) {
+        status = "tight";
+      } else {
+        status = "risky";
+      }
+
+      return {
+        status,
+        is_other: true,
+        spent_so_far: formatAmount(0),
+        category_budget: null,
+        budget_remaining: null,
+        total_after_spend: formatAmount(amount),
+        budget_excess: null,
+        buffer_before: formatAmount(bufferRemaining),
+        buffer_after: formatAmount(newBuffer),
+        buffer_impact: formatAmount(amount),
+        upcoming_bills: upcomingBills,
+      };
+    }
+
+    // Get category budget and spending
+    const categoryBudget = profile.suggested_budgets.categories.find(
+      (cat) => cat.name === category
+    );
+    const budgetAmount = categoryBudget
+      ? parseInt(categoryBudget.budget.replace(/[₹,k]/g, "")) * 1000
+      : 0;
+
+    const spentSoFar = categorySpending[category] || 0;
+    const totalAfterSpend = spentSoFar + amount;
+    const budgetExcess = totalAfterSpend - budgetAmount;
+    const budgetRemaining = budgetAmount - spentSoFar;
+
+    // Calculate buffer impact
+    const bufferImpact = budgetExcess > 0 ? budgetExcess : 0;
+    const newBuffer = bufferRemaining - bufferImpact;
+
+    // Determine status based on budget and buffer impact
     let status: "safe" | "tight" | "risky";
-    if (amount <= bufferRemaining * 0.5 && impact.days_impact <= 1) {
+
+    if (amount <= budgetRemaining && bufferImpact === 0) {
+      // Within category budget, no buffer impact
       status = "safe";
-    } else if (amount <= bufferRemaining && impact.days_impact <= 3) {
+    } else if (budgetExcess > 0 && newBuffer > bufferRemaining * 0.3) {
+      // Exceeds budget but buffer remains healthy (>30%)
       status = "tight";
     } else {
+      // Exhausts most/all buffer or goes negative
       status = "risky";
     }
 
-    const formatAmount = (amt: number) => `₹${(amt / 1000).toFixed(1)}k`;
-
     return {
       status,
+      is_other: false,
+      spent_so_far: formatAmount(spentSoFar),
+      category_budget: formatAmount(budgetAmount),
+      budget_remaining: formatAmount(budgetRemaining),
+      total_after_spend: formatAmount(totalAfterSpend),
+      budget_excess: budgetExcess > 0 ? formatAmount(budgetExcess) : null,
       buffer_before: formatAmount(bufferRemaining),
       buffer_after: formatAmount(newBuffer),
-      goal_impact: impact.message,
+      buffer_impact: bufferImpact > 0 ? formatAmount(bufferImpact) : null,
       upcoming_bills: upcomingBills,
-      pattern: pattern.detected ? pattern.message : null,
-      recent_similar: pattern.count,
     };
   };
 
@@ -350,14 +402,18 @@ export default function Home() {
 
   const startReality = () => {
     setStep("reality");
-    
+
     const realityText = getRealityCheckText(profile, {
       savingsGuess: userResponses["q1"] || undefined,
       personaGuess: userResponses["q3"] || undefined,
     });
 
     addMessage("assistant", realityText, "reality-check");
-    setActiveChips(toChips(realityChips));
+
+    // Go directly to goal flow after showing reality check
+    setTimeout(() => {
+      startGoal();
+    }, 2000);
   };
 
   // ============ REALITY FLOW ============
@@ -418,7 +474,7 @@ export default function Home() {
     const timeline = chip.label;
     setGoalDraft((prev) => ({ ...prev, timeline }));
     addMessage("user", timeline);
-    addMessage("assistant", "If you know the amount, drop it. Or skip.");
+    addMessage("assistant", "How much do you think this will cost?");
     setGoalStage("amount");
     setActiveChips(toChips(amountChips));
   };
@@ -438,14 +494,20 @@ export default function Home() {
 
   const showBudgetReview = () => {
     setGoalStage("budget-review");
+    const preset = getPacePreset(profile, selectedPaceId);
     const budgets = profile.suggested_budgets;
-    const budgetText = 
-      `Based on your last few months, I've set up these budgets:\n\n` +
-      `Overall monthly budget: ${budgets.overall_budget}\n` +
-      `Buffer bucket (miscellaneous): ${budgets.buffer_bucket}\n\n` +
-      `Category budgets:\n` +
+    const goalName = goalDraft.name || profile.goal.goal_name;
+
+    const budgetText =
+      `For the ${preset.label.toLowerCase()} pace on ${goalName}, here are the monthly spending assumptions:\n\n` +
+      `Overall monthly spend: ${budgets.overall_budget}\n` +
+      `Buffer (flex spending): ${budgets.buffer_bucket}\n\n` +
+      `Category breakdown:\n` +
       budgets.categories.map((cat) => `• ${cat.name}: ${cat.budget}`).join("\n") +
-      `\n\nThis keeps you on track for your goal. Any edits?`;
+      `\n\n━━━━━━━━━━━━━━━━━━━\n\n` +
+      `This assumes you have ${profile.goal.accumulated_savings} already in accumulated savings.\n\n` +
+      `Look good, or need edits?`;
+
     addMessage("assistant", budgetText);
     setActiveChips(toChips(budgetReviewChips));
   };
@@ -480,7 +542,7 @@ export default function Home() {
   const handlePaceChip = (chip: ChatChip) => {
     if (paceStage === "summary") {
       if (chip.id === "continue") {
-        addMessage("assistant", getLeverReviewText(selectedPaceId));
+        addMessage("user", chip.label);
         showBudgetReview();
         return;
       }
@@ -525,11 +587,41 @@ export default function Home() {
       const action = getGoalCompletionAction(profile, selectedPaceId);
       const eta = goalDraft.timeline || profile.goal.horizon;
       const goalName = goalDraft.name || profile.goal.goal_name;
-      addMessage(
-        "assistant",
-        `${action.headline} is now active.\n\nYou'll hit ${goalName} in ${eta}.`,
-        "success",
-      );
+
+      // Extract amount from primary CTA (e.g., "Start RD ₹10k" -> "₹10k")
+      const amountMatch = action.primary_cta.match(/₹[\dk]+/);
+      const amount = amountMatch ? amountMatch[0] : "";
+
+      // Determine product type message
+      let productMessage = "";
+      if (action.productType === "RD") {
+        productMessage = `An RD of ${amount} has been started.`;
+      } else if (action.productType === "Autosave") {
+        productMessage = `Auto-save of ${amount}/day has been started.`;
+      }
+
+      // Generate fun goal message
+      let goalMessage = "";
+      const goalLower = goalName.toLowerCase();
+      if (goalLower.includes("japan")) {
+        goalMessage = `I'll see you in Tokyo in ${eta}!`;
+      } else if (goalLower.includes("trip") || goalLower.includes("vacation")) {
+        goalMessage = `See you on your trip in ${eta}!`;
+      } else if (goalLower.includes("emergency")) {
+        goalMessage = `You'll have your safety net ready in ${eta}!`;
+      } else {
+        goalMessage = `You'll hit ${goalName} in ${eta}!`;
+      }
+
+      addMessage("assistant", productMessage, "success");
+
+      setTimeout(() => {
+        addMessage("assistant", goalMessage);
+        setTimeout(() => {
+          finishBudget({ skipInsight: true });
+        }, 500);
+      }, 1000);
+      return;
     } else if (chip.id === "product-skip") {
       const eta = goalDraft.timeline || profile.goal.horizon;
       const goalName = goalDraft.name || profile.goal.goal_name;
@@ -840,7 +932,7 @@ export default function Home() {
 
   const handleAffordCategory = (chip: ChatChip) => {
     const amount = subflowData.affordAmount || "₹1,500";
-    const category = chip.value === "Skip" ? "General" : chip.value || "General";
+    const category = chip.value || "Other";
     const amountNum = parseInt(amount.replace(/[₹,]/g, ""));
 
     setSubflowData((prev) => ({ ...prev, affordCategory: category }));
@@ -852,21 +944,66 @@ export default function Home() {
     // Display full picture
     let message = `CAN I AFFORD ${amount}?\n\n`;
 
-    if (fullPicture.status === "safe") {
-      message += `✓ YES - here's the full picture:\n\n`;
-    } else if (fullPicture.status === "tight") {
-      message += `⚠ TIGHT - here's the full picture:\n\n`;
+    // Handle "Other" category (no budget, comes from buffer)
+    if (fullPicture.is_other) {
+      if (fullPicture.status === "safe") {
+        message += `✓ YES — You can easily afford this\n\n`;
+        message += `This comes from your flex buffer (${fullPicture.buffer_before}).\n\n`;
+        message += `After this ${amount} spend, your buffer will be at ${fullPicture.buffer_after} — still healthy.`;
+      } else if (fullPicture.status === "tight") {
+        message += `⚠ TIGHT — Doable, but watch your buffer\n\n`;
+        message += `This comes from your flex buffer (${fullPicture.buffer_before}).\n\n`;
+        message += `After this ${amount} spend, your buffer drops to ${fullPicture.buffer_after}.\n\n`;
+        if (fullPicture.upcoming_bills) {
+          message += `⚠ Heads up: ${fullPicture.upcoming_bills}\n\n`;
+        }
+        message += `Try to keep some buffer for unexpected expenses this month.`;
+      } else {
+        message += `⚠ RISKY — This exhausts your buffer\n\n`;
+        message += `This comes from your flex buffer (${fullPicture.buffer_before}).\n\n`;
+        if (fullPicture.buffer_after.startsWith('₹-')) {
+          message += `This ${amount} spend will completely exhaust your buffer and put you ${fullPicture.buffer_after} in the red.\n\n`;
+        } else {
+          message += `After this ${amount} spend, your buffer drops to ${fullPicture.buffer_after}.\n\n`;
+        }
+        if (fullPicture.upcoming_bills) {
+          message += `⚠ Urgent: ${fullPicture.upcoming_bills}\n\n`;
+        }
+        message += `Without a buffer, you're vulnerable to unexpected expenses. Consider skipping this or finding a way to cut back elsewhere.`;
+      }
     } else {
-      message += `⚠ RISKY - here's the full picture:\n\n`;
-    }
+      // Normal category with budget
+      if (fullPicture.status === "safe") {
+        message += `✓ YES — You can easily afford this\n\n`;
+        message += `You've spent ${fullPicture.spent_so_far} on ${category} so far (budget: ${fullPicture.category_budget}).\n\n`;
+        message += `After this ${amount} spend, you'll be at ${fullPicture.total_after_spend} — still under budget.\n\n`;
+        message += `Your buffer stays untouched at ${fullPicture.buffer_before}.`;
+      } else if (fullPicture.status === "tight") {
+        message += `⚠ TIGHT — Doable, but cuts into your safety net\n\n`;
+        message += `You've spent ${fullPicture.spent_so_far} on ${category} so far (budget: ${fullPicture.category_budget}).\n\n`;
+        message += `This ${amount} spend will push you to ${fullPicture.total_after_spend} — that's ${fullPicture.budget_excess} over budget.\n\n`;
+        message += `The excess dips into your buffer: ${fullPicture.buffer_before} → ${fullPicture.buffer_after}.\n\n`;
+        if (fullPicture.upcoming_bills) {
+          message += `⚠ Heads up: ${fullPicture.upcoming_bills}\n\n`;
+        }
+        message += `If you keep spending at your usual pace, you might need to cut back elsewhere this month.`;
+      } else {
+        message += `⚠ RISKY — This exhausts your budget\n\n`;
+        message += `You've spent ${fullPicture.spent_so_far} on ${category} so far (budget: ${fullPicture.category_budget}).\n\n`;
+        message += `This ${amount} spend pushes you to ${fullPicture.total_after_spend} — that's ${fullPicture.budget_excess} over budget.\n\n`;
 
-    message += `💰 Your buffer: ${fullPicture.buffer_before} → ${fullPicture.buffer_after} after\n`;
-    message += `📊 Goal impact: ${fullPicture.goal_impact}\n`;
-    if (fullPicture.upcoming_bills) {
-      message += `🚨 Upcoming: ${fullPicture.upcoming_bills}\n`;
-    }
-    if (fullPicture.pattern) {
-      message += `📈 ${fullPicture.pattern}\n`;
+        if (fullPicture.buffer_after.startsWith('₹-')) {
+          message += `This will completely exhaust your ${fullPicture.buffer_before} buffer and put you ${fullPicture.buffer_after} in the red.\n\n`;
+        } else {
+          message += `This eats up most of your buffer: ${fullPicture.buffer_before} → ${fullPicture.buffer_after}.\n\n`;
+        }
+
+        if (fullPicture.upcoming_bills) {
+          message += `⚠ Urgent: ${fullPicture.upcoming_bills}\n\n`;
+        }
+
+        message += `If you continue your usual spending pattern, you'll deplete your buffer and fall behind on your goal. You should ideally cut back on ${category} for the rest of the month.`;
+      }
     }
 
     addMessage("assistant", message);

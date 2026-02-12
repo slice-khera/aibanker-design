@@ -29,52 +29,52 @@ export const wrappedSlides: WrappedSlide[] = [
   {
     id: "wrapped-1",
     headline: "Your money wrapped",
-    punchline: "We analyzed your last 30 days. Some patterns are worth sharing.",
+    punchline: "30 days analyzed. Here's what you need to see.",
   },
   {
     id: "wrapped-2",
-    headline: "Almost 4 days of work",
-    punchline: "That's what you traded for things you bought after 11pm this month. Night mode you doesn't negotiate.",
+    headline: "Late night shopping",
+    punchline: "Things you bought after 11pm.",
     stat: {
-      label: "Your night mode tax",
+      label: "",
       value: "~4 days",
-      caption: "Of work traded",
+      caption: "Of your salary. Night mode you has expensive taste.",
     },
   },
   {
     id: "wrapped-3",
     headline: "Two people. One account.",
-    punchline: "Week 1 after salary vs Week 4 before it — one is thriving, one is calculating. The gap? 3x.",
+    punchline: "Week 1 you vs Week 4 you.",
     stat: {
-      label: "Week 1 vs Week 4 spending",
+      label: "",
       value: "3x more",
-      caption: "First week energy",
+      caption: "First week spending vs last week",
     },
   },
   {
     id: "wrapped-4",
     headline: "Death by a thousand cuts",
-    punchline: "42 purchases under ₹500. Each one felt like nothing. Together? That's 5 days of work walking out the door.",
+    punchline: "42 purchases under ₹500. Each felt like nothing.",
     stat: {
-      label: "Small purchases add up to",
+      label: "",
       value: "5 days",
-      caption: "42 tiny decisions",
+      caption: "Of your salary gone",
     },
   },
   {
     id: "wrapped-5",
-    headline: "Saturday, 10pm - 1am",
-    punchline: "Your wallet's weakest hours. Nearly 25% of your weekly spending happens in this 3-hour window. Coincidence? No.",
+    headline: "Your danger zone",
+    punchline: "Saturday, 10pm–1am.",
     stat: {
-      label: "Your danger zone",
+      label: "",
       value: "25%",
-      caption: "In just 3 hours",
+      caption: "Of weekly spending in 3 hours",
     },
   },
   {
     id: "wrapped-6",
     headline: "Ready for reality?",
-    punchline: "Tell me what you THINK you do... then I'll show you the receipts.",
+    punchline: "Tell me what you think you do. Then I'll show you the receipts.",
   },
 ];
 
@@ -82,7 +82,7 @@ export const wrappedSlides: WrappedSlide[] = [
 export const personaQuestions: PersonaQuestion[] = [
   {
     id: "q1-savings",
-    text: "Be honest — roughly what % of your income do you save each month?",
+    text: "Honestly, how much do you save each month?",
     chips: [
       { id: "0-5", label: "0–5%", value: "0-5%" },
       { id: "5-10", label: "5–10%", value: "5-10%" },
@@ -93,7 +93,7 @@ export const personaQuestions: PersonaQuestion[] = [
   },
   {
     id: "q2-disposable",
-    text: "Of your disposable money (after bills), where does most go?",
+    text: "Once bills are paid, where does your money go?",
     chips: [
       { id: "food", label: "Food", value: "Food" },
       { id: "shopping", label: "Shopping", value: "Shopping" },
@@ -106,7 +106,7 @@ export const personaQuestions: PersonaQuestion[] = [
   },
   {
     id: "q2-followup",
-    text: "Pick the biggest one's share:",
+    text: "What's your best guess on how much?",
     chips: [
       { id: "10", label: "10%", value: "10%" },
       { id: "20", label: "20%", value: "20%" },
@@ -117,7 +117,7 @@ export const personaQuestions: PersonaQuestion[] = [
   },
   {
     id: "q3-persona",
-    text: "What's your spending persona according to you?",
+    text: "How would you describe yourself?",
     chips: [
       { id: "disciplined", label: "Disciplined", value: "Disciplined" },
       { id: "weekend", label: "Weekend splurger", value: "Weekend splurger" },
@@ -129,7 +129,7 @@ export const personaQuestions: PersonaQuestion[] = [
   },
   {
     id: "q4-confidence",
-    text: "How confident are you in those answers?",
+    text: "How sure are you about all that?",
     chips: [
       { id: "very", label: "Very", value: "very" },
       { id: "somewhat", label: "Somewhat", value: "somewhat" },
@@ -151,14 +151,12 @@ export const goalChips: ChipOption[] = [
   { id: "big-purchase", label: "Big purchase", value: "Big purchase" },
   { id: "emergency", label: "Emergency fund", value: "Emergency fund" },
   { id: "increase-savings", label: "Increase monthly savings", value: "Increase monthly savings" },
-  { id: "quit-job", label: "Quit-job fund", value: "Quit-job fund" },
 ];
 
 export const timelineChips: ChipOption[] = [
   { id: "3m", label: "3 months", value: "3 months" },
   { id: "6m", label: "6 months", value: "6 months" },
   { id: "1y", label: "1 year", value: "12 months" },
-  { id: "someday", label: "Just someday", value: "Someday" },
 ];
 
 export const amountChips: ChipOption[] = [
@@ -166,7 +164,7 @@ export const amountChips: ChipOption[] = [
   { id: "1l", label: "₹1L", value: "₹1L" },
   { id: "5l", label: "₹5L", value: "₹5L" },
   { id: "10l", label: "₹10L", value: "₹10L" },
-  { id: "skip", label: "Skip", value: "Not set" },
+  { id: "skip", label: "Not sure", value: "Not set" },
 ];
 
 export const paceChoiceChips: ChipOption[] = [
@@ -386,12 +384,11 @@ export const tradeoffChoiceChips: ChipOption[] = [
 
 // ============ UPDATED: CAN I AFFORD - Category Input ============
 export const affordCategoryChips: ChipOption[] = [
-  { id: "food", label: "Food", value: "Food" },
+  { id: "food", label: "Food & Delivery", value: "Food & Delivery" },
   { id: "shopping", label: "Shopping", value: "Shopping" },
   { id: "entertainment", label: "Entertainment", value: "Entertainment" },
   { id: "transport", label: "Transport", value: "Transport" },
   { id: "other", label: "Other", value: "Other" },
-  { id: "skip-category", label: "Skip", value: "Skip" },
 ];
 
 export const affordContextualChips: ChipOption[] = [
