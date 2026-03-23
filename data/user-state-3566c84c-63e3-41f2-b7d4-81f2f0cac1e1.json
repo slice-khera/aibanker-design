@@ -1,0 +1,38 @@
+{
+  "userId": "3566c84c-63e3-41f2-b7d4-81f2f0cac1e1",
+  "onboardingComplete": true,
+  "currentStep": "home",
+  "personaStage": "q1",
+  "goalStage": "plan",
+  "budgetStage": "digest",
+  "personaAnswers": {},
+  "goal": {
+    "name": "Big purchase",
+    "timeline": "6 months",
+    "timelineMonths": 6,
+    "amount": "₹5L",
+    "amountNum": 500000,
+    "savingsAllocated": 1248000,
+    "paceId": "balanced",
+    "createdAt": "2026-03-17T12:28:20.516Z"
+  },
+  "budgetOverrides": {},
+  "budgetStyle": null,
+  "bufferAmount": 4000,
+  "bufferRemaining": 4000,
+  "products": [
+    {
+      "type": "rd",
+      "amount": 0,
+      "frequency": "monthly",
+      "activatedAt": "2026-03-17T12:28:20.516Z",
+      "active": true
+    }
+  ],
+  "preferences": [],
+  "spendRatings": [],
+  "nudges": [],
+  "activeFlow": null,
+  "lastActiveAt": "2026-03-17T12:28:20.517Z",
+  "createdAt": "2026-03-17T12:27:49.678Z"
+}

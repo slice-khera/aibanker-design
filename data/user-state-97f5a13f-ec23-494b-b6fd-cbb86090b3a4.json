@@ -1,0 +1,24 @@
+{
+  "userId": "97f5a13f-ec23-494b-b6fd-cbb86090b3a4",
+  "onboardingComplete": false,
+  "currentStep": "persona",
+  "personaStage": "q2-follow",
+  "goalStage": "choice",
+  "budgetStage": "digest",
+  "personaAnswers": {
+    "q1": "0-5",
+    "q2": "travel"
+  },
+  "goal": null,
+  "budgetOverrides": {},
+  "budgetStyle": null,
+  "bufferAmount": 4000,
+  "bufferRemaining": 4000,
+  "products": [],
+  "preferences": [],
+  "spendRatings": [],
+  "nudges": [],
+  "activeFlow": null,
+  "lastActiveAt": "2026-02-26T05:25:22.399Z",
+  "createdAt": "2026-02-26T05:25:15.552Z"
+}

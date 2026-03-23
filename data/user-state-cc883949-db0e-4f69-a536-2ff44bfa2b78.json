@@ -1,0 +1,27 @@
+{
+  "userId": "cc883949-db0e-4f69-a536-2ff44bfa2b78",
+  "onboardingComplete": false,
+  "currentStep": "reality",
+  "personaStage": "q4",
+  "goalStage": "choice",
+  "budgetStage": "digest",
+  "personaAnswers": {
+    "q1": "0-5",
+    "q2": "food",
+    "q2-follow": "10",
+    "q3": "impulse",
+    "q4": "very"
+  },
+  "goal": null,
+  "budgetOverrides": {},
+  "budgetStyle": null,
+  "bufferAmount": 4000,
+  "bufferRemaining": 4000,
+  "products": [],
+  "preferences": [],
+  "spendRatings": [],
+  "nudges": [],
+  "activeFlow": null,
+  "lastActiveAt": "2026-02-26T04:48:02.367Z",
+  "createdAt": "2026-02-26T04:47:45.882Z"
+}

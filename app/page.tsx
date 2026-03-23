@@ -1,23 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef, type ReactNode } from "react";
 import Chat, { type ChatChip, type ChatMessage } from "./components/Chat";
+import ChatCard, { type ChatCardData, type CardVariant, CATEGORY_ICONS, CATEGORY_COLORS } from "./components/ChatCards";
 import PersonaQuizStack, { type RevealData } from "./components/PersonaQuizStack";
-import WrappedCarousel from "./components/WrappedCarousel";
-import ChatInitialScreen, { defaultSuggestions } from "./components/ChatInitialScreen";
+import { getSuggestions } from "./components/ChatInitialScreen";
+import { AppBar, BOTTOM_INSET, NavButton } from "./components/AppChrome";
+import PayScreen from "./components/PayScreen";
 import {
   affordAmountChips,
   amountChips,
   budgetAgreementChips,
   budgetDigestChips,
-  budgetReviewChips,
   budgetStyleChips,
   goalChips,
   leakFixChips,
   onTrackChips,
   personaQuestions,
   paceChoiceChips,
-  paceContinueChips,
+  planConfirmChips,
+  planAdjustChips,
   pinnedGoalChips,
   steadyStateChips,
   tradeoffChoiceChips,
@@ -53,9 +55,29 @@ import type {
 } from "./lib/types";
 import { getEffectiveBudget } from "./lib/budget-utils";
 import { useUserState } from "./hooks/useUserState";
+import { typography } from "./lib/typography";
 
 type PaceStage = "summary" | "select";
 type PersonaStageKey = "q1" | "q2" | "q2-follow" | "q3" | "q4";
+type GoalProgressCardData = Extract<ChatCardData, { type: "goal-progress" }>;
+type GoalDetailSnapshot = {
+  name: string;
+  saved: number;
+  target: number;
+  pct: number;
+  status: "ahead" | "behind" | "on-track";
+  daysLabel: string;
+  timeline: string;
+  timelineMonths: number;
+  monthsElapsed: number;
+  monthsLeft: number;
+  paceLabel: string;
+  contributionAmount: number;
+  contributionLabel: string;
+  productLabel: string;
+  amountRemaining: number;
+  startedLabel: string;
+};
 
 const personaStageOrder: PersonaStageKey[] = ["q1", "q2", "q2-follow", "q3", "q4"];
 const personaQuestionMap: Record<PersonaStageKey, number> = {
@@ -85,6 +107,163 @@ const dynamicCategoryChips = buildDynamicAffordCategoryChips(
 const categorySpending: Record<string, number> = {};
 for (const cat of lifestyleCategories.slice(0, 6)) {
   categorySpending[cat.name] = cat.monthlyAverage;
+}
+
+// ─── Debug panel: card fixtures ────────────────────────────────
+const DBG_SPEND_OVERVIEW: ChatCardData = {
+  type: "spend-overview",
+  month: "February",
+  amount: 78400,
+  comparisonText: "12% higher than your average",
+  chartData: [
+    { label: "Sep", value: 58000 },
+    { label: "Oct", value: 63200 },
+    { label: "Nov", value: 71000 },
+    { label: "Dec", value: 89500 },
+    { label: "Jan", value: 66800 },
+    { label: "Feb", value: 78400 },
+  ],
+  average: 67200,
+  highlightIndex: 5,
+};
+
+const DBG_CATEGORIES: ChatCardData = {
+  type: "category-breakdown",
+  month: "February",
+  amount: 78400,
+  subtext: "Across 7 categories",
+  categories: [
+    { name: "Food & Delivery", amount: 22400, pct: 29, color: "#ff9a17", icon: "🍔" },
+    { name: "Shopping", amount: 18600, pct: 24, color: "#d30ad7", icon: "🛍️" },
+    { name: "Transport", amount: 11200, pct: 14, color: "#2b6acf", icon: "🚗" },
+    { name: "Subscriptions", amount: 8400, pct: 11, color: "#5e8edb", icon: "📱" },
+    { name: "Utilities", amount: 7800, pct: 10, color: "#ffb24f", icon: "💡" },
+    { name: "Entertainment", amount: 6000, pct: 8, color: "#87068a", icon: "🎬" },
+    { name: "Other", amount: 4000, pct: 5, color: "#8e949d", icon: "📦" },
+  ],
+};
+
+const DBG_GOAL_AHEAD: ChatCardData = {
+  type: "goal-progress",
+  name: "Trip to Japan",
+  pct: 62,
+  saved: 93000,
+  target: 150000,
+  daysLabel: "11 days ahead",
+  status: "ahead",
+};
+
+const DBG_GOAL_BEHIND: ChatCardData = {
+  type: "goal-progress",
+  name: "Trip to Japan",
+  pct: 38,
+  saved: 57000,
+  target: 150000,
+  daysLabel: "14 days behind",
+  status: "behind",
+};
+
+const DBG_GOAL_ONTRACK: ChatCardData = {
+  type: "goal-progress",
+  name: "Trip to Japan",
+  pct: 50,
+  saved: 75000,
+  target: 150000,
+  daysLabel: "On track",
+  status: "on-track",
+};
+
+const DBG_FD_SETUP: ChatCardData = {
+  type: "investment-product",
+  productType: "Fixed Deposit",
+  amount: 15000,
+  rate: "7.25% p.a.",
+  tenure: "1 year",
+  amountOptions: [
+    { label: "₹10k", value: 10000 },
+    { label: "₹15k", value: 15000 },
+    { label: "₹18k", value: 18000 },
+  ],
+  accountLabel: "Savings xx1234",
+  activated: false,
+};
+
+const DBG_FD_ACTIVATED: ChatCardData = {
+  type: "investment-product",
+  productType: "Fixed Deposit",
+  amount: 15000,
+  rate: "7.25% p.a.",
+  tenure: "1 year",
+  amountOptions: [
+    { label: "₹10k", value: 10000 },
+    { label: "₹15k", value: 15000 },
+    { label: "₹18k", value: 18000 },
+  ],
+  accountLabel: "Savings xx1234",
+  activated: true,
+};
+
+const DBG_SAVINGS_PLAN: ChatCardData = {
+  type: "savings-plan",
+  name: "Trip to Japan",
+  target: 150000,
+  timeline: "Dec 2025",
+  existingSavings: 30000,
+  monthlyAmount: 8500,
+  productType: "RD",
+  productLabel: "Recurring Deposit",
+  rate: "6.5% p.a.",
+  pct: 20,
+  timelineLabel: "11 months · Dec 2025",
+};
+
+// ─── Debug panel: UI helpers ────────────────────────────────────
+function DbgBtn({
+  children,
+  onClick,
+  active,
+  destructive,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+  active?: boolean;
+  destructive?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-full border px-3 py-1 text-xs transition-all active:scale-95 whitespace-nowrap ${
+        destructive
+          ? "border-red-200 bg-white text-red-500 hover:bg-red-50"
+          : active
+          ? "border-[#3dbb6c] bg-[#e0f4e8] text-[#008830]"
+          : "border-[rgba(0,0,0,0.2)] bg-white text-[#8e949d] hover:border-[#78808b] hover:text-[#4e5866]"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function DbgRow({
+  label,
+  children,
+  wrap,
+}: {
+  label: string;
+  children: ReactNode;
+  wrap?: boolean;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="w-16 shrink-0 pt-0.5">
+        <span style={{ ...typography.metadata, textTransform: "uppercase", color: "#8e949d" }}>
+          {label}
+        </span>
+      </div>
+      <div className={`flex ${wrap ? "flex-wrap" : ""} gap-1.5`}>{children}</div>
+    </div>
+  );
 }
 
 export default function Home() {
@@ -117,7 +296,81 @@ export default function Home() {
   const savingsForGoal = userState?.goal?.savingsAllocated ?? localSavingsForGoal;
 
   // Core UI state (transient, not persisted)
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { id: "m1", role: "user", text: "How much did I spend last month?" },
+    {
+      id: "m2", role: "assistant",
+      text: "February was a bit heavier than usual — ₹78,400 total, about 12% above your average.",
+      card: {
+        type: "spend-overview",
+        month: "February",
+        amount: 78400,
+        comparisonText: "12% higher than your average",
+        chartData: [
+          { label: "Sep", value: 58000 },
+          { label: "Oct", value: 63200 },
+          { label: "Nov", value: 71000 },
+          { label: "Dec", value: 89500 },
+          { label: "Jan", value: 66800 },
+          { label: "Feb", value: 78400 },
+        ],
+        average: 67200,
+        highlightIndex: 5,
+      },
+    },
+    { id: "m3", role: "user", text: "Where did it all go?" },
+    {
+      id: "m4", role: "assistant",
+      text: "Food and shopping led the month. Here's the full breakdown.",
+      card: {
+        type: "category-breakdown",
+        month: "February",
+        amount: 78400,
+        subtext: "Across 7 categories",
+        categories: [
+          { name: "Food & Delivery", amount: 22400, pct: 29, color: "#ff9a17", icon: "🍔" },
+          { name: "Shopping", amount: 18600, pct: 24, color: "#d30ad7", icon: "🛍️" },
+          { name: "Transport", amount: 11200, pct: 14, color: "#2b6acf", icon: "🚗" },
+          { name: "Subscriptions", amount: 8400, pct: 11, color: "#5e8edb", icon: "📱" },
+          { name: "Utilities", amount: 7800, pct: 10, color: "#ffb24f", icon: "💡" },
+          { name: "Entertainment", amount: 6000, pct: 8, color: "#87068a", icon: "🎬" },
+          { name: "Other", amount: 4000, pct: 5, color: "#8e949d", icon: "📦" },
+        ],
+      },
+    },
+    { id: "m5", role: "user", text: "How's my Japan trip goal going?" },
+    {
+      id: "m6", role: "assistant",
+      text: "You're ahead of pace — the extra saving in December helped.",
+      card: {
+        type: "goal-progress",
+        name: "Trip to Japan",
+        pct: 62,
+        saved: 93000,
+        target: 150000,
+        daysLabel: "11 days ahead",
+        status: "ahead",
+      },
+    },
+    { id: "m7", role: "user", text: "Can I park some savings somewhere?" },
+    {
+      id: "m8", role: "assistant",
+      text: "You have ₹18,000 sitting idle. A short FD makes sense here.",
+      card: {
+        type: "investment-product",
+        productType: "Fixed Deposit",
+        amount: 15000,
+        rate: "7.25% p.a.",
+        tenure: "1 year",
+        amountOptions: [
+          { label: "₹10k", value: 10000 },
+          { label: "₹15k", value: 15000 },
+          { label: "₹18k", value: 18000 },
+        ],
+        accountLabel: "Savings xx1234",
+      },
+    },
+  ]);
   const [activeChips, setActiveChips] = useState<ChatChip[]>([]);
   const [homeSubflow, setHomeSubflow] = useState<HomeSubflow>("idle");
   const [paceStage, setPaceStage] = useState<PaceStage>("summary");
@@ -129,6 +382,7 @@ export default function Home() {
   const [personaSubmitting, setPersonaSubmitting] = useState(false);
   const [personaRevealVisible, setPersonaRevealVisible] = useState(false);
   const [personaRevealData, setPersonaRevealData] = useState<RevealData | undefined>();
+  const [personaStoryIndex, setPersonaStoryIndex] = useState(-1);
 
   // Data-driven state (transient)
   const [dynamicPacePresets, setDynamicPacePresets] = useState<PacePreset[]>(profile.pace_presets);
@@ -137,11 +391,144 @@ export default function Home() {
   const [receiptsOpen, setReceiptsOpen] = useState(false);
   const [insightIndex, setInsightIndex] = useState(0);
   const [isAgentProcessingGlow, setIsAgentProcessingGlow] = useState(false);
+  const [debugGlow, setDebugGlow] = useState<"off" | "sheet" | "base">("off");
+  const [debugGlowPalette, setDebugGlowPalette] = useState<"rainbow" | "dls">("rainbow");
+  const [debugPanelOpen, setDebugPanelOpen] = useState(true);
+  const [chatVisible, setChatVisible] = useState(false);
+  const [chatScreenPhase, setChatScreenPhase] = useState<"closed" | "entering" | "open" | "exiting">("closed");
+  const [reviewMessages, setReviewMessages] = useState<ChatMessage[] | null>(null);
+  const [goalDetail, setGoalDetail] = useState<GoalDetailSnapshot | null>(null);
+  const [showInitialScreen, setShowInitialScreen] = useState(true);
+  const [rdDetailVisible, setRdDetailVisible] = useState(false);
+  const [debugCardVariant, setDebugCardVariant] = useState<CardVariant>("card");
+  const [fdSheetPhase, setFdSheetPhase] = useState<"closed" | "entering" | "open">("closed");
+  const [fdSheetData, setFdSheetData] = useState<Extract<ChatCardData, { type: "investment-product" }> | null>(null);
+  const [fdSelectedAmount, setFdSelectedAmount] = useState(0);
+
+  // ── Chat sheet drag state ──────────────────────────────────────────────
+  const SNAP_THRESHOLD = 60;
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [frameHeight, setFrameHeight] = useState(760); // sensible default before measurement
+
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setFrameHeight(el.clientHeight));
+    ro.observe(el);
+    setFrameHeight(el.clientHeight);
+    return () => ro.disconnect();
+  }, []);
+
+  // Snap points derived from frame height
+  const PILL_HEIGHT = 72;   // floating bar height when minimized
+  const PILL_MARGIN = 16;   // left / right / bottom margin in minimized state
+  const SHEET_MAX_OFFSET = Math.round(frameHeight * 0.10);  // 90% height visible (default)
+  const SHEET_MIN_OFFSET = frameHeight - PILL_HEIGHT - PILL_MARGIN; // floating pill at bottom
+
+  const [sheetOffset, setSheetOffset] = useState(SHEET_MAX_OFFSET);
+  const [isSheetDragging, setIsSheetDragging] = useState(false);
+  const sheetDragRef = useRef<{ startY: number; startOffset: number }>({
+    startY: 0,
+    startOffset: 0,
+  });
+
+  // Reset to default position whenever frame height is (re)measured
+  const prevFrameHeightRef = useRef(0);
+  useEffect(() => {
+    if (frameHeight !== prevFrameHeightRef.current) {
+      prevFrameHeightRef.current = frameHeight;
+      setSheetOffset(SHEET_MIN_OFFSET);
+    }
+  }, [frameHeight, SHEET_MIN_OFFSET]);
+
+  const chatTransitionTimerRef = useRef<number | null>(null);
+  const chatTransitionFrameRef = useRef<number | null>(null);
+
+  const clearChatTransitionTimers = useCallback(() => {
+    if (chatTransitionTimerRef.current !== null) {
+      window.clearTimeout(chatTransitionTimerRef.current);
+      chatTransitionTimerRef.current = null;
+    }
+    if (chatTransitionFrameRef.current !== null) {
+      window.cancelAnimationFrame(chatTransitionFrameRef.current);
+      chatTransitionFrameRef.current = null;
+    }
+  }, []);
+
+  const showChatOverlay = useCallback((showLauncher: boolean) => {
+    clearChatTransitionTimers();
+    setReviewMessages(null);
+    setGoalDetail(null);
+    setShowInitialScreen(showLauncher);
+    setSheetOffset(SHEET_MAX_OFFSET);
+    setChatVisible(true);
+    setChatScreenPhase("entering");
+    chatTransitionFrameRef.current = window.requestAnimationFrame(() => {
+      chatTransitionFrameRef.current = window.requestAnimationFrame(() => {
+        setChatScreenPhase("open");
+        chatTransitionFrameRef.current = null;
+      });
+    });
+  }, [SHEET_MAX_OFFSET, clearChatTransitionTimers]);
+
+  const openChatOverlay = useCallback(() => {
+    showChatOverlay(true);
+  }, [showChatOverlay]);
+
+  const closeChatOverlay = useCallback(() => {
+    clearChatTransitionTimers();
+    setReviewMessages(null);
+    setGoalDetail(null);
+    setChatScreenPhase("exiting");
+    chatTransitionTimerRef.current = window.setTimeout(() => {
+      setChatVisible(false);
+      setChatScreenPhase("closed");
+      chatTransitionTimerRef.current = null;
+    }, 460);
+  }, [clearChatTransitionTimers]);
+
+  useEffect(() => {
+    return () => {
+      clearChatTransitionTimers();
+    };
+  }, [clearChatTransitionTimers]);
+
+  const onSheetPointerDown = useCallback((e: React.PointerEvent) => {
+    sheetDragRef.current = { startY: e.clientY, startOffset: sheetOffset };
+    setIsSheetDragging(true);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }, [sheetOffset]);
+
+  const onSheetPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!isSheetDragging) return;
+    const delta = e.clientY - sheetDragRef.current.startY;
+    const next = Math.max(SHEET_MAX_OFFSET, Math.min(SHEET_MIN_OFFSET, sheetDragRef.current.startOffset + delta));
+    setSheetOffset(next);
+  }, [isSheetDragging, SHEET_MAX_OFFSET, SHEET_MIN_OFFSET]);
+
+  const onSheetPointerUp = useCallback(() => {
+    if (!isSheetDragging) return;
+    setIsSheetDragging(false);
+    const delta = sheetOffset - sheetDragRef.current.startOffset;
+    if (delta < -SNAP_THRESHOLD) {
+      setSheetOffset(SHEET_MAX_OFFSET);
+    } else if (delta > SNAP_THRESHOLD) {
+      setSheetOffset(SHEET_MIN_OFFSET);
+      closeChatOverlay();
+    } else {
+      const mid = (SHEET_MAX_OFFSET + SHEET_MIN_OFFSET) / 2;
+      if (sheetOffset < mid) {
+        setSheetOffset(SHEET_MAX_OFFSET);
+      } else {
+        setSheetOffset(SHEET_MIN_OFFSET);
+        closeChatOverlay();
+      }
+    }
+  }, [isSheetDragging, sheetOffset, SHEET_MAX_OFFSET, SHEET_MIN_OFFSET, SNAP_THRESHOLD, closeChatOverlay]);
 
   // AI Chat state
   const [aiMessages, setAiMessages] = useState<AIChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [streamingText, setStreamingText] = useState("");
   const abortRef = useRef<AbortController | null>(null);
 
   // Swipe interface state (transient)
@@ -163,12 +550,59 @@ export default function Home() {
   const msgIdRef = { current: 0 };
 
   const addMessage = useCallback(
-    (role: "assistant" | "user", text: string, special?: ChatMessage["special"]) => {
+    (role: "assistant" | "user", text: string, special?: ChatMessage["special"], card?: ChatCardData) => {
       const id = `msg-${Date.now()}-${++msgIdRef.current}`;
-      setMessages((prev) => [...prev, { id, role, text, special }]);
+      setMessages((prev) => [...prev, { id, role, text, special, card }]);
     },
     [],
   );
+
+  // ── Message queue: assistant messages appear staggered, not all at once ──
+  type QueuedMsg = { role: "assistant" | "user"; text: string; special?: ChatMessage["special"]; card?: ChatCardData };
+  const msgQueueRef = useRef<QueuedMsg[]>([]);
+  const msgQueueDrainingRef = useRef(false);
+  const msgQueueTimerRef = useRef<number | null>(null);
+  const goalOnboardingTimerRef = useRef<number | null>(null);
+
+  const drainMsgQueue = useCallback(() => {
+    if (msgQueueRef.current.length === 0) {
+      msgQueueDrainingRef.current = false;
+      return;
+    }
+    const next = msgQueueRef.current.shift()!;
+    addMessage(next.role, next.text, next.special, next.card);
+    // Continue draining remaining items immediately — Chat's reveal choreography handles pacing
+    if (msgQueueRef.current.length > 0) {
+      msgQueueTimerRef.current = window.setTimeout(drainMsgQueue, 0);
+    } else {
+      msgQueueDrainingRef.current = false;
+    }
+  }, [addMessage]);
+
+  const queueMessage = useCallback(
+    (role: "assistant" | "user", text: string, special?: ChatMessage["special"], card?: ChatCardData) => {
+      msgQueueRef.current.push({ role, text, special, card });
+      if (!msgQueueDrainingRef.current) {
+        msgQueueDrainingRef.current = true;
+        drainMsgQueue();
+      }
+    },
+    [drainMsgQueue],
+  );
+
+  // Clear queue on full reset
+  const clearMsgQueue = useCallback(() => {
+    msgQueueRef.current = [];
+    msgQueueDrainingRef.current = false;
+    if (msgQueueTimerRef.current !== null) {
+      window.clearTimeout(msgQueueTimerRef.current);
+      msgQueueTimerRef.current = null;
+    }
+    if (goalOnboardingTimerRef.current !== null) {
+      window.clearTimeout(goalOnboardingTimerRef.current);
+      goalOnboardingTimerRef.current = null;
+    }
+  }, []);
 
   const toChips = (options: ChipOption[]): ChatChip[] =>
     options.map((o) => ({ id: o.id, label: o.label }));
@@ -207,7 +641,6 @@ export default function Home() {
     ];
     setAiMessages(newAiMessages);
     setIsStreaming(true);
-    setStreamingText("");
     setActiveChips([]);
 
     try {
@@ -237,6 +670,10 @@ export default function Home() {
       const reader = response.body?.getReader();
       if (!reader) throw new Error("No response body");
 
+      // Create a placeholder message and stream tokens into it
+      const streamMsgId = `msg-${Date.now()}-${++msgIdRef.current}`;
+      setMessages((prev) => [...prev, { id: streamMsgId, role: "assistant", text: "", streaming: true }]);
+
       const decoder = new TextDecoder();
       let fullResponse = "";
 
@@ -245,18 +682,24 @@ export default function Home() {
         if (done) break;
         const chunk = decoder.decode(value);
         fullResponse += chunk;
-        setStreamingText(fullResponse);
+        const captured = fullResponse;
+        setMessages((prev) =>
+          prev.map((m) => (m.id === streamMsgId ? { ...m, text: captured } : m))
+        );
       }
 
-      // Add completed message
-      setStreamingText("");
+      // Mark streaming complete
       if (fullResponse.trim()) {
-        addMessage("assistant", fullResponse);
+        setMessages((prev) =>
+          prev.map((m) => (m.id === streamMsgId ? { ...m, text: fullResponse, streaming: false } : m))
+        );
         setAiMessages((prev) => [
           ...prev,
           { role: "assistant" as const, content: fullResponse },
         ]);
       } else {
+        // Remove empty placeholder, show error
+        setMessages((prev) => prev.filter((m) => m.id !== streamMsgId));
         addMessage(
           "assistant",
           "I'm having trouble connecting right now. Make sure API keys are configured in .env.local."
@@ -267,12 +710,11 @@ export default function Home() {
       console.error("Chat error:", error);
       addMessage(
         "assistant",
-        "Sorry, I couldn't process that right now. Try again?"
+        "Something went wrong. Try again."
       );
     } finally {
       setIsStreaming(false);
-      setStreamingText("");
-      setActiveChips(toChips(steadyStateChips));
+        setActiveChips(toChips(steadyStateChips));
     }
   };
 
@@ -827,27 +1269,50 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     if (ruleId) {
       setSubflowData((prev) => ({ ...prev, tradeoffRule: ruleId, tradeoffStep: "decision" }));
       setHomeSubflow("tradeoff");
-      addMessage("assistant", getTradeoffPrompt(ruleId));
+      queueMessage("assistant", getTradeoffPrompt(ruleId));
       setActiveChips(toChips(tradeoffChoiceChips));
       return;
     }
     setSubflowData((prev) => ({ ...prev, tradeoffStep: "bucket-select" }));
     setHomeSubflow("tradeoff");
-    addMessage("assistant", "Pick a buffer bucket size:");
+    queueMessage("assistant", "Pick a buffer bucket size:");
     setActiveChips(getBucketOptionChips());
   };
 
   // ============ WRAPPED COMPLETE ============
-  const handleWrappedComplete = () => {
-    mutate({ currentStep: "persona", personaStage: "q1" });
+  const handleStoryAdvance = useCallback(() => {
+    if (personaStoryIndex < dynamicWrappedSlides.length - 1) {
+      setPersonaStoryIndex(personaStoryIndex + 1);
+    } else {
+      setPersonaStoryIndex(-1);
+      setPersonaCoverVisible(true);
+    }
+  }, [personaStoryIndex]);
+
+  const handleStoryBack = useCallback(() => {
+    if (personaStoryIndex > 0) {
+      setPersonaStoryIndex(personaStoryIndex - 1);
+    }
+  }, [personaStoryIndex]);
+
+  const openWrappedStories = useCallback(() => {
+    setChatVisible(false);
+    setChatScreenPhase("closed");
+    setReviewMessages(null);
+    setGoalDetail(null);
+    setRdDetailVisible(false);
     setMessages([]);
     setActiveChips([]);
     setPersonaDraftAnswers({});
     setPersonaActiveIndex(0);
-    setPersonaCoverVisible(true);
+    setPersonaCoverVisible(false);
     setPersonaTransitioning(false);
     setPersonaSubmitting(false);
-  };
+    setPersonaRevealVisible(false);
+    setPersonaStoryIndex(0);
+    mutate({ currentStep: "persona", personaStage: "q1" });
+  }, [mutate]);
+
 
   // ============ PERSONA FLOW ============
   const handlePersonaAnswer = (questionIndex: number, chip: ChipOption) => {
@@ -927,8 +1392,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
       }
     }
 
-    mutate({ personaAnswers: nextAnswers, personaStage: "q4" });
-    startReality(nextAnswers);
+    handoffToGoalFromQuiz(nextAnswers);
   };
 
   const startPersonaQuiz = () => {
@@ -950,6 +1414,31 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     startGoal();
   };
 
+  const handoffToGoalFromQuiz = useCallback((answerSnapshot?: Record<string, string>) => {
+    const answers = answerSnapshot ?? userState?.personaAnswers ?? {};
+
+    storeMemoryDecision(
+      "persona_quiz",
+      `User thinks they save ${answers["q1"] || "unknown"}. Top category guess: ${answers["q2"] || "unknown"}. Identifies as: ${answers["q3"] || "unknown"}. Confidence: ${answers["q4"] || "unknown"}.`
+    );
+
+    mutate({ currentStep: "goal", goalStage: "choice", personaAnswers: answers, personaStage: "q4" });
+    clearMsgQueue();
+    setMessages([]);
+    setActiveChips([]);
+    setReceiptsOpen(false);
+    showChatOverlay(false);
+
+    queueMessage("assistant", "You don't have bad habits, your money just has habits.");
+    queueMessage("assistant", "Let's set up a savings goal.");
+    queueMessage("assistant", "What are you saving toward?");
+
+    goalOnboardingTimerRef.current = window.setTimeout(() => {
+      setActiveChips(toChips(goalChips));
+      goalOnboardingTimerRef.current = null;
+    }, 1800);
+  }, [userState?.personaAnswers, mutate, clearMsgQueue, showChatOverlay, queueMessage]);
+
   // ============ REALITY FLOW ============
   const handleRealityChip = (chip: ChatChip) => {
     addMessage("user", chip.label);
@@ -957,11 +1446,165 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     startGoal();
   };
 
+  // ============ GOAL REVIEW ============
+  const getGoalContributionSummary = useCallback(() => {
+    const product = userState?.products?.find((p) => p.active);
+    if (!product) {
+      return {
+        productLabel: "Manual savings",
+        contributionAmount: 0,
+        contributionLabel: "No active automation yet",
+      };
+    }
+
+    const productLabel = product.type === "rd"
+      ? "Recurring Deposit"
+      : product.type === "autosave"
+        ? "Auto-save"
+        : "Fixed Deposit";
+
+    if (product.type === "autosave") {
+      return {
+        productLabel,
+        contributionAmount: product.amount * 30,
+        contributionLabel: `${formatINR(product.amount)}/day running`,
+      };
+    }
+
+    if (product.type === "rd") {
+      return {
+        productLabel,
+        contributionAmount: product.amount,
+        contributionLabel: `${formatINR(product.amount)}/month running`,
+      };
+    }
+
+    return {
+      productLabel,
+      contributionAmount: product.amount,
+      contributionLabel: `${formatINR(product.amount)} parked`,
+    };
+  }, [userState?.products]);
+
+  const getGoalReviewPayload = useCallback(() => {
+    const goal = userState?.goal;
+    if (!goal) return null;
+
+    const monthsElapsed = Math.max(1, Math.round((Date.now() - new Date(goal.createdAt).getTime()) / (30 * 24 * 60 * 60 * 1000)));
+    const { contributionAmount } = getGoalContributionSummary();
+    const monthlySaved = contributionAmount;
+    const totalSaved = goal.savingsAllocated + (monthlySaved * monthsElapsed);
+    const pct = goal.amountNum > 0 ? Math.min(100, Math.round((totalSaved / goal.amountNum) * 100)) : 0;
+    const monthsLeft = Math.max(0, goal.timelineMonths - monthsElapsed);
+
+    const status: "ahead" | "behind" | "on-track" =
+      pct >= ((monthsElapsed / goal.timelineMonths) * 100) + 5 ? "ahead"
+      : pct <= ((monthsElapsed / goal.timelineMonths) * 100) - 5 ? "behind"
+      : "on-track";
+
+    const daysLabel = status === "ahead" ? "Ahead of schedule"
+      : status === "behind" ? "Behind schedule"
+      : "On track";
+
+    const goalNameForCopy = goal.name
+      ? `${goal.name.charAt(0).toLowerCase()}${goal.name.slice(1)}`
+      : goal.name;
+    const monthsWord = monthsLeft === 1 ? "month" : "months";
+    const message = status === "on-track"
+      ? `Everything looks good. You're on track with ${monthsLeft} ${monthsWord} to go.`
+      : status === "ahead"
+      ? `You're ahead of schedule for ${goalNameForCopy}. ${monthsLeft} ${monthsWord} left and looking strong.`
+      : `You're a bit behind on ${goalNameForCopy}. ${monthsLeft} ${monthsWord} left — might be worth adjusting.`;
+
+    return {
+      message,
+      card: {
+        type: "goal-progress" as const,
+        name: goal.name,
+        pct,
+        saved: totalSaved,
+        target: goal.amountNum,
+        daysLabel: `${daysLabel} · ${monthsLeft} months left`,
+        status,
+      },
+    };
+  }, [userState?.goal, getGoalContributionSummary]);
+
+  const openGoalDetail = useCallback((card: GoalProgressCardData) => {
+    const goal = userState?.goal;
+    const paceMap = {
+      aggressive: "Aggressive pace",
+      balanced: "Balanced pace",
+      relaxed: "Relaxed pace",
+    } as const;
+
+    const timeline = goal?.timeline ?? "Current plan";
+    const timelineMonths = goal?.timelineMonths ?? Math.max(1, Math.round((card.target / Math.max(card.saved, 1)) * 12));
+    const monthsElapsed = goal
+      ? Math.max(1, Math.round((Date.now() - new Date(goal.createdAt).getTime()) / (30 * 24 * 60 * 60 * 1000)))
+      : Math.max(1, timelineMonths - Math.max(0, parseInt(card.daysLabel.match(/(\d+)\s+months?\s+left/) ? card.daysLabel.match(/(\d+)\s+months?\s+left/)?.[1] || "0" : "0", 10)));
+    const monthsLeftFromLabel = card.daysLabel.match(/(\d+)\s+months?\s+left/);
+    const monthsLeft = goal
+      ? Math.max(0, goal.timelineMonths - monthsElapsed)
+      : monthsLeftFromLabel ? parseInt(monthsLeftFromLabel[1], 10) : Math.max(0, timelineMonths - monthsElapsed);
+    const { contributionAmount, contributionLabel, productLabel } = getGoalContributionSummary();
+    const amountRemaining = Math.max(0, card.target - card.saved);
+    const startedLabel = goal
+      ? new Date(goal.createdAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })
+      : "Latest snapshot";
+
+    setGoalDetail({
+      name: goal?.name ?? card.name,
+      saved: card.saved,
+      target: card.target,
+      pct: card.pct,
+      status: card.status,
+      daysLabel: card.daysLabel,
+      timeline,
+      timelineMonths: goal?.timelineMonths ?? timelineMonths,
+      monthsElapsed,
+      monthsLeft,
+      paceLabel: goal ? paceMap[goal.paceId] : "Current pace",
+      contributionAmount,
+      contributionLabel,
+      productLabel,
+      amountRemaining,
+      startedLabel,
+    });
+  }, [userState?.goal, getGoalContributionSummary]);
+
+  const showGoalReview = () => {
+    const payload = getGoalReviewPayload();
+    if (!payload) return;
+
+    queueMessage("assistant", payload.message, undefined, payload.card);
+    setActiveChips([]);
+  };
+
+  const openGoalReviewShortcut = useCallback((title: string) => {
+    const payload = getGoalReviewPayload();
+    if (!payload) return;
+
+    setReviewMessages([
+      {
+        id: `review-user-${Date.now()}`,
+        role: "user",
+        text: title,
+      },
+      {
+        id: `review-assistant-${Date.now() + 1}`,
+        role: "assistant",
+        text: payload.message,
+        card: payload.card,
+      },
+    ]);
+    setShowInitialScreen(false);
+  }, [getGoalReviewPayload]);
+
   // ============ GOAL FLOW ============
   const startGoal = () => {
     mutate({ currentStep: "goal", goalStage: "choice" });
-    addMessage("assistant", "Your money has habits. Let's build a better one.");
-    addMessage("assistant", "What are you saving toward?");
+    queueMessage("assistant", "What are you saving toward?");
     setActiveChips(toChips(goalChips));
   };
 
@@ -978,20 +1621,16 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
       handleGoalAmount(chip);
       return;
     }
-    if (goalStage === "savings") {
-      handleSavingsOpt(chip);
+    if (goalStage === "savings-ask") {
+      handleSavingsAskChip(chip);
       return;
     }
-    if (goalStage === "pace") {
-      handlePaceChip(chip);
+    if (goalStage === "plan") {
+      handlePlanChip(chip);
       return;
     }
-    if (goalStage === "budget-review") {
-      handleBudgetReviewChip(chip);
-      return;
-    }
-    if (goalStage === "product") {
-      handleGoalProductChip(chip);
+    if (goalStage === "plan-adjust") {
+      handlePlanAdjustChip(chip);
       return;
     }
     if (goalStage === "pinned") {
@@ -1000,359 +1639,287 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     }
   };
 
+  // Step 1: What are you saving toward?
   const handleGoalChoice = (value: string) => {
     setLocalGoalDraft((prev) => ({ ...prev, name: value }));
     addMessage("user", value);
-    addMessage("assistant", "When do you want this by?");
+
+    if (value === "Trip") {
+      queueMessage("assistant", "Where are you headed?");
+      mutate({ goalStage: "destination" });
+      setActiveChips([]);
+    } else {
+      queueMessage("assistant", "By when?");
+      mutate({ goalStage: "timeline" });
+      setActiveChips(toChips(timelineChips));
+    }
+  };
+
+  // Step 1b: Where are you headed? (Trip only)
+  const handleGoalDestination = (value: string) => {
+    setLocalGoalDraft((prev) => ({ ...prev, name: `Trip to ${value}` }));
+    addMessage("user", value);
+    queueMessage("assistant", "By when?");
     mutate({ goalStage: "timeline" });
     setActiveChips(toChips(timelineChips));
   };
 
+  // Step 2: By when?
   const handleGoalTimeline = (chip: ChatChip) => {
     const timeline = chip.label;
     setLocalGoalDraft((prev) => ({ ...prev, timeline }));
     addMessage("user", timeline);
-    addMessage("assistant", "How much do you think this will cost?");
+    queueMessage("assistant", "How much do you need?");
     mutate({ goalStage: "amount" });
     setActiveChips(toChips(amountChips));
   };
 
+  // Step 3: How much? → check for existing investments, then show plan
   const handleGoalAmount = (chip: ChatChip) => {
-    const amount = chip.id === "skip" ? "Not set" : chip.label;
+    const amount = chip.label;
     setLocalGoalDraft((prev) => ({ ...prev, amount }));
-    addMessage("user", chip.label);
+    addMessage("user", amount);
 
-    // Store goal in Mem0
     storeMemoryDecision(
       "goal_set",
       `User set goal: ${goalDraft.name || "unnamed"}, ${amount}, ${goalDraft.timeline || "no timeline"}`
     );
 
-    // Show savings opt-in with real investment total
+    const goalName = goalDraft.name || "Savings goal";
+    const timeline = goalDraft.timeline || "6 months";
     const totalInvested = profile.investmentSummary.totalInvested;
+
     if (totalInvested > 0) {
-      mutate({ goalStage: "savings" });
-      addMessage(
-        "assistant",
-        `You already have ${formatINR(totalInvested)} in investments. How much of that counts toward this goal?`
-      );
-      setActiveChips([
-        { id: "savings-all", label: `All of it (${formatINR(totalInvested)})` },
-        { id: "savings-none", label: "None — starting fresh" },
-        { id: "savings-custom", label: "Custom amount" },
-      ]);
+      // Ask before applying existing investments — 3 separate messages
+      mutate({ goalStage: "savings-ask" });
+      queueMessage("assistant", `${goalName}. ${amount}. ${timeline}. Got it.`);
+      setTimeout(() => {
+        queueMessage("assistant", `I can see you have ${formatINR(totalInvested)} in investments.`);
+        setTimeout(() => {
+          queueMessage("assistant", "Would you like to count that toward this goal?");
+          setActiveChips([
+            { id: "savings-yes", label: "Yes, include that too" },
+            { id: "savings-no", label: "No, start from scratch" },
+          ]);
+        }, 600);
+      }, 800);
     } else {
-      // No investments — skip savings stage
-      proceedToPace(amount, 0);
+      // No investments — go straight to plan
+      queueMessage("assistant", `${goalName}. ${amount}. ${timeline}. Got it.`);
+      setTimeout(() => {
+        showPlanCard(amount, timeline, goalName, undefined, 0);
+      }, 800);
     }
   };
 
-  const handleSavingsOpt = (chip: ChatChip) => {
+  // Step 3b: Savings ask — yes or no
+  const handleSavingsAskChip = (chip: ChatChip) => {
     addMessage("user", chip.label);
-    const goalAmount = goalDraft.amount || "₹5L";
+    const amount = goalDraft.amount || "₹5L";
+    const timeline = goalDraft.timeline || "6 months";
+    const goalName = goalDraft.name || "Savings goal";
     const totalInvested = profile.investmentSummary.totalInvested;
 
-    if (chip.id === "savings-all") {
-      setLocalSavingsForGoal(totalInvested);
-      proceedToPace(goalAmount, totalInvested);
-    } else if (chip.id === "savings-none") {
-      setLocalSavingsForGoal(0);
-      proceedToPace(goalAmount, 0);
-    } else if (chip.id === "savings-custom") {
-      // Enable text input for custom amount
-      addMessage("assistant", "How much of your investments should count? (e.g. ₹5L, ₹2L)");
-      // Stay on savings stage — handleGoalInput will handle text
+    if (chip.id === "savings-yes") {
+      showPlanCard(amount, timeline, goalName, undefined, totalInvested);
     } else {
-      // Dynamic chip — parse the amount from the chip label
-      const chipAmount = parseINR(chip.label);
-      if (chipAmount > 0) {
-        const capped = Math.min(chipAmount, totalInvested);
-        setLocalSavingsForGoal(capped);
-        proceedToPace(goalAmount, capped);
-      }
+      showPlanCard(amount, timeline, goalName, undefined, 0);
     }
   };
 
-  const proceedToPace = async (goalAmount: string, savings: number) => {
+  // Show investment product card for the user to confirm
+  const showPlanCard = (goalAmount: string, timeline: string, goalName: string, paceOverride?: string, savingsOverride?: number) => {
     const goalNum = parseINR(goalAmount);
-    const remaining = Math.max(0, goalNum - savings);
+    const existingSavings = savingsOverride ?? 0;
+    const remaining = Math.max(0, goalNum - existingSavings);
 
-    // Compute pace presets for remaining goal amount
+    setLocalSavingsForGoal(existingSavings);
+
     const presets = computePacePresets(remaining);
     setDynamicPacePresets(presets);
 
-    const paceId = getDefaultPaceId(goalDraft.timeline);
+    const paceId = (paceOverride || getDefaultPaceId(timeline)) as "aggressive" | "balanced" | "relaxed";
     setLocalPaceId(paceId);
-    mutate({ goalStage: "pace" });
-    setPaceStage("summary");
 
-    if (savings > 0) {
-      addMessage("assistant", `Great. With ${formatINR(savings)} already counted, you need ${formatINR(remaining)} more.`);
-    }
-
-    const response = await callFlowAssist("copy", "pace-summary", buildPaceContext(paceId));
-    if (response?.message) {
-      addMessage("assistant", response.message);
-    } else {
-      addMessage("assistant", getPaceSummaryFromPresets(presets, paceId));
-    }
-    setActiveChips(toChips(paceContinueChips));
-  };
-
-  const getPaceSummaryFromPresets = (presets: PacePreset[], paceId: string) => {
     const preset = presets.find((p) => p.id === paceId) ?? presets[0];
-    return (
-      `${preset.label} pace — ${preset.pace_window}\n\n` +
-      `You'd need to cut ~${preset.required_monthly_cut}/month.\n` +
-      `${preset.feasibility_note}\n\n` +
-      `Ways to do it:\n` +
-      preset.lever_examples.map((item) => `• ${item}`).join("\n")
+    const monthlyAmount = parseINR(preset.required_monthly_cut);
+    const productType = preset.recommended_product.type;
+    const rate = productType === "RD" ? "7.25% p.a." : "~4% p.a.";
+
+    mutate({ goalStage: "plan" });
+
+    const productName = productType === "RD" ? "a monthly RD" : "daily auto-save";
+    const savingsLine = existingSavings > 0
+      ? `With ${formatINR(existingSavings)} already counted in, you'd need ${formatINR(monthlyAmount)}/month to get there.`
+      : `You'd need to put away ${formatINR(monthlyAmount)}/month to get there.`;
+    const summaryLine = `${savingsLine} I'd recommend ${productName} at ${rate}.`;
+
+    // Show investment product card with Invest CTA
+    const baseAmount = monthlyAmount;
+    const amountOptions = [
+      { label: formatINR(baseAmount), value: baseAmount },
+      { label: formatINR(Math.round(baseAmount * 1.5 / 1000) * 1000), value: Math.round(baseAmount * 1.5 / 1000) * 1000 },
+      { label: formatINR(baseAmount * 2), value: baseAmount * 2 },
+    ];
+
+    addMessage(
+      "assistant",
+      summaryLine,
+      undefined,
+      {
+        type: "investment-product",
+        productType: productType === "RD" ? "Recurring Deposit" : "Auto-save",
+        amount: baseAmount,
+        rate,
+        tenure: timeline,
+        amountOptions,
+        accountLabel: "Savings xx1234",
+        onInvest: (investAmount: number) => {
+          handleInvestConfirm(investAmount, goalName, timeline, existingSavings, goalNum, paceId, productType);
+        },
+      },
     );
+    // No chips — the card's "Invest" button is the CTA
+    setActiveChips([]);
   };
 
-  const showBudgetReview = () => {
-    mutate({ goalStage: "budget-review" });
-    const preset = lookupPace(selectedPaceId);
-    const budgets = profile.suggested_budgets;
-    const goalName = goalDraft.name || profile.goal.goal_name;
+  // User tapped "Invest" on the product card → persist goal + show savings-plan confirmation
+  const handleInvestConfirm = (
+    investAmount: number,
+    goalName: string,
+    timeline: string,
+    existingSavings: number,
+    goalNum: number,
+    paceId: "aggressive" | "balanced" | "relaxed",
+    productType: string,
+  ) => {
+    const prodType = productType === "RD" ? "rd" as const : "autosave" as const;
+    const timelineMonths = parseTimelineToMonths(timeline);
 
-    // Show budget categories with any overrides applied
-    const categoryLines = budgets.categories.map((cat) => {
-      const override = budgetOverrides[cat.name];
-      if (override !== undefined) {
-        return `• ${cat.name}: ${formatINR(override)} (was ${cat.budget})`;
+    // Persist goal + product
+    const goalObj = {
+      name: goalName,
+      timeline,
+      timelineMonths,
+      amount: goalDraft.amount || "₹5L",
+      amountNum: goalNum,
+      savingsAllocated: existingSavings,
+      paceId,
+      createdAt: new Date().toISOString(),
+    };
+
+    mutate({
+      onboardingComplete: true,
+      currentStep: "home",
+      goal: goalObj,
+      budgetOverrides,
+      bufferRemaining,
+      products: [...(userState?.products || []), {
+        type: prodType,
+        amount: investAmount,
+        frequency: prodType === "rd" ? "monthly" : "daily",
+        activatedAt: new Date().toISOString(),
+        active: true,
+      }],
+    });
+
+    // Flip the existing investment-product card to activated state
+    setMessages((prev) => prev.map((msg) => {
+      if (msg.card?.type === "investment-product" && !msg.card.activated) {
+        return { ...msg, card: { ...msg.card, activated: true, amount: investAmount, onInvest: undefined, onArrowTap: () => setRdDetailVisible(true) } };
       }
-      return `• ${cat.name}: ${cat.budget}`;
-    }).join("\n");
+      return msg;
+    }));
 
-    const savingsNote = savingsForGoal > 0
-      ? `This accounts for ${formatINR(savingsForGoal)} already allocated from your investments.`
-      : `Starting from scratch — no existing savings counted.`;
-
-    const budgetText =
-      `For the ${preset.label.toLowerCase()} pace on ${goalName}, here are the monthly spending assumptions:\n\n` +
-      `Overall monthly spend: ${budgets.overall_budget}\n` +
-      `Buffer (flex spending): ${budgets.buffer_bucket}\n\n` +
-      `Category breakdown:\n` +
-      categoryLines +
-      `\n\n━━━━━━━━━━━━━━━━━━━\n\n` +
-      savingsNote + `\n\n` +
-      `Look good, or need edits?`;
-
-    addMessage("assistant", budgetText);
-    setActiveChips(toChips(budgetReviewChips));
+    queueMessage("assistant", "Congratulations on taking the first step toward achieving your savings goal!");
+    setActiveChips([]);
   };
 
-  const handleBudgetReviewChip = (chip: ChatChip) => {
-    if (chip.id === "approve-budget") {
-      addMessage("user", chip.label);
-      addMessage("assistant", getGoalProductText(selectedPaceId));
-      mutate({ goalStage: "product" });
-      setActiveChips(getGoalProductChips(selectedPaceId));
+  // Step 4: Adjust (only reachable if we add adjust chips back later)
+  const handlePlanChip = (chip: ChatChip) => {
+    addMessage("user", chip.label);
+
+    if (chip.id === "adjust-plan") {
+      mutate({ goalStage: "plan-adjust" });
+      queueMessage("assistant", "What would you like to change?");
+      setActiveChips(toChips(planAdjustChips));
       return;
     }
-
-    if (chip.id === "edit-budget") {
-      addMessage("user", chip.label);
-      addMessage(
-        "assistant",
-        "Tell me what to change — e.g. 'reduce cash withdrawals to ₹10k' or 'set other to ₹3k'"
-      );
-      // Stay on budget-review stage — text input will be handled by handleBudgetEditInput
-    }
   };
 
-  const handleBudgetEditInput = async (text: string) => {
-    addMessage("user", text);
+  // Adjust sub-options
+  const handlePlanAdjustChip = (chip: ChatChip) => {
+    addMessage("user", chip.label);
 
-    const response = await callFlowAssist("reason", "budget-review", buildBudgetContext(), text);
-
-    if (response?.message) {
-      addMessage("assistant", response.message);
-      if (response.actions.length > 0) {
-        applyFlowActions(response.actions);
-      }
-    } else {
-      // Fallback: regex-based parsing
-      const input = text.toLowerCase();
-      const amountMatch = text.match(/₹[\d,.]+[kKlL]?/);
-      const amount = amountMatch ? parseINR(amountMatch[0]) : 0;
-
-      if (!amount) {
-        addMessage("assistant", "I couldn't find an amount. Try something like 'reduce Cash Withdrawals to ₹10k'.");
-        setActiveChips([
-          { id: "approve-budget", label: "Looks good" },
-          { id: "edit-budget", label: "Edit more" },
-        ]);
-        return;
-      }
-
-      let matchedCategory: string | null = null;
-      for (const cat of profile.suggested_budgets.categories) {
-        const catLower = cat.name.toLowerCase();
-        const catWords = catLower.split(/[\s/()]+/).filter(Boolean);
-        if (catWords.some((w) => w.length > 2 && input.includes(w))) {
-          matchedCategory = cat.name;
-          break;
-        }
-      }
-
-      if (!matchedCategory) {
-        addMessage("assistant", `I couldn't match a category. Available: ${profile.suggested_budgets.categories.map((c) => c.name).join(", ")}`);
-        setActiveChips([
-          { id: "approve-budget", label: "Looks good" },
-          { id: "edit-budget", label: "Edit more" },
-        ]);
-        return;
-      }
-
-      mutate({ budgetOverrides: { [matchedCategory!]: amount } });
-      addMessage("assistant", `Updated ${matchedCategory} to ${formatINR(amount)}.`);
-    }
-
-    setActiveChips([
-      { id: "approve-budget", label: "Looks good" },
-      { id: "edit-budget", label: "Edit more" },
-    ]);
-  };
-
-  const handlePaceChip = async (chip: ChatChip) => {
-    if (paceStage === "summary") {
-      if (chip.id === "continue") {
-        addMessage("user", chip.label);
-        storeMemoryDecision("pace_chosen", `User chose ${selectedPaceId} pace`);
-        showBudgetReview();
-        return;
-      }
-
-      if (chip.id === "tweak-pace") {
-        setPaceStage("select");
-        addMessage("assistant", "Pick a pace that feels realistic:");
-        setActiveChips(toChips(paceChoiceChips));
-      }
-      return;
-    }
-
-    if (paceStage === "select") {
-      if (chip.id === "aggressive" || chip.id === "balanced" || chip.id === "relaxed") {
-        setLocalPaceId(chip.id);
-        setPaceStage("summary");
-        if (userState?.goal) {
-          mutate({ goal: { ...userState.goal, paceId: chip.id } });
-        }
-
-        const response = await callFlowAssist("copy", "pace-summary", buildPaceContext(chip.id));
-        if (response?.message) {
-          addMessage("assistant", response.message);
-        } else {
-          addMessage("assistant", getPaceSummary(chip.id));
-        }
-        setActiveChips(toChips(paceContinueChips));
-      }
-    }
-  };
-
-  const handleGoalProductChip = (chip: ChatChip) => {
-    if (chip.id === "product-change-pace") {
-      mutate({ goalStage: "pace" });
-      setPaceStage("select");
-      addMessage("assistant", "Pick a pace that feels realistic:");
+    if (chip.id === "change-pace") {
+      queueMessage("assistant", "Pick a pace:");
       setActiveChips(toChips(paceChoiceChips));
+      // Stay on plan-adjust — pace selection handled below
       return;
     }
 
-    if (chip.id === "product-secondary") {
-      addMessage(
-        "assistant",
-        "Got it. I can show smaller options if you want, but this still works as a starter.",
+    if (chip.id === "aggressive" || chip.id === "balanced" || chip.id === "relaxed") {
+      // Re-show plan with new pace
+      showPlanCard(
+        goalDraft.amount || "₹5L",
+        goalDraft.timeline || "6 months",
+        goalDraft.name || "Savings goal",
+        chip.id,
       );
-      setActiveChips(getGoalProductChips(selectedPaceId));
       return;
     }
 
-    if (chip.id === "product-primary") {
-      const preset = lookupPace(selectedPaceId);
-      const eta = goalDraft.timeline || profile.goal.horizon;
-      const goalName = goalDraft.name || profile.goal.goal_name;
+    if (chip.id === "less-savings") {
+      // Set savings to 0 and recompute
+      setLocalSavingsForGoal(0);
+      const goalNum = parseINR(goalDraft.amount || "₹5L");
+      const presets = computePacePresets(goalNum);
+      setDynamicPacePresets(presets);
 
-      // Extract amount from chip label (e.g., "Start RD ₹83.3k" -> "₹83.3k")
-      const amountMatch = chip.label.match(/₹[\d.]+[kKlL]?/);
-      const amount = amountMatch ? amountMatch[0] : preset.required_monthly_cut;
+      const paceId = selectedPaceId;
+      const preset = presets.find((p) => p.id === paceId) ?? presets[0];
+      const monthlyAmount = parseINR(preset.required_monthly_cut);
+      const productType = preset.recommended_product.type;
+      const rate = productType === "RD" ? "7.25% p.a." : "~4% p.a.";
+      const timelineMonths = parseTimelineToMonths(goalDraft.timeline || "6 months");
 
-      // Determine product type message
-      let productMessage = "";
-      if (preset.recommended_product.type === "RD") {
-        productMessage = `An RD of ${amount} has been started.`;
-      } else if (preset.recommended_product.type === "Autosave") {
-        productMessage = `Auto-save of ${amount}/day has been started.`;
-      }
-
-      // Generate fun goal message
-      let goalMessage = "";
-      const goalLower = goalName.toLowerCase();
-      if (goalLower.includes("japan")) {
-        goalMessage = `I'll see you in Tokyo in ${eta}!`;
-      } else if (goalLower.includes("trip") || goalLower.includes("vacation")) {
-        goalMessage = `See you on your trip in ${eta}!`;
-      } else if (goalLower.includes("emergency")) {
-        goalMessage = `You'll have your safety net ready in ${eta}!`;
-      } else {
-        goalMessage = `You'll hit ${goalName} in ${eta}!`;
-      }
-
-      // Persist: save goal + product + mark onboarding complete
-      const productType = preset.recommended_product.type === "RD" ? "rd" as const : "autosave" as const;
-      const goalObj = {
-        name: goalName,
-        timeline: eta,
-        timelineMonths: parseTimelineToMonths(eta),
-        amount: goalDraft.amount || profile.goal.goal_amount,
-        amountNum: parseINR(goalDraft.amount || profile.goal.goal_amount),
-        savingsAllocated: savingsForGoal,
-        paceId: selectedPaceId,
-        createdAt: new Date().toISOString(),
-      };
-      mutate({
-        onboardingComplete: true,
-        currentStep: "home",
-        goal: goalObj,
-        budgetOverrides,
-        bufferRemaining,
-        products: [...(userState?.products || []), {
-          type: productType,
-          amount: parseINR(amount),
-          frequency: productType === "rd" ? "monthly" : "daily",
-          activatedAt: new Date().toISOString(),
-          active: true,
-        }],
-      });
-
-      addMessage("assistant", productMessage, "success");
-
-      setTimeout(() => {
-        addMessage("assistant", goalMessage);
-        setTimeout(() => {
-          finishBudget({ skipInsight: true });
-        }, 500);
-      }, 1000);
-      return;
-    } else if (chip.id === "product-skip") {
-      const eta = goalDraft.timeline || profile.goal.horizon;
-      const goalName = goalDraft.name || profile.goal.goal_name;
+      mutate({ goalStage: "plan" });
       addMessage(
         "assistant",
-        `No worries. At your current pace, you'll hit ${goalName} in ${eta}. You can set up automation anytime.`,
+        "Starting fresh — no existing savings applied.",
+        undefined,
+        {
+          type: "savings-plan",
+          name: goalDraft.name || "Savings goal",
+          target: goalNum,
+          timeline: goalDraft.timeline || "6 months",
+          existingSavings: 0,
+          monthlyAmount,
+          productType: productType === "RD" ? "RD" : "Auto-save",
+          productLabel: preset.recommended_product.label,
+          rate,
+          pct: 0,
+          timelineLabel: `${timelineMonths} months to go`,
+        },
       );
-      // Persist: save goal + mark onboarding complete (no product)
+      setActiveChips(toChips(planConfirmChips));
+      return;
+    }
+
+    if (chip.id === "skip-auto") {
+      // Save goal without product
+      const goalName = goalDraft.name || "Savings goal";
+      const timeline = goalDraft.timeline || "6 months";
+
       mutate({
         onboardingComplete: true,
         currentStep: "home",
         goal: {
           name: goalName,
-          timeline: eta,
-          timelineMonths: parseTimelineToMonths(eta),
-          amount: goalDraft.amount || profile.goal.goal_amount,
-          amountNum: parseINR(goalDraft.amount || profile.goal.goal_amount),
+          timeline,
+          timelineMonths: parseTimelineToMonths(timeline),
+          amount: goalDraft.amount || "₹5L",
+          amountNum: parseINR(goalDraft.amount || "₹5L"),
           savingsAllocated: savingsForGoal,
           paceId: selectedPaceId,
           createdAt: new Date().toISOString(),
@@ -1360,9 +1927,11 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
         budgetOverrides,
         bufferRemaining,
       });
-    }
 
-    finishBudget({ skipInsight: true });
+      queueMessage("assistant", `${goalName} is set. You can turn on automation anytime.`);
+      finishBudget({ skipInsight: true });
+      return;
+    }
   };
 
   const handlePinnedGoal = (chip: ChatChip) => {
@@ -1373,13 +1942,13 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
       return;
     }
     if (chip.id === "adjust-goal") {
-      addMessage("assistant", "What would you like to change?");
+      queueMessage("assistant", "What would you like to change?");
       mutate({ goalStage: "choice" });
       setActiveChips(toChips(goalChips));
       return;
     }
     if (chip.id === "add-goal") {
-      addMessage("assistant", "You can add more goals later. For now, let's nail this one first.");
+      queueMessage("assistant", "You can add more goals later. For now, let's nail this one first.");
       setActiveChips(toChips(pinnedGoalChips));
     }
   };
@@ -1390,51 +1959,8 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
       handleGoalChoice(value);
       return;
     }
-    if (goalStage === "savings") {
-      addMessage("user", value);
-      const amount = parseINR(value);
-      if (amount > 0) {
-        const totalInvested = profile.investmentSummary.totalInvested;
-        const capped = Math.min(amount, totalInvested);
-        setLocalSavingsForGoal(capped);
-        proceedToPace(goalDraft.amount || "₹5L", capped);
-      } else {
-        // Non-numeric input — use AI to reason about savings allocation
-        const totalInvested = profile.investmentSummary.totalInvested;
-        const goalAmount = goalDraft.amount || "₹5L";
-        const savingsContext = `SAVINGS ALLOCATION DECISION:
-Goal: ${goalDraft.name || "unnamed"} — ${goalAmount} in ${goalDraft.timeline || "TBD"}
-Total investments: ${formatINR(totalInvested)}
-Investment breakdown: ${Object.entries(profile.investmentSummary.breakdown).map(([k, v]) => `${k}: ${formatINR(v.total)}`).join(", ")}
-Account balance: ${formatINR(profile.accountBalance)}
-Savings rate: ${profile.persona.actual_savings_pct}
-
-The user needs to decide how much of their existing ${formatINR(totalInvested)} investments to count toward this goal.
-Analyze their financial situation and suggest a specific amount with reasoning.
-Consider: goal size vs total investments, whether they need an emergency buffer, liquidity of investments, and other goals they might have.
-End your response by suggesting 2-3 specific amounts they could pick.`;
-
-        const response = await callFlowAssist("reason", "savings-allocation", savingsContext, value);
-        if (response?.message) {
-          addMessage("assistant", response.message);
-        } else {
-          addMessage("assistant", `You have ${formatINR(totalInvested)} in investments. How much should count toward this goal?`);
-        }
-
-        // Show chips with AI-informed or sensible default options
-        const halfGoal = Math.min(totalInvested, Math.round(parseINR(goalAmount) * 0.5 / 10000) * 10000);
-        const quarterInvestments = Math.round(totalInvested * 0.25 / 10000) * 10000;
-        setActiveChips([
-          { id: "savings-all", label: `All (${formatINR(totalInvested)})` },
-          ...(halfGoal > 0 && halfGoal < totalInvested ? [{ id: "savings-half-goal", label: formatINR(halfGoal) }] : []),
-          ...(quarterInvestments > 0 && quarterInvestments < halfGoal ? [{ id: "savings-quarter", label: formatINR(quarterInvestments) }] : []),
-          { id: "savings-none", label: "None — start fresh" },
-        ]);
-      }
-      return;
-    }
-    if (goalStage === "budget-review") {
-      handleBudgetEditInput(value);
+    if (goalStage === "destination") {
+      handleGoalDestination(value);
       return;
     }
   };
@@ -1460,7 +1986,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         if (chip.id === "ok-pace") {
           addMessage(
             "assistant",
-            `You're on track for the ${preset.label.toLowerCase()} pace. Want to keep it steady with a small system?`,
+            `You're on track for the ${preset.label.toLowerCase()} pace. Want to add a system to stay consistent?`,
           );
           mutate({ budgetStage: "onTrack" });
           setActiveChips(toChips(onTrackChips));
@@ -1486,23 +2012,23 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         if (chip.id === "auto" || chip.id === "backup") {
           addMessage(
             "assistant",
-            "Want me to set a soft budget so weekends don't derail the goal?",
+            "Want to set a soft budget for weekends to protect the goal?",
           );
           mutate({ budgetStage: "budgetChoice" });
           setActiveChips(toChips(budgetAgreementChips));
         } else {
-          addMessage("assistant", "Got it. I'll keep you posted on progress.");
+          queueMessage("assistant", "Noted. I'll track progress.");
           finishBudget();
         }
         break;
 
       case "lever":
         if (chip.id === "no-change") {
-          addMessage("assistant", "Totally fair. Let's just track for now and revisit later.");
+          queueMessage("assistant", "Tracking only for now.");
           finishBudget();
         } else {
           mutate({ personaAnswers: { ...userState?.personaAnswers, selectedLever: chip.id } });
-          addMessage("assistant", "Do you want me to set a budget for this category?");
+          queueMessage("assistant", "Do you want me to set a budget for this category?");
           mutate({ budgetStage: "budgetChoice" });
           setActiveChips(toChips(budgetAgreementChips));
         }
@@ -1510,15 +2036,15 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
 
       case "budgetChoice":
         if (chip.id === "choose") {
-          addMessage("assistant", "Pick a vibe — strict, chill, or buffer bucket?");
+          queueMessage("assistant", "Choose a budget style:");
           mutate({ budgetStage: "budgetStyle" });
           setActiveChips(toChips(budgetStyleChips));
         } else {
           addMessage(
             "assistant",
             chip.id === "track"
-              ? "Cool — I'll just track and surface insights."
-              : "Done. I've set a soft budget for this category.",
+              ? "Tracking only."
+              : "Soft budget set for this category.",
           );
           mutate({ budgetStage: "actionConfirm" });
           setActiveChips([{ id: "continue", label: "Continue" }]);
@@ -1534,13 +2060,13 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         storeMemoryDecision("budget_style", `User prefers ${chip.label.toLowerCase()} budget over strict`);
         addMessage(
           "assistant",
-          `Locked in. I'll use the ${chip.label.toLowerCase()} budget style for this category.`,
+          `${chip.label} budget style set for this category.`,
         );
         setActiveChips([{ id: "continue", label: "Continue" }]);
         break;
 
       case "action":
-        addMessage("assistant", "Budget updated. I'll keep it friendly.");
+        queueMessage("assistant", "Budget updated.");
         mutate({ budgetStage: "actionConfirm" });
         setActiveChips([{ id: "continue", label: "Continue" }]);
         break;
@@ -1555,12 +2081,12 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     mutate({ currentStep: "home" });
     setHomeSubflow("idle");
     if (options?.skipInsight) {
-      addMessage("assistant", "All set. Want to check anything else?");
+      queueMessage("assistant", "Done. What would you like to check next?");
       setActiveChips(toChips(steadyStateChips));
       return;
     }
     const nextInsight = profile.insights[insightIndex % profile.insights.length];
-    addMessage("assistant", nextInsight.message, "insight");
+    queueMessage("assistant", nextInsight.message, "insight");
     setActiveChips(
       nextInsight.chips.length > 0
         ? nextInsight.chips.map((c, i) => ({ id: `insight-${i}`, label: c }))
@@ -1579,6 +2105,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
       "progress": () => startProgressFlow(),
       "understand": () => startUnderstandFlow(),
       "goal-new": () => startGoal(),
+      "review-goal": () => showGoalReview(),
       "budget-flow": () => startBudget(),
       "leaks": () => { setHomeSubflow("leak-insight"); handleLeakInsight({ id: "investigate", label: "Investigate" }); },
     };
@@ -1669,7 +2196,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     } else if (chip.label.includes("Auto-save") || chip.label.includes("auto")) {
       // Autosave suggestion from insight - simplified flow
       const dailyAmount = profile.action.suggested_autosave_day;
-      addMessage("assistant", `Set up autosave at ${dailyAmount}/day?`);
+      queueMessage("assistant", `Set up autosave at ${dailyAmount}/day?`);
       setActiveChips([
         { id: "confirm-auto", label: `Yes, ${dailyAmount}/day` },
         { id: "cancel", label: "Not now" },
@@ -1677,7 +2204,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     } else if (chip.label.includes("RD")) {
       // RD suggestion from insight
       const rdAmount = profile.action.suggested_rd_month;
-      addMessage("assistant", `Start an RD at ${rdAmount}/month?`);
+      queueMessage("assistant", `Start an RD at ${rdAmount}/month?`);
       setActiveChips([
         { id: "confirm-rd", label: `Yes, ${rdAmount}/month` },
         { id: "other-amounts", label: "Other amounts" },
@@ -1685,7 +2212,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
       ]);
     } else if (chip.label.includes("FD")) {
       // FD suggestion from insight
-      addMessage("assistant", getFDSuggestion(profile));
+      queueMessage("assistant", getFDSuggestion(profile));
       setActiveChips([
         { id: "create-fd", label: "Create FD" },
         { id: "keep-liquid", label: "Keep liquid" },
@@ -1700,7 +2227,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
       handleLeakInsight({ id: "investigate", label: "Investigate" });
     } else {
       // Generic response and return to steady state
-      addMessage("assistant", "Got it. What else can I help with?");
+      queueMessage("assistant", "Got it. What else can I help with?");
       returnToSteadyState();
     }
   };
@@ -1713,14 +2240,14 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
   // ============ SUBFLOW: CAN I AFFORD (REDESIGNED) ============
   const startAffordFlow = () => {
     setHomeSubflow("afford-amount");
-    addMessage("assistant", "How much are we talking? Pick an amount.");
+    queueMessage("assistant", "How much?");
     setActiveChips(toChips(affordAmountChips));
   };
 
   const handleAffordAmount = (chip: ChatChip) => {
     setSubflowData((prev) => ({ ...prev, affordAmount: chip.label }));
     setHomeSubflow("afford-category");
-    addMessage("assistant", "What's this for? (Helps me personalize recommendations)");
+    queueMessage("assistant", "What category?");
     setActiveChips(toChips(dynamicCategoryChips));
   };
 
@@ -1738,7 +2265,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     const response = await callFlowAssist("copy", "afford-analysis", buildAffordContext(amountNum, category));
 
     if (response?.message) {
-      addMessage("assistant", response.message);
+      queueMessage("assistant", response.message);
     } else {
       // Fallback template
       let message = `CAN I AFFORD ${amount}?\n\n`;
@@ -1750,7 +2277,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         message += `RISKY — This ${fullPicture.budget_excess ? `blows past your ${category} budget by ${fullPicture.budget_excess}` : "exhausts your buffer"}. Buffer: ${fullPicture.buffer_before} → ${fullPicture.buffer_after}.`;
       }
       if (fullPicture.upcoming_bills) message += `\n\nHeads up: ${fullPicture.upcoming_bills}`;
-      addMessage("assistant", message);
+      queueMessage("assistant", message);
     }
 
     // Chips still determined by status
@@ -1794,7 +2321,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
       const impact = calculateGoalImpact(amountNum);
       storeMemoryDecision("afford_decision", `User approved ${amount} spend on ${category}${chip.id === "go-anyway" ? " despite budget risk" : ""}`);
 
-      addMessage("assistant", `Got it! ${amount} approved.`);
+      queueMessage("assistant", `${amount} approved.`);
       if (impact.days_impact > 0) {
         addMessage(
           "assistant",
@@ -1809,14 +2336,14 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
       const reduceAmount = Math.floor(amountNum * 0.6);
       mutate({ bufferRemaining: bufferRemaining - reduceAmount });
       storeMemoryDecision("afford_decision", `User reduced ${amount} to ₹${reduceAmount} on ${category} to protect buffer`);
-      addMessage("assistant", `Reduced to ₹${reduceAmount}. That's more comfortable for your buffer.`);
+      queueMessage("assistant", `Reduced to ₹${reduceAmount}. Buffer stays intact.`);
       returnToSteadyState();
       return;
     }
 
     if (chip.id === "delay") {
       storeMemoryDecision("afford_decision", `User delayed ${amount} ${category} spend to protect buffer`);
-      addMessage("assistant", "Smart move. Delaying gives your buffer time to recover.");
+      queueMessage("assistant", "Noted. Buffer has more time to recover before the spend.");
       returnToSteadyState();
       return;
     }
@@ -1826,7 +2353,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         "assistant",
         `Setting a ${category} cap. This prevents repeat patterns and keeps ${goalName} on track.`
       );
-      addMessage("assistant", `Suggested cap: ${formatINR(Math.floor(amountNum * 1.5))}/month for ${category}.`);
+      queueMessage("assistant", `Suggested cap: ${formatINR(Math.floor(amountNum * 1.5))}/month for ${category}.`);
       returnToSteadyState();
       return;
     }
@@ -1834,7 +2361,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     if (chip.id === "alternatives") {
       setHomeSubflow("afford-alternatives");
       const preset = lookupPace(selectedPaceId);
-      addMessage("assistant", `To afford ${amount} comfortably, you could:\n\n${preset.lever_examples.slice(0, 3).map((l, i) => `${i + 1}. ${l}`).join('\n')}`);
+      queueMessage("assistant", `To afford ${amount} comfortably, you could:\n\n${preset.lever_examples.slice(0, 3).map((l, i) => `${i + 1}. ${l}`).join('\n')}`);
       setActiveChips([
         { id: "lever-0", label: preset.lever_examples[0] },
         { id: "lever-1", label: preset.lever_examples[1] || "Extend goal" },
@@ -1855,7 +2382,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
       return;
     }
 
-    addMessage("assistant", `Applied: ${chip.label}. Your buffer is now more comfortable.`);
+    queueMessage("assistant", `Applied: ${chip.label}.`);
     returnToSteadyState();
   };
 
@@ -1875,7 +2402,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     setHomeSubflow("swipe-rating");
     addMessage(
       "assistant",
-      "Let's rate your recent spends. Swipe → for worth it, ← for regret, ↑ to skip.\n\n(Use chips to simulate swipe)"
+      "Rate your recent spends. Swipe → worth it, ← regret, ↑ skip."
     );
     if (receipts.length > 0) {
       showSwipeCard(receipts[0]);
@@ -1884,7 +2411,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
 
   const showSwipeCard = (receipt: typeof profile.receipts[0]) => {
     const cardMessage = `${receipt.merchant || receipt.category}\n${receipt.amount}\n${receipt.time}\n\n${receipt.category}`;
-    addMessage("assistant", cardMessage);
+    queueMessage("assistant", cardMessage);
     setActiveChips([
       { id: "swipe-right", label: "→ Worth it" },
       { id: "swipe-left", label: "← Regret" },
@@ -1933,7 +2460,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
       if (spendRatings.length + (chip.id !== "done-swiping" ? 1 : 0) >= 5) {
         analyzeSwipePatterns();
       } else {
-        addMessage("assistant", "Rate at least 5 spends to see patterns.");
+        queueMessage("assistant", "Rate at least 5 spends to see patterns.");
         returnToSteadyState();
       }
     } else {
@@ -1962,7 +2489,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     }
 
     if (spendRatings.length < 3) {
-      addMessage("assistant", "Not enough ratings yet. Keep rating spends to build insights.");
+      queueMessage("assistant", "Not enough ratings yet. Keep rating spends to build insights.");
       returnToSteadyState();
       return;
     }
@@ -1977,7 +2504,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     const response = await callFlowAssist("copy", "swipe-analysis", buildSwipeAnalysisContext(ratingsForContext));
 
     if (response?.message) {
-      addMessage("assistant", response.message);
+      queueMessage("assistant", response.message);
     } else {
       // Fallback: basic pattern detection
       const categoryRatings: Record<string, { worth: number; regret: number; meh: number; total: number }> = {};
@@ -1994,7 +2521,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
           else if (data.worth / data.total >= 0.6) msg += `${cat}: mostly joy.\n`;
         }
       }
-      addMessage("assistant", msg || "No clear patterns yet.");
+      queueMessage("assistant", msg || "No clear patterns yet.");
     }
 
     if (regrets.length > 0 || worths.length > 0) {
@@ -2032,14 +2559,14 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         const cutAmount = actual ? formatINR(Math.round(actual.monthlyAverage * 0.25)) : "₹2k";
         const catShort = topRegretCat.split("(")[0].trim();
 
-        addMessage("assistant", `${topRegretCat} = mostly regret. What should we do?`);
+        queueMessage("assistant", `${topRegretCat} = mostly regret. What should we do?`);
         setActiveChips([
           { id: "nudge-time", label: "Set spending alert" },
           { id: `reduce-${topRegretCat}`, label: `Reduce ${catShort} by ${cutAmount}` },
           { id: "nothing", label: "Nothing for now" },
         ]);
       } else {
-        addMessage("assistant", "No clear regret patterns yet. Keep rating to build insights.");
+        queueMessage("assistant", "No clear regret patterns yet. Keep rating to build insights.");
         returnToSteadyState();
       }
     } else if (chip.id === "protect-joy") {
@@ -2058,14 +2585,14 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         const allocateAmount = actual ? formatINR(Math.ceil(actual.monthlyAverage * 0.8 / 500) * 500) : "₹2k";
         const catShort = topJoyCat.split("(")[0].trim();
 
-        addMessage("assistant", "Which joy spending should we protect?");
+        queueMessage("assistant", "Which joy spending should we protect?");
         setActiveChips([
           { id: `allocate-${topJoyCat}`, label: `Allocate ${allocateAmount} for ${catShort}` },
           { id: "keep-flexible", label: "Keep flexible" },
           { id: "nothing", label: "Not now" },
         ]);
       } else {
-        addMessage("assistant", "No clear joy patterns yet.");
+        queueMessage("assistant", "No clear joy patterns yet.");
         returnToSteadyState();
       }
     }
@@ -2075,7 +2602,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     const goalName = goalDraft.name || profile.goal.goal_name;
 
     if (chip.id === "nothing" || chip.id === "keep-flexible") {
-      addMessage("assistant", "Got it. I'll just track for now.");
+      queueMessage("assistant", "Got it. I'll just track for now.");
       returnToSteadyState();
       return;
     }
@@ -2098,7 +2625,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         }],
       });
       storeMemoryDecision("nudge_set", `User set spending nudge for ${nudgeCategory} from swipe actions`);
-      addMessage("assistant", `I'll nudge you when ${nudgeCategory} spending spikes to prevent regrets.`);
+      queueMessage("assistant", `I'll nudge you when ${nudgeCategory} spending spikes to prevent regrets.`);
       returnToSteadyState();
       return;
     }
@@ -2129,7 +2656,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
           `UPDATED YOUR PLAN\n\nReduced ${catName}: ${formatINR(currentBudgetNum)} → ${formatINR(reducedBudget)}\n(Trimming regret patterns)\n\nSavings: ${formatINR(savings)}/month toward ${goalName}`
         );
       } else {
-        addMessage("assistant", "Budget updated based on your rating patterns.");
+        queueMessage("assistant", "Budget updated based on your rating patterns.");
       }
       returnToSteadyState();
       return;
@@ -2158,7 +2685,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
           `Allocated ${formatINR(allocateAmount)}/month for ${catName} (your joy category).\n\nThis protects what you value while keeping ${goalName} on track.`
         );
       } else {
-        addMessage("assistant", "Joy spending protected.");
+        queueMessage("assistant", "Joy spending protected.");
       }
       returnToSteadyState();
       return;
@@ -2176,7 +2703,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
       const topLeak = leaks[0];
 
       if (!topLeak) {
-        addMessage("assistant", "Your spending is fairly stable — no major leaks detected! That's a good sign.");
+        queueMessage("assistant", "Your spending is fairly stable — no major leaks detected! That's a good sign.");
         returnToSteadyState();
         return;
       }
@@ -2194,7 +2721,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
       // Try AI copy
       const response = await callFlowAssist("copy", "leak-insight", buildLeakContext());
       if (response?.message) {
-        addMessage("assistant", response.message + "\n\nWas this joy or regret spending?");
+        queueMessage("assistant", response.message + "\n\nWas this joy or regret spending?");
       } else {
         // Fallback template
         addMessage(
@@ -2212,7 +2739,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     }
 
     if (chip.id === "ignore") {
-      addMessage("assistant", "Got it. I'll check back later.");
+      queueMessage("assistant", "Got it. I'll check back later.");
       returnToSteadyState();
     }
   };
@@ -2237,7 +2764,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     }
 
     if (chip.id === "regret" || chip.id === "mixed") {
-      addMessage("assistant", "Let's plug this leak. Options:");
+      queueMessage("assistant", "Let's plug this leak. Options:");
       setActiveChips([
         { id: "nudge-time", label: "Set a spending alert" },
         { id: "reduce-category", label: `Reduce ${leakCategory.split("(")[0].trim()} by ${formatINR(suggestedCut)}` },
@@ -2255,14 +2782,14 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     if (chip.id === "allocate") {
       mutate({ budgetOverrides: { [leakCategory]: allocateAmount } });
       storeMemoryDecision("leak_action", `User allocated ${formatINR(allocateAmount)}/month as joy budget for ${leakCategory}`);
-      addMessage("assistant", `Allocated ${formatINR(allocateAmount)}/month for ${leakCategory} (your joy category).`);
+      queueMessage("assistant", `Allocated ${formatINR(allocateAmount)}/month for ${leakCategory} (your joy category).`);
       returnToSteadyState();
       return;
     }
 
     if (chip.id === "no-allocate" || chip.id === "not-now") {
       storeMemoryDecision("leak_action", `User declined to address ${leakCategory} leak for now`);
-      addMessage("assistant", "No worries. Let me know if you change your mind.");
+      queueMessage("assistant", "No worries. Let me know if you change your mind.");
       returnToSteadyState();
       return;
     }
@@ -2276,7 +2803,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         }],
       });
       storeMemoryDecision("leak_action", `User set spending alert for ${leakCategory} spikes`);
-      addMessage("assistant", `I'll alert you when ${leakCategory} spending spikes above average.`);
+      queueMessage("assistant", `I'll alert you when ${leakCategory} spending spikes above average.`);
       returnToSteadyState();
       return;
     }
@@ -2286,7 +2813,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
       const rounded = Math.ceil(newBudget / 500) * 500;
       mutate({ budgetOverrides: { [leakCategory]: rounded } });
       storeMemoryDecision("leak_action", `User reduced ${leakCategory} budget by ${formatINR(suggestedCut)} to plug leak`);
-      addMessage("assistant", `Reduced ${leakCategory} budget by ${formatINR(suggestedCut)}. This plugs the leak.`);
+      queueMessage("assistant", `Reduced ${leakCategory} budget by ${formatINR(suggestedCut)}. This plugs the leak.`);
       returnToSteadyState();
     }
   };
@@ -2306,26 +2833,40 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     const isAhead = daysNum > 0;
     const isBehind = daysNum < 0;
 
+    const progressPct = goalAmountNum > 0 ? Math.round((progressAmount / goalAmountNum) * 100) : 0;
+    const status: "ahead" | "behind" | "on-track" = isAhead ? "ahead" : isBehind ? "behind" : "on-track";
+    const daysLabel = isAhead
+      ? `${daysNum} days ahead`
+      : isBehind
+        ? `${Math.abs(daysNum)} days behind`
+        : "On track";
+
     // Try AI copy for the status message
     const response = await callFlowAssist("copy", "progress-status", buildProgressContext());
 
+    const progressCard: ChatCardData = {
+      type: "goal-progress",
+      name: goalName,
+      pct: progressPct,
+      saved: progressAmount,
+      target: goalAmountNum,
+      daysLabel,
+      status,
+    };
+
     if (response?.message) {
-      addMessage("assistant", response.message);
+      queueMessage("assistant", response.message, undefined, progressCard);
     } else {
-      // Fallback template
-      const progressPct = goalAmountNum > 0 ? Math.round((progressAmount / goalAmountNum) * 100) : 0;
       const timeline = goalDraft.timeline || profile.goal.horizon;
-      const savingsPct = profile.persona.actual_savings_pct;
-      const requiredPct = profile.goal.required_savings_pct;
-      let statusMessage = `PROGRESS CHECK\n\n${goalName}: ${formatINR(progressAmount)} / ${goalAmount}\n${progressPct}% complete\n\nTimeline: ${timeline}\nPace: ${preset.label} (${preset.required_monthly_cut} cuts/month)\n\n`;
+      let statusText = "";
       if (isAhead) {
-        statusMessage += `Status: ${daysNum} days AHEAD\n\nCurrent savings: ${savingsPct} (vs ${requiredPct} needed)\nYou're outperforming!`;
+        statusText = `You're ${daysNum} days ahead on ${goalName}. Keep it up!`;
       } else if (isBehind) {
-        statusMessage += `Status: ${Math.abs(daysNum)} days BEHIND\n\nCurrent savings: ${savingsPct} (vs ${requiredPct} needed)\nLet's adjust.`;
+        statusText = `You're ${Math.abs(daysNum)} days behind on ${goalName}. Let's adjust.`;
       } else {
-        statusMessage += `Status: Exactly ON TRACK\n\nCurrent savings: ${savingsPct} (vs ${requiredPct} needed)\nPerfect pace!`;
+        statusText = `You're exactly on track for ${goalName}. Perfect pace!`;
       }
-      addMessage("assistant", statusMessage);
+      queueMessage("assistant", statusText, undefined, progressCard);
     }
 
     // Chips determined by state machine (same as before)
@@ -2367,12 +2908,12 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     if (chip.id === "relax-pace") {
       const response = await callFlowAssist("copy", "progress-relax", buildProgressActionContext("relax-pace"));
       if (response?.message) {
-        addMessage("assistant", response.message);
+        queueMessage("assistant", response.message);
         if (response.actions.length > 0) applyFlowActions(response.actions);
       } else {
         const monthlyCut = parseINR(preset.required_monthly_cut);
         const relaxable = Math.round(monthlyCut * 0.15);
-        addMessage("assistant", `You can reduce cuts by up to ${formatINR(relaxable)}/month and still hit your goal on time.`);
+        queueMessage("assistant", `You can reduce cuts by up to ${formatINR(relaxable)}/month and still hit your goal on time.`);
       }
       setActiveChips([
         { id: "apply-relax", label: "Sounds good" },
@@ -2383,7 +2924,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
 
     if (chip.id === "apply-relax") {
       storeMemoryDecision("progress_action", "User chose to relax pace after being ahead of goal");
-      addMessage("assistant", "Pace relaxed. You're still on track with more breathing room.");
+      queueMessage("assistant", "Pace relaxed. You're still on track with more breathing room.");
       returnToSteadyState();
       return;
     }
@@ -2391,10 +2932,10 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     if (chip.id === "finish-faster") {
       const response = await callFlowAssist("copy", "progress-faster", buildProgressActionContext("finish-faster"));
       if (response?.message) {
-        addMessage("assistant", response.message);
+        queueMessage("assistant", response.message);
         if (response.actions.length > 0) applyFlowActions(response.actions);
       } else {
-        addMessage("assistant", "At this pace, you could finish 2 weeks early or increase your target.");
+        queueMessage("assistant", "At this pace, you could finish 2 weeks early or increase your target.");
       }
       setActiveChips([
         { id: "finish-early", label: "Finish early" },
@@ -2406,7 +2947,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
 
     if (chip.id === "finish-early" || chip.id === "increase-target") {
       storeMemoryDecision("progress_action", `User chose to ${chip.label.toLowerCase()} after being ahead`);
-      addMessage("assistant", "Updated! Your plan now reflects your strong performance.");
+      queueMessage("assistant", "Updated! Your plan now reflects your strong performance.");
       returnToSteadyState();
       return;
     }
@@ -2440,13 +2981,13 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         }],
       });
       storeMemoryDecision("autosave_activated", `User set up autosave based on ${selectedPaceId} pace`);
-      addMessage("assistant", "Autosave activated! Your progress is now protected.", "success");
+      queueMessage("assistant", "Autosave activated! Your progress is now protected.", "success");
       returnToSteadyState();
       return;
     }
 
     if (chip.id === "keep-as-is" || chip.id === "cancel") {
-      addMessage("assistant", "Keeping your current plan. You're doing great!");
+      queueMessage("assistant", "Keeping your current plan. You're doing great!");
       returnToSteadyState();
     }
   };
@@ -2458,7 +2999,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
       const response = await callFlowAssist("copy", "progress-diagnosis", buildProgressActionContext("see-what-happened"));
 
       if (response?.message) {
-        addMessage("assistant", response.message);
+        queueMessage("assistant", response.message);
       } else {
         // Fallback
         const budgets = profile.suggested_budgets;
@@ -2474,7 +3015,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
             overBudgetCats.push(cat.name);
           }
         }
-        addMessage("assistant", `Spending vs budget:\n\n${lines.join("\n")}\n\n${overBudgetCats.join(" and ") || "Some categories"} went over.`);
+        queueMessage("assistant", `Spending vs budget:\n\n${lines.join("\n")}\n\n${overBudgetCats.join(" and ") || "Some categories"} went over.`);
       }
 
       // Still build dynamic chips from over-budget categories
@@ -2505,16 +3046,16 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         const newBudget = Math.ceil(matchedCat.monthlyAverage * 0.85 / 500) * 500;
         mutate({ budgetOverrides: { [matchedCat.name]: newBudget } });
         storeMemoryDecision("budget_tightened", `Tightened ${matchedCat.name} to ${formatINR(newBudget)} after falling behind on goal`);
-        addMessage("assistant", `Reduced ${matchedCat.name} budget to ${formatINR(newBudget)}. This should help you catch up.`);
+        queueMessage("assistant", `Reduced ${matchedCat.name} budget to ${formatINR(newBudget)}. This should help you catch up.`);
       } else {
-        addMessage("assistant", "Budget updated. This should help you catch up.");
+        queueMessage("assistant", "Budget updated. This should help you catch up.");
       }
       returnToSteadyState();
       return;
     }
 
     if (chip.id === "rate-spends") {
-      addMessage("assistant", "Let's rate some spends to find patterns.");
+      queueMessage("assistant", "Let's rate some spends to find patterns.");
       startWorthFlow();
       return;
     }
@@ -2546,7 +3087,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         });
       }
       storeMemoryDecision("timeline_extended", `Extended goal timeline to ${newMonths} months after falling behind`);
-      addMessage("assistant", `Timeline extended to ${chip.label}. Your pace is now more realistic.`);
+      queueMessage("assistant", `Timeline extended to ${chip.label}. Your pace is now more realistic.`);
       returnToSteadyState();
       return;
     }
@@ -2554,13 +3095,13 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     if (chip.id === "catch-up") {
       const response = await callFlowAssist("copy", "progress-catchup", buildProgressActionContext("catch-up"));
       if (response?.message) {
-        addMessage("assistant", response.message);
+        queueMessage("assistant", response.message);
         if (response.actions.length > 0) applyFlowActions(response.actions);
       } else {
         const preset = lookupPace(selectedPaceId);
         const monthlyCut = parseINR(preset.required_monthly_cut);
         const extraNeeded = Math.round(monthlyCut * 0.2);
-        addMessage("assistant", `To catch up, you need ${formatINR(extraNeeded)} more in cuts this month.`);
+        queueMessage("assistant", `To catch up, you need ${formatINR(extraNeeded)} more in cuts this month.`);
       }
       setActiveChips([
         { id: "apply-catchup", label: "Apply suggestions" },
@@ -2572,13 +3113,13 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
 
     if (chip.id === "apply-catchup") {
       storeMemoryDecision("catchup_applied", "User applied catch-up budget suggestions after falling behind");
-      addMessage("assistant", "Budget adjusted. You're on the path to catching up!");
+      queueMessage("assistant", "Budget adjusted. You're on the path to catching up!");
       returnToSteadyState();
       return;
     }
 
     if (chip.id === "change-goal") {
-      addMessage("assistant", "Let's revisit your goal.");
+      queueMessage("assistant", "Let's revisit your goal.");
       startGoal();
       return;
     }
@@ -2595,7 +3136,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
       const dailyAmount = Math.floor(
         (parseInt(preset.required_monthly_cut.replace(/[₹,k]/g, "")) * 1000) / 30
       );
-      addMessage("assistant", `Set autosave at ₹${dailyAmount}/day to protect current pace?`);
+      queueMessage("assistant", `Set autosave at ₹${dailyAmount}/day to protect current pace?`);
       setActiveChips([
         { id: "confirm-auto", label: `Yes, ₹${dailyAmount}/day` },
         { id: "cancel", label: "Cancel" },
@@ -2617,13 +3158,13 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         }],
       });
       storeMemoryDecision("autosave_activated", `User set up autosave at ₹${dailyAmt}/day from on-track progress`);
-      addMessage("assistant", "Autosave activated! Your pace is now protected.", "success");
+      queueMessage("assistant", "Autosave activated! Your pace is now protected.", "success");
       returnToSteadyState();
       return;
     }
 
     if (chip.id === "push-harder") {
-      addMessage("assistant", "Want to increase your monthly cuts to finish faster?");
+      queueMessage("assistant", "Want to increase your monthly cuts to finish faster?");
       setActiveChips([
         { id: "increase-cuts", label: "Increase cuts by ₹2k" },
         { id: "cancel", label: "Keep current" },
@@ -2632,19 +3173,19 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     }
 
     if (chip.id === "increase-cuts") {
-      addMessage("assistant", "Increased monthly cuts. You'll reach your goal faster!");
+      queueMessage("assistant", "Increased monthly cuts. You'll reach your goal faster!");
       returnToSteadyState();
       return;
     }
 
     if (chip.id === "keep-manual" || chip.id === "cancel") {
-      addMessage("assistant", "Keeping things manual. I'll check in regularly.");
+      queueMessage("assistant", "Keeping things manual. I'll check in regularly.");
       returnToSteadyState();
       return;
     }
 
     if (chip.id === "adjust-goal") {
-      addMessage("assistant", "Let's adjust your goal.");
+      queueMessage("assistant", "Let's adjust your goal.");
       startGoal();
     }
   };
@@ -2652,25 +3193,56 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
   // ============ UNDERSTAND MY MONEY (Educational flow) ============
   const startUnderstandFlow = () => {
     setHomeSubflow("understand-menu");
-    addMessage("assistant", "Let's break down your money story. What would you like to explore?");
+    queueMessage("assistant", "Let's break down your money story. What would you like to explore?");
     setActiveChips(toChips(understandMenuChips));
   };
 
   const handleUnderstandMenu = async (chip: ChatChip) => {
     if (chip.id === "where-money-goes") {
       setHomeSubflow("understand-categories");
-      const months = profile.dataRange.months;
 
-      let catBreakdown = "";
-      for (const cat of lifestyleCategories.slice(0, 6)) {
-        catBreakdown += `• ${cat.name}: ~₹${cat.monthlyAverage.toLocaleString("en-IN")}/mo (${cat.shareOfLifestyle})\n`;
-      }
+      // Build spend overview chart from monthly breakdown
+      const monthEntries = Object.entries(profile.monthlyBreakdown)
+        .sort(([a], [b]) => a.localeCompare(b));
+      const recentMonths = monthEntries.slice(-5);
+      const chartData = recentMonths.map(([m, d]) => {
+        const date = new Date(m + "-01");
+        return { label: date.toLocaleString("en-IN", { month: "short" }), value: d.totalDebits };
+      });
+      const avgSpend = chartData.length > 0
+        ? Math.round(chartData.reduce((s, d) => s + d.value, 0) / chartData.length)
+        : 0;
+      const latestMonth = recentMonths[recentMonths.length - 1];
+      const latestLabel = latestMonth
+        ? new Date(latestMonth[0] + "-01").toLocaleString("en-IN", { month: "long" })
+        : "Recent";
+      const latestAmount = latestMonth ? latestMonth[1].totalDebits : 0;
+      const pctDiff = avgSpend > 0 ? Math.round(((latestAmount - avgSpend) / avgSpend) * 100) : 0;
+      const compText = pctDiff > 0
+        ? `${pctDiff}% higher than your monthly average`
+        : pctDiff < 0
+          ? `${Math.abs(pctDiff)}% lower than your monthly average`
+          : "Right at your monthly average";
 
       addMessage(
         "assistant",
-        `YOUR MONEY MAP\n\nData: ${months} months, ${profile.dataRange.totalTransactions} transactions\nBalance: ₹${profile.accountBalance.toLocaleString("en-IN")}\n\nInvestments: ₹${profile.investmentSummary.totalInvested.toLocaleString("en-IN")} total (${profile.persona.actual_savings_pct} of income)\n\nLifestyle spending breakdown (monthly avg):\n${catBreakdown}\n${lifestyleCategories[0]?.name || "Top category"} is your biggest variable spend at ${lifestyleCategories[0]?.shareOfLifestyle || "?"}. That's where the most optimization opportunity is.`
+        "You're spending a bit more than you usually do! Your shopping and food expenses are what pushed it up.",
+        undefined,
+        {
+          type: "spend-overview",
+          month: latestLabel,
+          amount: latestAmount,
+          comparisonText: compText,
+          chartData,
+          average: avgSpend,
+          highlightIndex: chartData.length - 1,
+        },
       );
-      setActiveChips(toChips(understandDrilldownChips));
+      queueMessage("assistant", "Want me to bring out your top spends?");
+      setActiveChips([
+        { id: "show-top-spends", label: "Yes" },
+        { id: "back", label: "Not now" },
+      ]);
       return;
     }
 
@@ -2679,7 +3251,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
 
       const response = await callFlowAssist("copy", "understand-patterns", buildPatternsContext());
       if (response?.message) {
-        addMessage("assistant", response.message);
+        queueMessage("assistant", response.message);
       } else {
         // Fallback template
         const totalInvested = profile.investmentSummary.totalInvested;
@@ -2701,7 +3273,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
           patternsText += `Cash withdrawals: ${formatINR(cashCat.monthlyAverage)}/month\n\n`;
         }
         patternsText += `These patterns aren't good or bad - they're just how your money behaves.`;
-        addMessage("assistant", patternsText);
+        queueMessage("assistant", patternsText);
       }
       setActiveChips(toChips(understandDrilldownChips));
       return;
@@ -2712,7 +3284,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
 
       const response = await callFlowAssist("copy", "understand-benchmarks", buildBenchmarksContext());
       if (response?.message) {
-        addMessage("assistant", response.message);
+        queueMessage("assistant", response.message);
       } else {
         // Fallback template
         const savingsRate = parseInt(profile.persona.actual_savings_pct.replace(/[~%]/g, "")) || 0;
@@ -2728,7 +3300,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         benchText += `${topCatName}\nYou: ${topCatShare}% of lifestyle | Typical: 20-30%\n→ ${topCatShare > 30 ? "Higher than typical" : topCatShare > 20 ? "Within normal range" : "Lower than typical (efficient!)"}\n\n`;
         benchText += `Lifestyle vs Income\nYou: ${lifestylePct}% | Avg: 40-60%\n→ ${lifestylePct > 60 ? "High — consider trimming" : lifestylePct > 40 ? "Within normal range" : "Lean lifestyle spending"}\n\n`;
         benchText += `Benchmarks are guides, not rules. What matters is whether you're hitting YOUR goals.`;
-        addMessage("assistant", benchText);
+        queueMessage("assistant", benchText);
       }
       setActiveChips(toChips(understandDrilldownChips));
       return;
@@ -2739,7 +3311,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
 
       const response = await callFlowAssist("copy", "understand-personality", buildPersonalityContext());
       if (response?.message) {
-        addMessage("assistant", response.message);
+        queueMessage("assistant", response.message);
       } else {
         // Fallback template
         const savingsRate = parseInt(profile.persona.actual_savings_pct.replace(/[~%]/g, "")) || 0;
@@ -2784,7 +3356,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
           `Strengths:\n${strengths.map((s) => `+ ${s}`).join("\n")}\n\n` +
           `Growth areas:\n${growthAreas.map((g) => `- ${g}`).join("\n")}\n\n` +
           `Best strategies:\n${strategies.map((s) => `• ${s}`).join("\n")}`;
-        addMessage("assistant", personalityText);
+        queueMessage("assistant", personalityText);
       }
       setActiveChips(toChips(understandActionChips));
     }
@@ -2793,6 +3365,44 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
   const handleUnderstandCategories = (chip: ChatChip) => {
     if (chip.id === "back") {
       startUnderstandFlow();
+      return;
+    }
+
+    if (chip.id === "show-top-spends") {
+      // Build category breakdown card from real data
+      const monthEntries = Object.entries(profile.monthlyBreakdown).sort(([a], [b]) => a.localeCompare(b));
+      const latestMonth = monthEntries[monthEntries.length - 1];
+      const latestLabel = latestMonth
+        ? new Date(latestMonth[0] + "-01").toLocaleString("en-IN", { month: "long" })
+        : "Recent";
+      const latestAmount = latestMonth ? latestMonth[1].totalDebits : 0;
+      const topCatName = lifestyleCategories[0]?.name || "Top category";
+      const subtext = `Looking good comes at a cost, ${topCatName.toLowerCase().split("(")[0].trim()} was your biggest spend`;
+
+      const categories = lifestyleCategories.slice(0, 5).map((cat) => {
+        const shortName = cat.name.replace(/\s*\(.*\)/, "");
+        return {
+          name: shortName,
+          amount: cat.monthlyAverage,
+          pct: parseInt(cat.shareOfLifestyle.replace("%", "")) || 0,
+          color: CATEGORY_COLORS[cat.name] || CATEGORY_COLORS[shortName] || "#8e949d",
+          icon: CATEGORY_ICONS[cat.name] || CATEGORY_ICONS[shortName] || CATEGORY_ICONS["Other / Uncategorized"],
+        };
+      });
+
+      addMessage(
+        "assistant",
+        "",
+        undefined,
+        {
+          type: "category-breakdown",
+          month: latestLabel,
+          amount: latestAmount,
+          subtext,
+          categories,
+        },
+      );
+      setActiveChips(toChips(understandDrilldownChips));
       return;
     }
 
@@ -2806,7 +3416,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     }
 
     if (chip.id === "explore-category") {
-      addMessage("assistant", "Let's dive into your Food & Delivery spending.");
+      queueMessage("assistant", "Let's dive into your Food & Delivery spending.");
       setActiveChips([{ id: "rate-food", label: "Rate Food spends" }, { id: "back", label: "Back" }]);
       return;
     }
@@ -2818,7 +3428,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     }
 
     if (chip.id === "rate-food") {
-      addMessage("assistant", "Let's rate your Food spends to find what's worth it.");
+      queueMessage("assistant", "Let's rate your Food spends to find what's worth it.");
       startWorthFlow();
     }
   };
@@ -2839,7 +3449,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     }
 
     if (chip.id === "see-patterns") {
-      addMessage("assistant", "You're already viewing your patterns!");
+      queueMessage("assistant", "You're already viewing your patterns!");
       setActiveChips(toChips(understandActionChips));
     }
   };
@@ -2875,13 +3485,13 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     }
 
     if (chip.id === "weekend-cap" || chip.id === "automate-savings" || chip.id === "plan-weekend") {
-      addMessage("assistant", `Great choice! Let's set up: ${chip.label}`);
+      queueMessage("assistant", `Great choice! Let's set up: ${chip.label}`);
       returnToSteadyState();
       return;
     }
 
     if (chip.id === "done-learning") {
-      addMessage("assistant", "Hope that helped! Let me know what else I can do.");
+      queueMessage("assistant", "Hope that helped! Let me know what else I can do.");
       returnToSteadyState();
       return;
     }
@@ -2907,7 +3517,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         return;
       }
       if (chip.id === "nudge") {
-        addMessage("assistant", "Done. I'll nudge you before similar spends.");
+        queueMessage("assistant", "Done. I'll nudge you before similar spends.");
         returnToSteadyState();
       }
     }
@@ -2946,7 +3556,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
         tradeoffRule: chip.id,
         tradeoffStep: "decision",
       }));
-      addMessage("assistant", getTradeoffPrompt(chip.id));
+      queueMessage("assistant", getTradeoffPrompt(chip.id));
       setActiveChips(toChips(tradeoffChoiceChips));
       return;
     }
@@ -2957,9 +3567,9 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
           (option) => option.id === subflowData.tradeoffRule,
         ) ?? profile.tradeoff_rules.bucket_options[0];
       if (chip.id === "reduce-elsewhere") {
-        addMessage("assistant", rule.reduce_elsewhere);
+        queueMessage("assistant", rule.reduce_elsewhere);
       } else {
-        addMessage("assistant", rule.extend_timeline);
+        queueMessage("assistant", rule.extend_timeline);
       }
       returnToSteadyState();
     }
@@ -2987,6 +3597,7 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
 
   // ============ RESET ============
   const resetFlow = () => {
+    clearMsgQueue();
     if (abortRef.current) abortRef.current.abort();
     resetState(); // Resets all persistent state (step, stages, overrides, etc.)
     // Reset transient local state
@@ -2999,9 +3610,10 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     setReceiptsOpen(false);
     setInsightIndex(0);
     setDynamicPacePresets(profile.pace_presets);
+    setMessages([]);
+    setReviewMessages(null);
     setAiMessages([]);
     setIsStreaming(false);
-    setStreamingText("");
     setSwipeIndex(0);
     setSwipeQueue([]);
     welcomeShownRef.current = false;
@@ -3009,9 +3621,48 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     mutate({ currentStep: "home" });
   };
 
+  // ============ DEBUG CARD PREVIEW ============
+  const injectCardPreview = useCallback(
+    (card: ChatCardData, prompt: string) => {
+      clearMsgQueue();
+      if (abortRef.current) abortRef.current.abort();
+      showChatOverlay(false);
+      setReviewMessages([
+        { id: "dbg-user", role: "user", text: prompt },
+        { id: "dbg-card", role: "assistant", text: "", card: { ...card, variant: debugCardVariant } },
+      ]);
+    },
+    [clearMsgQueue, showChatOverlay, debugCardVariant],
+  );
+
+  const openFdSheet = useCallback((card: Extract<ChatCardData, { type: "investment-product" }>) => {
+    setFdSheetData(card);
+    setFdSelectedAmount(card.amount);
+    setFdSheetPhase("entering");
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setFdSheetPhase("open");
+      });
+    });
+  }, []);
+
+  const confirmFdSetup = useCallback(() => {
+    const updater = (msgs: ChatMessage[]) =>
+      msgs.map((m) =>
+        m.card?.type === "investment-product"
+          ? { ...m, card: { ...(m.card as Extract<ChatCardData, { type: "investment-product" }>), amount: fdSelectedAmount, activated: true } }
+          : m
+      );
+    setMessages((prev) => updater(prev));
+    setReviewMessages((prev) => (prev ? updater(prev) : prev));
+    setFdSheetPhase("entering");
+    setTimeout(() => setFdSheetPhase("closed"), 360);
+  }, [fdSelectedAmount]);
+
   useEffect(() => {
     if (!isHydrated || launchResetDoneRef.current) return;
     launchResetDoneRef.current = true;
+    clearMsgQueue();
     if (abortRef.current) abortRef.current.abort();
     setMessages([]);
     setActiveChips([]);
@@ -3026,13 +3677,13 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
     setDynamicPacePresets(profile.pace_presets);
     setAiMessages([]);
     setIsStreaming(false);
-    setStreamingText("");
     setSwipeIndex(0);
     setSwipeQueue([]);
     setIsAgentProcessingGlow(false);
 
     // Load directly into chat (design-exploration: skip wrapped/persona story).
     mutate({ currentStep: "home" });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHydrated]);
 
@@ -3044,9 +3695,9 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
   // ============ DRAWER CONTENT ============
   const receiptsDrawer = receiptsOpen ? (
     <div className="space-y-2">
-      <p className="font-medium text-zinc-900">Recent transactions</p>
+      <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)" }}>Recent transactions</p>
       {profile.receipts.map((r) => (
-        <p key={r.id} className="text-zinc-600">
+        <p key={r.id} style={{ ...typography.caption, color: "rgba(0,0,0,0.5)" }}>
           {r.time} · {r.category} · {r.amount} {r.merchant && `· ${r.merchant}`}
         </p>
       ))}
@@ -3054,92 +3705,198 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
   ) : null;
 
   // ============ PINNED GOAL ============
-  const pinnedGoal =
-    step === "home" || (step === "budget" && budgetStage !== "digest") ? (
-      <div className="flex items-center gap-4">
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50">
-          <svg className="h-5 w-5 text-emerald-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-          </svg>
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="truncate text-sm font-medium text-zinc-900">
-            {goalDraft.name || profile.goal.goal_name}
-          </p>
-          <p className="text-xs text-zinc-500">
-            {goalDraft.amount || profile.goal.goal_amount} · {goalDraft.timeline || profile.goal.horizon} · {lookupPace(selectedPaceId).label}
-          </p>
-        </div>
-        <div className="flex-shrink-0 text-right">
-          <p className="text-xs font-medium text-emerald-700">{profile.goal.days_ahead_behind}</p>
-          <p className="text-[10px] text-zinc-400">on track</p>
-        </div>
-      </div>
-    ) : null;
+  const pinnedGoal = null;
+  const activeGoalProduct = userState?.products?.find((product) => product.active);
+  const goalAutomationCard = useMemo<Extract<ChatCardData, { type: "investment-product" }> | null>(() => {
+    if (!activeGoalProduct || !goalDetail) return null;
+
+    const productType = activeGoalProduct.type === "rd"
+      ? "Recurring Deposit"
+      : activeGoalProduct.type === "autosave"
+        ? "Auto-save"
+        : "Fixed Deposit";
+    const amount = activeGoalProduct.type === "autosave"
+      ? goalDetail.contributionAmount
+      : activeGoalProduct.amount;
+    const rate = activeGoalProduct.type === "autosave" ? "~4% p.a." : "7.25% p.a.";
+
+    return {
+      type: "investment-product",
+      productType,
+      amount,
+      rate,
+      tenure: goalDetail.timeline,
+      amountOptions: [],
+      accountLabel: "Savings xx1234",
+      activated: true,
+      onArrowTap: activeGoalProduct.type === "rd" ? () => setRdDetailVisible(true) : undefined,
+    };
+  }, [activeGoalProduct, goalDetail]);
+  const displayedMessages = useMemo(
+    () => (reviewMessages ?? messages).map((message) => {
+      if (message.card?.type === "goal-progress") {
+        return {
+          ...message,
+          card: {
+            ...message.card,
+            onArrowTap: () => openGoalDetail(message.card as Extract<ChatCardData, { type: "goal-progress" }>),
+          },
+        };
+      }
+      if (message.card?.type === "investment-product" && !message.card.activated) {
+        return {
+          ...message,
+          card: {
+            ...message.card,
+            onContinue: () => openFdSheet(message.card as Extract<ChatCardData, { type: "investment-product" }>),
+          },
+        };
+      }
+      return message;
+    }),
+    [reviewMessages, messages, openGoalDetail, openFdSheet]
+  );
+  const displayedChips = reviewMessages ? [] : activeChips;
+  const showChatInput = !reviewMessages && (step === "home" || (step === "goal" && (goalStage === "choice" || goalStage === "destination")));
+
+  // ============ THINKING LABEL ============
+  const thinkingLabel = useMemo(() => {
+    if (isStreaming) return "Thinking...";
+
+    // Map subflows to contextual labels
+    const subflowLabels: Partial<Record<HomeSubflow, string>> = {
+      "afford-amount": "Checking if you can afford this...",
+      "afford-category": "Checking if you can afford this...",
+      "afford-fullpicture": "Checking your budget...",
+      "afford-alternatives": "Slicing the numbers...",
+      "swipe-rating": "Looking at your spends...",
+      "swipe-patterns": "Spotting patterns...",
+      "swipe-actions": "Analyzing your habits...",
+      "progress-status": "Calculating progress toward your goal...",
+      "progress-ahead": "Calculating progress toward your goal...",
+      "progress-behind": "Calculating progress toward your goal...",
+      "progress-ontrack": "Calculating progress toward your goal...",
+      "understand-menu": "Slicing the numbers...",
+      "understand-categories": "Looking at your spends...",
+      "understand-patterns": "Spotting patterns...",
+      "understand-benchmarks": "Checking your budget...",
+      "understand-personality": "Analyzing your habits...",
+      "leak-insight": "Spotting patterns...",
+      "leak-investigate": "Looking at your spends...",
+      "leak-solution": "Slicing the numbers...",
+      "tradeoff": "Checking your budget...",
+    };
+
+    if (homeSubflow !== "idle" && subflowLabels[homeSubflow]) {
+      return subflowLabels[homeSubflow]!;
+    }
+
+    // Goal stages
+    if (step === "goal") {
+      return "Working out a savings plan...";
+    }
+
+    return "Thinking...";
+  }, [isStreaming, homeSubflow, step]);
 
   // ============ RENDER ============
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#eef0f2] px-4 py-6 text-zinc-900">
+    <div className="flex min-h-screen items-center justify-center bg-[#eef0f2] px-6 py-6" style={{ color: "rgba(0,0,0,0.9)" }}>
       {/* Background decorations */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-white/70 blur-3xl" />
         <div className="absolute bottom-8 left-1/2 h-48 w-72 -translate-x-1/2 rounded-full bg-white/50 blur-3xl" />
       </div>
 
-      <div className="relative w-full max-w-[360px]">
-        <div className="mb-3 flex items-center justify-end gap-2 px-2">
-          <div className="mr-auto text-xs font-medium text-zinc-500">slice Banker</div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={resetFlow}
-              className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-zinc-600 transition-all duration-200 hover:border-zinc-300 hover:text-zinc-900 hover:bg-zinc-50 active:scale-95"
-            >
-              Restart
-            </button>
-            <button
-              onClick={resetUser}
-              className="rounded-full border border-red-200 bg-white px-3 py-1.5 text-red-600 transition-all duration-200 hover:border-red-300 hover:bg-red-50 active:scale-95"
-            >
-              New User
-            </button>
+      <div className="relative w-full max-w-[480px]">
+        <div className="mx-auto max-w-[360px]">
+          <div className="mb-3 flex items-center px-1">
+            <div style={{ ...typography.caption, color: "#8e949d" }}>slice Banker</div>
           </div>
-        </div>
 
-        <div className="relative rounded-[46px] bg-[#111214] p-[8px] shadow-[0_28px_70px_rgba(0,0,0,0.16),0_6px_18px_rgba(0,0,0,0.08)] ring-1 ring-black/10">
-          <div className="pointer-events-none absolute -left-[3px] top-[120px] h-14 w-[3px] rounded-full bg-zinc-700/80" />
-          <div className="pointer-events-none absolute -left-[3px] top-[188px] h-20 w-[3px] rounded-full bg-zinc-700/80" />
-          <div className="pointer-events-none absolute -right-[3px] top-[170px] h-24 w-[3px] rounded-full bg-zinc-700/80" />
-          <div className="relative z-10 aspect-[393/852] w-full overflow-hidden rounded-[38px] bg-white">
-            {step === "home" && messages.length === 0 ? (
-              <ChatInitialScreen
-                suggestions={defaultSuggestions}
-                onSuggestionClick={(id, title) => {
-                  handleChipSelect({ id, label: title });
-                }}
-                onSubmit={handleChatSubmit}
-              />
-            ) : (
+          <div className="relative rounded-[32px] bg-[#1a1a1e] p-[6px] shadow-[0_28px_70px_rgba(0,0,0,0.16),0_6px_18px_rgba(0,0,0,0.05)] ring-1 ring-white/5">
+          <div ref={frameRef} className="relative z-10 aspect-[360/780] w-full overflow-hidden rounded-[26px] bg-white">
             <>
+              {/* ── Pay screen (default landing layer) ── */}
+              <div className="absolute inset-0">
+                <PayScreen onChatOpen={openChatOverlay} onProfileOpen={openWrappedStories} />
+              </div>
+
+              {step === "persona" ? (
+                <div className="absolute inset-0 z-30">
+                  <PersonaQuizStack
+                    slides={dynamicWrappedSlides}
+                    storyIndex={personaStoryIndex}
+                    onStoryAdvance={handleStoryAdvance}
+                    onStoryBack={handleStoryBack}
+                    questions={personaQuestions}
+                    activeIndex={personaActiveIndex}
+                    showCover={personaCoverVisible}
+                    showReveal={personaRevealVisible}
+                    revealData={personaRevealData}
+                    isTransitioning={personaTransitioning}
+                    onStart={startPersonaQuiz}
+                    onSelect={handlePersonaAnswer}
+                    onBack={handlePersonaBack}
+                    onRevealDone={() => submitPersonaQuiz()}
+                  />
+                </div>
+              ) : null}
+
+              {/* ── Chat (full-screen overlay) ── */}
+              {chatVisible && step !== "persona" && (
               <div
-                className={`pointer-events-none absolute inset-0 z-0 rounded-[38px] phone-screen-processing-band ${
-                  isAgentProcessingGlow ? "is-active" : ""
-                }`}
-                aria-hidden="true"
-              />
-              <div className="relative z-10 m-[8px] h-[calc(100%-16px)] overflow-hidden rounded-[30px] bg-white">
-                <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-12 bg-gradient-to-b from-white/70 to-transparent" />
+                className="absolute inset-0 z-20"
+                style={{
+                  overflow: "hidden",
+                  backgroundColor: "white",
+                  transform: chatScreenPhase === "open" ? "translateY(0%)" : "translateY(100%)",
+                  opacity: chatScreenPhase === "open" ? 1 : 0.98,
+                  transition: "transform 460ms cubic-bezier(0.22, 1, 0.36, 1), opacity 260ms ease-out",
+                  willChange: "transform, opacity",
+                  pointerEvents: chatScreenPhase === "exiting" ? "none" : "auto",
+                }}
+              >
+                {/* Processing glow */}
+                <div
+                  className={`pointer-events-none absolute inset-0 z-30 ${debugGlow === "base" ? "phone-screen-processing-band" : "phone-screen-processing-band phone-screen-processing-band--sheet"} ${isAgentProcessingGlow || debugGlow !== "off" ? "is-active" : ""} ${debugGlowPalette === "dls" ? "glow-dls" : ""}`}
+                  style={{ borderRadius: 24 }}
+                  aria-hidden="true"
+                />
                 <Chat
                   title="slice"
+                  isSheetMinimized={false}
+                  sheetTransitionProgress={0}
                   subtitle={`${profile.label}`}
-                  messages={messages}
-                  chips={activeChips}
+                  messages={displayedMessages}
+                  chips={displayedChips}
                   onChipSelect={handleChipSelect}
-                  showInput={step === "home" || (step === "goal" && (goalStage === "choice" || goalStage === "savings" || goalStage === "budget-review"))}
-                  inputPlaceholder={step === "home" ? "Ask me anything about your money..." : goalStage === "budget-review" ? "e.g. 'reduce cash withdrawals to ₹10k'" : goalStage === "savings" ? "e.g. ₹5L" : "Type your goal..."}
-                  onSubmit={step === "home" ? handleChatSubmit : handleGoalInput}
-                  isStreaming={isStreaming}
-                  streamingText={streamingText}
-                  onProcessingStateChange={setIsAgentProcessingGlow}
+                  showInitialPrompt={showInitialScreen}
+                  initialSuggestions={getSuggestions(!!userState?.goal)}
+                  onInitialSuggestionClick={(id, title) => {
+                    if (id === "review-goal") {
+                      openGoalReviewShortcut(title);
+                    } else {
+                      setReviewMessages(null);
+                      setShowInitialScreen(false);
+                      handleChipSelect({ id, label: title });
+                    }
+                  }}
+                  showInput={showChatInput}
+                  inputPlaceholder="Start typing..."
+                  onSubmit={(value) => {
+                    setReviewMessages(null);
+                    setShowInitialScreen(false);
+                    if (step === "home") {
+                      handleChatSubmit(value);
+                    } else {
+                      handleGoalInput(value);
+                    }
+                  }}
+                  // onProcessingStateChange={setIsAgentProcessingGlow} // glow disabled for now
+
+                  showTyping={isStreaming}
+                  thinkingLabel={thinkingLabel}
                   drawerContent={receiptsDrawer}
                   pinnedContent={pinnedGoal}
                   headerActions={[
@@ -3150,11 +3907,381 @@ End your response by suggesting 2-3 specific amounts they could pick.`;
                       active: receiptsOpen,
                     },
                   ]}
+                  onSheetClose={closeChatOverlay}
+                  onSheetExpand={() => {}}
+                  appBarDragHandleProps={{}}
                 />
               </div>
+              )}
+
+              {/* ── FD Setup bottom sheet ── */}
+              {fdSheetPhase !== "closed" && fdSheetData && (
+                <div
+                  className="absolute inset-0 z-30"
+                  style={{
+                    backgroundColor: fdSheetPhase === "open" ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0)",
+                    transition: "background-color 300ms ease",
+                  }}
+                  onClick={() => {
+                    setFdSheetPhase("entering");
+                    setTimeout(() => setFdSheetPhase("closed"), 360);
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      backgroundColor: "#fff",
+                      borderRadius: "24px 24px 0 0",
+                      padding: "16px 24px 40px",
+                      transform: fdSheetPhase === "open" ? "translateY(0)" : "translateY(100%)",
+                      transition: "transform 360ms cubic-bezier(0.22, 1, 0.36, 1)",
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Handle */}
+                    <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(0,0,0,0.2)", margin: "0 auto 24px" }} />
+
+                    {/* Header */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+                      <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)" }}>
+                        Set up {fdSheetData.productType}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => { setFdSheetPhase("entering"); setTimeout(() => setFdSheetPhase("closed"), 360); }}
+                        style={{ border: "none", background: "transparent", padding: "4px", cursor: "pointer", color: "rgba(0,0,0,0.3)", ...typography.buttonSmall }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* Amount label */}
+                    <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 8 }}>
+                      AMOUNT
+                    </p>
+
+                    {/* Amount chips */}
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
+                      {fdSheetData.amountOptions.map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setFdSelectedAmount(opt.value)}
+                          style={{
+                            ...typography.bodySmall,
+                            padding: "8px 16px",
+                            borderRadius: 64,
+                            border: fdSelectedAmount === opt.value ? "1px solid #D30AD7" : "1px solid rgba(0,0,0,0.2)",
+                            color: "rgba(0,0,0,0.9)",
+                            backgroundColor: fdSelectedAmount === opt.value ? "#fae2fa" : "#fff",
+                            cursor: "pointer",
+                            transition: "all 150ms ease",
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Rate + Tenure */}
+                    <div style={{ display: "flex", gap: 24, marginBottom: 24 }}>
+                      <div>
+                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4 }}>RATE</p>
+                        <p style={{ ...typography.buttonSmall, color: "#00a63e" }}>{fdSheetData.rate}</p>
+                      </div>
+                      <div>
+                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4 }}>TENURE</p>
+                        <p style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.9)" }}>{fdSheetData.tenure}</p>
+                      </div>
+                    </div>
+
+                    {/* Paying from */}
+                    <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4 }}>
+                      PAYING FROM
+                    </p>
+                    <p style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.7)", marginBottom: 24 }}>
+                      {fdSheetData.accountLabel}
+                    </p>
+
+                    {/* CTA */}
+                    <button
+                      type="button"
+                      onClick={confirmFdSetup}
+                      style={{
+                        ...typography.buttonNormal,
+                        width: "100%",
+                        padding: "12px 24px",
+                        borderRadius: 100,
+                        backgroundColor: "#D30AD7",
+                        color: "#fff",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Set up · {formatINR(fdSelectedAmount)}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Goal Detail screen (overlay on top of chat) ── */}
+              {goalDetail && (
+                <div
+                  className="absolute inset-0 z-40"
+                  style={{ backgroundColor: "#fff", display: "flex", flexDirection: "column" }}
+                >
+                  <AppBar
+                    title="Goal"
+                    leading={<NavButton kind="back" onClick={() => setGoalDetail(null)} ariaLabel="Back" />}
+                  />
+
+                  <div
+                    style={{
+                      flex: 1,
+                      overflowY: "auto",
+                      padding: "28px 24px",
+                      paddingBottom: BOTTOM_INSET + 32,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 32,
+                    }}
+                  >
+                    {/* ── Name + target ── */}
+                    <div>
+                      <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
+                        {goalDetail.name}
+                      </p>
+                    </div>
+
+                    {/* ── Progress ── */}
+                    <div>
+                      {/* Bar */}
+                      <div style={{ height: 12, backgroundColor: "rgba(0,0,0,0.05)", borderRadius: 100, overflow: "hidden", marginBottom: 16 }}>
+                        <div
+                          style={{
+                            width: `${Math.min(goalDetail.pct, 100)}%`,
+                            height: "100%",
+                            backgroundColor: "#D30AD7",
+                            borderRadius: 100,
+                          }}
+                        />
+                      </div>
+
+                      {/* Progress summary */}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
+                        <span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>
+                          {formatINR(goalDetail.saved)} / {formatINR(goalDetail.target)}
+                        </span>
+                        <span style={{ ...typography.headerH2, color: "rgba(0,0,0,0.88)" }}>
+                          {goalDetail.pct}%
+                        </span>
+                      </div>
+
+                      {/* Status pill */}
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          padding: "4px 8px",
+                          borderRadius: 100,
+                          backgroundColor: goalDetail.status === "ahead"
+                            ? "#e0f4e8"
+                            : goalDetail.status === "behind"
+                              ? "#f9e4e5"
+                              : "#fff3e3",
+                        }}
+                      >
+                        <span
+                          style={{
+                            ...typography.metadata,
+                            textTransform: "uppercase",
+                            color: goalDetail.status === "ahead"
+                              ? "#00a63e"
+                              : goalDetail.status === "behind"
+                                ? "#ce1d26"
+                                : "#ff9a17",
+                          }}
+                        >
+                          {goalDetail.daysLabel}
+                        </span>
+                      </div>
+                    </div>
+
+                    {goalAutomationCard ? (
+                      <div>
+                        <ChatCard card={goalAutomationCard} />
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              )}
+
+              {/* ── RD Detail screen (overlay on top of chat) ── */}
+              {rdDetailVisible && (
+                <div
+                  className="absolute inset-0 z-50"
+                  style={{ backgroundColor: "#fff", display: "flex", flexDirection: "column" }}
+                >
+                  <AppBar
+                    title="Recurring Deposit"
+                    leading={<NavButton kind="back" onClick={() => setRdDetailVisible(false)} ariaLabel="Back" />}
+                  />
+
+                  {/* Content */}
+                  <div
+                    style={{
+                      padding: "24px 24px",
+                      paddingBottom: BOTTOM_INSET + 24,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 24,
+                    }}
+                  >
+                    <div>
+                      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", textTransform: "uppercase", marginBottom: 8 }}>Monthly amount</p>
+                      <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)" }}>
+                        {userState?.products?.find((p) => p.type === "rd")
+                          ? formatINR(userState.products.find((p) => p.type === "rd")!.amount)
+                          : "—"}/month
+                      </p>
+                    </div>
+                    <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)" }} />
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>Rate</span>
+                        <span style={{ ...typography.buttonSmall, color: "#00a63e" }}>7.25% p.a.</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>Tenure</span>
+                        <span style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.9)" }}>{userState?.goal?.timeline ?? "—"}</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>Paying from</span>
+                        <span style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.9)" }}>Savings xx1234</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>Status</span>
+                        <span style={{ ...typography.buttonSmall, color: "#00a63e" }}>Active</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
-            )}
           </div>
+          </div>
+        </div>{/* /mx-auto max-w-[360px] */}
+
+        {/* ── Debug Panel ── */}
+        <div className="mt-3">
+          <button
+            onClick={() => setDebugPanelOpen((o) => !o)}
+            className="flex w-full items-center justify-between rounded-xl border border-[rgba(0,0,0,0.2)] bg-white/70 px-4 py-2 backdrop-blur-sm transition-colors hover:bg-white/90"
+          >
+            <span style={{ ...typography.metadata, textTransform: "uppercase", color: "#8e949d" }}>
+              Debug
+            </span>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              style={{
+                transform: debugPanelOpen ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 200ms ease",
+              }}
+            >
+              <path
+                d="M2 4L6 8L10 4"
+                stroke="rgba(0,0,0,0.3)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+          {debugPanelOpen && (
+            <div className="mt-1 rounded-xl border border-[rgba(0,0,0,0.2)] bg-white/80 p-4 backdrop-blur-sm space-y-3">
+              <DbgRow label="Session">
+                <DbgBtn onClick={resetFlow}>Restart</DbgBtn>
+                <DbgBtn onClick={resetUser} destructive>New User</DbgBtn>
+              </DbgRow>
+              <DbgRow label="Glow">
+                <DbgBtn
+                  onClick={() => setDebugGlow((p) => (p === "sheet" ? "off" : "sheet"))}
+                  active={debugGlow === "sheet"}
+                >
+                  Sheet
+                </DbgBtn>
+                <DbgBtn
+                  onClick={() => setDebugGlow((p) => (p === "base" ? "off" : "base"))}
+                  active={debugGlow === "base"}
+                >
+                  Base
+                </DbgBtn>
+              </DbgRow>
+              <DbgRow label="Palette">
+                <DbgBtn
+                  onClick={() => setDebugGlowPalette("rainbow")}
+                  active={debugGlowPalette === "rainbow"}
+                >
+                  Rainbow
+                </DbgBtn>
+                <DbgBtn
+                  onClick={() => setDebugGlowPalette("dls")}
+                  active={debugGlowPalette === "dls"}
+                >
+                  DLS
+                </DbgBtn>
+              </DbgRow>
+
+              <div className="h-px bg-[#f0f4f7]" />
+
+              <DbgRow label="Screens">
+                <DbgBtn onClick={closeChatOverlay}>Pay</DbgBtn>
+                <DbgBtn onClick={openWrappedStories}>Stories</DbgBtn>
+                <DbgBtn onClick={openChatOverlay}>Chat</DbgBtn>
+              </DbgRow>
+
+              <div className="h-px bg-[#f0f4f7]" />
+
+              <DbgRow label="Display">
+                <DbgBtn onClick={() => setDebugCardVariant("card")} active={debugCardVariant === "card"}>Card</DbgBtn>
+                <DbgBtn onClick={() => setDebugCardVariant("surface")} active={debugCardVariant === "surface"}>Surface</DbgBtn>
+              </DbgRow>
+
+              <DbgRow label="Cards" wrap>
+                <DbgBtn onClick={() => injectCardPreview(DBG_SPEND_OVERVIEW, "How much did I spend last month?")}>
+                  Spend Overview
+                </DbgBtn>
+                <DbgBtn onClick={() => injectCardPreview(DBG_CATEGORIES, "Where did it all go?")}>
+                  Categories
+                </DbgBtn>
+                <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_AHEAD, "How's my Japan goal?")}>
+                  Goal: ahead
+                </DbgBtn>
+                <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_BEHIND, "How's my Japan goal?")}>
+                  Goal: behind
+                </DbgBtn>
+                <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_ONTRACK, "How's my Japan goal?")}>
+                  Goal: on track
+                </DbgBtn>
+                <DbgBtn onClick={() => injectCardPreview(DBG_FD_SETUP, "Can I park some savings?")}>
+                  FD: setup
+                </DbgBtn>
+                <DbgBtn onClick={() => injectCardPreview(DBG_FD_ACTIVATED, "Can I park some savings?")}>
+                  FD: activated
+                </DbgBtn>
+                <DbgBtn onClick={() => injectCardPreview(DBG_SAVINGS_PLAN, "Build me a savings plan.")}>
+                  Savings plan
+                </DbgBtn>
+              </DbgRow>
+            </div>
+          )}
         </div>
       </div>
     </div>

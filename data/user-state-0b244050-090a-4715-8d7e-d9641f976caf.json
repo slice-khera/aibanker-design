@@ -1,0 +1,38 @@
+{
+  "userId": "0b244050-090a-4715-8d7e-d9641f976caf",
+  "onboardingComplete": true,
+  "currentStep": "home",
+  "personaStage": "q1",
+  "goalStage": "plan",
+  "budgetStage": "digest",
+  "personaAnswers": {},
+  "goal": {
+    "name": "Increase monthly savings",
+    "timeline": "3 months",
+    "timelineMonths": 3,
+    "amount": "₹5L",
+    "amountNum": 500000,
+    "savingsAllocated": 1248000,
+    "paceId": "aggressive",
+    "createdAt": "2026-03-23T14:24:43.825Z"
+  },
+  "budgetOverrides": {},
+  "budgetStyle": null,
+  "bufferAmount": 4000,
+  "bufferRemaining": 4000,
+  "products": [
+    {
+      "type": "rd",
+      "amount": 0,
+      "frequency": "monthly",
+      "activatedAt": "2026-03-23T14:24:43.825Z",
+      "active": true
+    }
+  ],
+  "preferences": [],
+  "spendRatings": [],
+  "nudges": [],
+  "activeFlow": null,
+  "lastActiveAt": "2026-03-23T14:24:43.827Z",
+  "createdAt": "2026-03-23T14:24:16.743Z"
+}

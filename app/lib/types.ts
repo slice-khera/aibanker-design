@@ -167,7 +167,7 @@ export type Memory = {
 export type FlowStep = "wrapped" | "persona" | "reality" | "goal" | "budget" | "home";
 
 export type PersonaStage = "q1" | "q2" | "q2-follow" | "q3" | "q4";
-export type GoalStage = "choice" | "timeline" | "amount" | "savings" | "pace" | "budget-review" | "product" | "pinned";
+export type GoalStage = "choice" | "destination" | "timeline" | "amount" | "savings-ask" | "plan" | "plan-adjust" | "pinned";
 export type BudgetStage = "digest" | "onTrack" | "lever" | "budgetChoice" | "budgetStyle" | "action" | "actionConfirm";
 export type HomeSubflow =
   | "idle"

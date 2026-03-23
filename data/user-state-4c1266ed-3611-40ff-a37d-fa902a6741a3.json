@@ -1,0 +1,21 @@
+{
+  "userId": "4c1266ed-3611-40ff-a37d-fa902a6741a3",
+  "onboardingComplete": false,
+  "currentStep": "goal",
+  "personaStage": "q1",
+  "goalStage": "destination",
+  "budgetStage": "digest",
+  "personaAnswers": {},
+  "goal": null,
+  "budgetOverrides": {},
+  "budgetStyle": null,
+  "bufferAmount": 4000,
+  "bufferRemaining": 4000,
+  "products": [],
+  "preferences": [],
+  "spendRatings": [],
+  "nudges": [],
+  "activeFlow": null,
+  "lastActiveAt": "2026-03-23T14:23:09.059Z",
+  "createdAt": "2026-03-23T14:22:57.111Z"
+}

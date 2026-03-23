@@ -1,0 +1,38 @@
+{
+  "userId": "41b366d5-123b-4f54-b1e7-45a483f2f3a7",
+  "onboardingComplete": true,
+  "currentStep": "home",
+  "personaStage": "q1",
+  "goalStage": "plan",
+  "budgetStage": "digest",
+  "personaAnswers": {},
+  "goal": {
+    "name": "Trip to Japan",
+    "timeline": "6 months",
+    "timelineMonths": 6,
+    "amount": "₹1L",
+    "amountNum": 100000,
+    "savingsAllocated": 0,
+    "paceId": "balanced",
+    "createdAt": "2026-03-17T10:54:29.981Z"
+  },
+  "budgetOverrides": {},
+  "budgetStyle": null,
+  "bufferAmount": 4000,
+  "bufferRemaining": 4000,
+  "products": [
+    {
+      "type": "rd",
+      "amount": 25000,
+      "frequency": "monthly",
+      "activatedAt": "2026-03-17T10:54:29.981Z",
+      "active": true
+    }
+  ],
+  "preferences": [],
+  "spendRatings": [],
+  "nudges": [],
+  "activeFlow": null,
+  "lastActiveAt": "2026-03-17T10:56:11.700Z",
+  "createdAt": "2026-03-17T10:53:28.302Z"
+}

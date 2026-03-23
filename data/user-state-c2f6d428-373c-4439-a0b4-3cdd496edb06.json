@@ -1,0 +1,27 @@
+{
+  "userId": "c2f6d428-373c-4439-a0b4-3cdd496edb06",
+  "onboardingComplete": false,
+  "currentStep": "budget",
+  "personaStage": "q4",
+  "goalStage": "choice",
+  "budgetStage": "digest",
+  "personaAnswers": {
+    "q1": "no-idea",
+    "q2": "other",
+    "q2-follow": "no-idea",
+    "q3": "complicated",
+    "q4": "very"
+  },
+  "goal": null,
+  "budgetOverrides": {},
+  "budgetStyle": null,
+  "bufferAmount": 4000,
+  "bufferRemaining": 4000,
+  "products": [],
+  "preferences": [],
+  "spendRatings": [],
+  "nudges": [],
+  "activeFlow": null,
+  "lastActiveAt": "2026-03-13T06:50:40.596Z",
+  "createdAt": "2026-03-13T06:39:53.491Z"
+}

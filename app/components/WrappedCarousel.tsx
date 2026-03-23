@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { WrappedSlide } from "../data/flows";
 import dynamic from "next/dynamic";
+import { typography } from "../lib/typography";
 
 const Wrapped3DScene = dynamic(() => import("./Wrapped3DScene"), {
   ssr: false,
@@ -133,7 +134,7 @@ export default function WrappedCarousel({
     const schemes = [
       { bg: 'from-indigo-600 via-purple-600 to-pink-600', accent: 'from-pink-400 to-rose-500' }, // Intro
       { bg: 'from-slate-800 via-purple-900 to-indigo-950', accent: 'from-blue-400 to-cyan-500' }, // Night mode
-      { bg: 'from-emerald-600 via-teal-600 to-cyan-600', accent: 'from-yellow-400 to-orange-500' }, // Two people
+      { bg: 'from-[#009837] via-teal-600 to-cyan-600', accent: 'from-yellow-400 to-orange-500' }, // Two people
       { bg: 'from-rose-600 via-pink-600 to-fuchsia-600', accent: 'from-amber-400 to-red-500' }, // Thousand cuts
       { bg: 'from-red-700 via-rose-700 to-pink-700', accent: 'from-orange-400 to-red-500' }, // Danger zone
       { bg: 'from-violet-600 via-purple-600 to-fuchsia-600', accent: 'from-cyan-400 to-blue-500' }, // Ready
@@ -145,7 +146,7 @@ export default function WrappedCarousel({
   const colors = getColorScheme();
 
   return (
-    <div className="relative flex h-full flex-col rounded-[28px] overflow-hidden bg-black">
+    <div className="relative flex h-full flex-col rounded-[24px] overflow-hidden bg-black">
       {/* Gradient background with smooth transition */}
       <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} transition-all duration-700`}>
         {/* Animated gradient overlay */}
@@ -161,7 +162,7 @@ export default function WrappedCarousel({
       {/* Content */}
       <div className="relative z-10 flex flex-col h-full p-6">
         {/* Progress bars */}
-        <div className="flex gap-1.5 mb-8">
+        <div className="flex gap-2 mb-8">
           {slides.map((_, i) => (
             <div
               key={i}
@@ -191,8 +192,9 @@ export default function WrappedCarousel({
           <div className="space-y-6 animate-slide-up" key={index}>
             {/* Headline */}
             <h1
-              className="text-[3rem] font-bold leading-[1.05] tracking-tight text-white"
+              className="text-white"
               style={{
+                ...typography.displaySmall,
                 textShadow: '0 4px 40px rgba(0, 0, 0, 0.6)',
               }}
             >
@@ -201,8 +203,8 @@ export default function WrappedCarousel({
 
             {/* Punchline */}
             <p
-              className="text-[1.125rem] leading-[1.5] text-white/95 font-normal max-w-[88%]"
-              style={{ textShadow: '0 2px 20px rgba(0, 0, 0, 0.5)' }}
+              className="text-white/95 max-w-[88%]"
+              style={{ ...typography.bodyLarge, textShadow: '0 2px 20px rgba(0, 0, 0, 0.5)' }}
             >
               {slide.punchline}
             </p>
@@ -213,10 +215,10 @@ export default function WrappedCarousel({
                 {/* Stat number */}
                 <div className="mb-3">
                   <div
-                    className="text-[5rem] font-black leading-none tracking-tight text-white inline-block animate-count-up"
+                    className="text-white inline-block animate-count-up"
                     style={{
+                      ...typography.displayLarge,
                       textShadow: '0 6px 40px rgba(0, 0, 0, 0.5)',
-                      letterSpacing: '-0.03em',
                     }}
                   >
                     {slide.stat.value}
@@ -224,7 +226,7 @@ export default function WrappedCarousel({
                 </div>
 
                 {/* Caption only */}
-                <p className="text-lg text-white/80 font-medium">
+                <p className="text-white/80" style={typography.bodyLarge}>
                   {slide.stat.caption}
                 </p>
               </div>
@@ -238,7 +240,7 @@ export default function WrappedCarousel({
       {isPaused && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 animate-fade-in">
           <div
-            className="flex gap-2.5 p-4 rounded-2xl"
+            className="flex gap-2 p-4 rounded-2xl"
             style={{
               background: 'rgba(0, 0, 0, 0.5)',
               backdropFilter: 'blur(20px)',

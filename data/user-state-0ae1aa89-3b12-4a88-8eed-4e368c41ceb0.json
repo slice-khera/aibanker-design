@@ -1,0 +1,44 @@
+{
+  "userId": "0ae1aa89-3b12-4a88-8eed-4e368c41ceb0",
+  "onboardingComplete": true,
+  "currentStep": "home",
+  "personaStage": "q1",
+  "goalStage": "plan",
+  "budgetStage": "digest",
+  "personaAnswers": {
+    "q1": "10-20",
+    "q2": "nights-out",
+    "q2-follow": "20",
+    "q3": "convenience",
+    "q4": "very"
+  },
+  "goal": {
+    "name": "Big purchase",
+    "timeline": "3 months",
+    "timelineMonths": 3,
+    "amount": "₹1L",
+    "amountNum": 100000,
+    "savingsAllocated": 0,
+    "paceId": "aggressive",
+    "createdAt": "2026-03-17T12:15:47.532Z"
+  },
+  "budgetOverrides": {},
+  "budgetStyle": null,
+  "bufferAmount": 4000,
+  "bufferRemaining": 4000,
+  "products": [
+    {
+      "type": "rd",
+      "amount": 33300,
+      "frequency": "monthly",
+      "activatedAt": "2026-03-17T12:15:47.532Z",
+      "active": true
+    }
+  ],
+  "preferences": [],
+  "spendRatings": [],
+  "nudges": [],
+  "activeFlow": null,
+  "lastActiveAt": "2026-03-17T12:26:46.841Z",
+  "createdAt": "2026-03-17T12:11:59.458Z"
+}

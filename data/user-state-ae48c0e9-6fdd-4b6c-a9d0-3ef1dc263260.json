@@ -1,0 +1,27 @@
+{
+  "userId": "ae48c0e9-6fdd-4b6c-a9d0-3ef1dc263260",
+  "onboardingComplete": false,
+  "currentStep": "persona",
+  "personaStage": "q4",
+  "goalStage": "choice",
+  "budgetStage": "digest",
+  "personaAnswers": {
+    "q1": "0-5",
+    "q2": "shopping",
+    "q2-follow": "30",
+    "q3": "weekend",
+    "q4": "very"
+  },
+  "goal": null,
+  "budgetOverrides": {},
+  "budgetStyle": null,
+  "bufferAmount": 4000,
+  "bufferRemaining": 4000,
+  "products": [],
+  "preferences": [],
+  "spendRatings": [],
+  "nudges": [],
+  "activeFlow": null,
+  "lastActiveAt": "2026-03-12T12:27:41.375Z",
+  "createdAt": "2026-03-12T12:24:28.016Z"
+}

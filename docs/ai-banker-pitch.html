@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Banker — Product Vision</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface-2: #1a1a24;
+    --border: #ffffff0d;
+    --text: #f0f0f5;
+    --text-dim: #8888a0;
+    --accent: #a78bfa;
+    --accent-dim: #a78bfa30;
+    --emerald: #34d399;
+    --emerald-dim: #34d39920;
+    --amber: #fbbf24;
+    --amber-dim: #fbbf2420;
+    --rose: #fb7185;
+    --rose-dim: #fb718520;
+    --blue: #60a5fa;
+    --blue-dim: #60a5fa20;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ---- NAV ---- */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: #0a0a0fdd; backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  nav .logo { font-weight: 700; font-size: 15px; letter-spacing: -0.3px; }
+  nav .logo span { color: var(--accent); }
+  nav .pills { display: flex; gap: 4px; }
+  nav .pills a {
+    font-size: 13px; color: var(--text-dim); text-decoration: none;
+    padding: 6px 14px; border-radius: 20px; transition: all 0.2s;
+  }
+  nav .pills a:hover { color: var(--text); background: var(--surface-2); }
+
+  /* ---- HERO ---- */
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    padding: 120px 40px 80px;
+    position: relative;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 600px; border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-dim) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-size: clamp(48px, 6vw, 80px); font-weight: 800;
+    letter-spacing: -2px; line-height: 1.05; max-width: 700px;
+    position: relative;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    margin-top: 24px; font-size: 18px; color: var(--text-dim);
+    max-width: 520px; line-height: 1.7;
+  }
+  .hero .pillars {
+    display: flex; gap: 12px; margin-top: 48px; flex-wrap: wrap; justify-content: center;
+  }
+  .hero .pillar-badge {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 20px; border-radius: 100px;
+    font-size: 14px; font-weight: 500; border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .pillar-badge .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+
+  /* ---- SECTIONS ---- */
+  section {
+    padding: 100px 40px;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .section-label {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--accent); margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: clamp(32px, 4vw, 48px); font-weight: 700;
+    letter-spacing: -1px; line-height: 1.15; max-width: 600px;
+  }
+  .section-desc {
+    margin-top: 16px; font-size: 17px; color: var(--text-dim);
+    max-width: 540px; line-height: 1.7;
+  }
+
+  /* ---- THREE PILLARS ---- */
+  .pillars-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+    margin-top: 60px;
+  }
+  @media (max-width: 800px) { .pillars-grid { grid-template-columns: 1fr; } }
+  .pillar-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 36px 32px;
+    position: relative; overflow: hidden;
+  }
+  .pillar-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .pillar-card.conscience::before { background: linear-gradient(90deg, var(--accent), var(--blue)); }
+  .pillar-card.companionship::before { background: linear-gradient(90deg, var(--emerald), var(--accent)); }
+  .pillar-card.commerce::before { background: linear-gradient(90deg, var(--amber), var(--rose)); }
+  .pillar-card .pillar-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 20px;
+  }
+  .conscience .pillar-icon { background: var(--accent-dim); }
+  .companionship .pillar-icon { background: var(--emerald-dim); }
+  .commerce .pillar-icon { background: var(--amber-dim); }
+  .pillar-card h3 {
+    font-size: 20px; font-weight: 700; margin-bottom: 12px;
+  }
+  .pillar-card p {
+    font-size: 14px; color: var(--text-dim); line-height: 1.7;
+  }
+  .pillar-card ul {
+    margin-top: 16px; list-style: none; padding: 0;
+  }
+  .pillar-card li {
+    font-size: 13px; color: var(--text-dim); padding: 6px 0;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .pillar-card li::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    margin-top: 7px; flex-shrink: 0;
+  }
+  .conscience li::before { background: var(--accent); }
+  .companionship li::before { background: var(--emerald); }
+  .commerce li::before { background: var(--amber); }
+
+  /* ---- PHONE MOCKUP ---- */
+  .phone {
+    width: 320px; min-height: 580px;
+    background: var(--surface); border: 1px solid #ffffff15;
+    border-radius: 36px; padding: 16px;
+    position: relative; flex-shrink: 0;
+    box-shadow: 0 40px 80px #00000060, 0 0 0 1px #ffffff08 inset;
+  }
+  .phone-inner {
+    background: var(--bg); border-radius: 24px;
+    min-height: 548px; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .phone-header {
+    padding: 20px 20px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .phone-header .ph-title {
+    font-size: 16px; font-weight: 700; letter-spacing: -0.3px;
+  }
+  .phone-header .ph-sub {
+    font-size: 11px; color: var(--text-dim); margin-top: 2px;
+  }
+  .phone-body {
+    flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 10px;
+    overflow: hidden;
+  }
+
+  /* Chat bubbles */
+  .bubble {
+    max-width: 85%; padding: 12px 16px;
+    font-size: 13px; line-height: 1.55;
+    border-radius: 16px;
+    animation: fadeUp 0.4s ease both;
+  }
+  .bubble.assistant {
+    background: #ffffff10; align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+  .bubble.user {
+    background: #ffffff; color: #111;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+  .bubble.special-reality {
+    background: linear-gradient(135deg, #7c3aed20, #a78bfa15);
+    border: 1px solid #a78bfa30;
+    align-self: flex-start; border-bottom-left-radius: 4px;
+  }
+  .bubble.special-insight {
+    background: linear-gradient(135deg, #f59e0b15, #fbbf2410);
+    border: 1px solid #fbbf2430;
+    align-self: flex-start; border-bottom-left-radius: 4px;
+  }
+  .bubble.special-success {
+    background: linear-gradient(135deg, #10b98115, #34d39910);
+    border: 1px solid #34d39930;
+    align-self: flex-start; border-bottom-left-radius: 4px;
+    text-align: center;
+  }
+  .bubble strong { font-weight: 600; }
+  .bubble .stat-card {
+    margin-top: 10px; padding: 14px;
+    background: #ffffff08; border-radius: 12px; text-align: center;
+  }
+  .stat-card .stat-val {
+    font-size: 28px; font-weight: 800; letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--accent), var(--blue));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .stat-card .stat-cap {
+    font-size: 11px; color: var(--text-dim); margin-top: 4px;
+  }
+
+  /* Chips */
+  .chips {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0;
+    animation: fadeUp 0.5s ease 0.2s both;
+  }
+  .chip {
+    padding: 8px 14px; border-radius: 100px;
+    font-size: 12px; font-weight: 500;
+    background: #ffffff10; border: 1px solid #ffffff15;
+    cursor: default; white-space: nowrap;
+  }
+  .chip.primary {
+    background: var(--emerald-dim); border-color: #34d39940;
+    color: var(--emerald);
+  }
+  .chip.accent {
+    background: var(--accent-dim); border-color: #a78bfa40;
+    color: var(--accent);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---- SCREEN SHOWCASE ---- */
+  .screens-row {
+    display: flex; gap: 40px; align-items: flex-start;
+    margin-top: 60px; flex-wrap: wrap; justify-content: center;
+  }
+  .screen-group {
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+  }
+  .screen-label {
+    font-size: 13px; font-weight: 600; color: var(--text-dim);
+    text-align: center; max-width: 300px;
+  }
+  .screen-label span {
+    display: inline-block; padding: 3px 10px; border-radius: 100px;
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 6px;
+  }
+  .screen-label span.con { background: var(--accent-dim); color: var(--accent); }
+  .screen-label span.comp { background: var(--emerald-dim); color: var(--emerald); }
+  .screen-label span.com { background: var(--amber-dim); color: var(--amber); }
+  .screen-label span.all { background: #ffffff10; color: var(--text-dim); }
+
+  /* ---- SURFACES SECTION ---- */
+  .surfaces-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
+    margin-top: 60px;
+  }
+  @media (max-width: 900px) { .surfaces-grid { grid-template-columns: 1fr; } }
+  .surface-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden;
+  }
+  .surface-card .surface-mock {
+    padding: 24px; min-height: 260px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .surface-card .surface-info {
+    padding: 24px; border-top: 1px solid var(--border);
+  }
+  .surface-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+  .surface-card p { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+  .surface-card .when {
+    margin-top: 12px; font-size: 12px; color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* Widget mockup */
+  .widget-mock {
+    width: 260px; background: var(--surface-2);
+    border-radius: 20px; border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .widget-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px 0;
+  }
+  .widget-header .wh-icon {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .widget-header .wh-text {
+    font-size: 12px; font-weight: 600; color: var(--text-dim);
+  }
+  .widget-body {
+    padding: 12px 16px 16px;
+  }
+  .widget-body .wb-headline {
+    font-size: 14px; font-weight: 600; line-height: 1.4;
+  }
+  .widget-body .wb-detail {
+    font-size: 12px; color: var(--text-dim); margin-top: 6px; line-height: 1.5;
+  }
+  .widget-body .wb-action {
+    margin-top: 10px; font-size: 11px; color: var(--accent); font-weight: 600;
+  }
+
+  /* WhatsApp mockup */
+  .wa-mock {
+    width: 260px; background: #0b141a;
+    border-radius: 16px; overflow: hidden;
+    border: 1px solid #ffffff10;
+  }
+  .wa-header-bar {
+    background: #1f2c34; padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .wa-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .wa-name { font-size: 14px; font-weight: 600; }
+  .wa-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .wa-bubble {
+    background: #1f2c34; padding: 10px 14px;
+    border-radius: 12px; border-top-left-radius: 4px;
+    font-size: 13px; line-height: 1.5; max-width: 95%;
+  }
+  .wa-bubble .wa-time {
+    font-size: 10px; color: #ffffff40; text-align: right; margin-top: 4px;
+  }
+  .wa-buttons {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .wa-btn {
+    text-align: center; padding: 8px;
+    font-size: 13px; color: #53bdeb; font-weight: 500;
+    background: #1f2c34; border-radius: 8px;
+  }
+
+  /* In-app mini */
+  .inapp-mini {
+    width: 260px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden;
+  }
+  .inapp-mini .im-header {
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    font-size: 14px; font-weight: 700;
+  }
+  .inapp-mini .im-body {
+    padding: 14px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .inapp-mini .im-msg {
+    padding: 10px 14px; border-radius: 14px;
+    font-size: 12px; line-height: 1.5;
+  }
+  .inapp-mini .im-msg.a { background: #ffffff10; border-bottom-left-radius: 4px; }
+  .inapp-mini .im-msg.u { background: #fff; color: #111; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .inapp-mini .im-chips {
+    display: flex; flex-wrap: wrap; gap: 5px; padding-top: 4px;
+  }
+  .inapp-mini .im-chip {
+    padding: 6px 12px; border-radius: 100px;
+    font-size: 11px; font-weight: 500;
+    background: #ffffff10; border: 1px solid #ffffff15;
+  }
+
+  /* ---- TRUST LADDER ---- */
+  .ladder {
+    display: flex; flex-direction: column; gap: 0;
+    margin-top: 60px; max-width: 700px;
+  }
+  .ladder-step {
+    display: flex; gap: 24px; position: relative;
+    padding: 32px 0;
+  }
+  .ladder-step:not(:last-child)::after {
+    content: ''; position: absolute;
+    left: 19px; top: 64px; bottom: 0;
+    width: 2px; background: var(--border);
+  }
+  .ladder-dot {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; flex-shrink: 0;
+    position: relative; z-index: 1;
+  }
+  .ladder-step:nth-child(1) .ladder-dot { background: var(--accent-dim); color: var(--accent); border: 2px solid var(--accent); }
+  .ladder-step:nth-child(2) .ladder-dot { background: var(--emerald-dim); color: var(--emerald); border: 2px solid var(--emerald); }
+  .ladder-step:nth-child(3) .ladder-dot { background: var(--amber-dim); color: var(--amber); border: 2px solid var(--amber); }
+  .ladder-content h4 { font-size: 17px; font-weight: 700; }
+  .ladder-content p {
+    font-size: 14px; color: var(--text-dim); margin-top: 6px; line-height: 1.6;
+  }
+  .ladder-tag {
+    display: inline-block; margin-top: 10px;
+    padding: 4px 12px; border-radius: 100px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .ladder-step:nth-child(1) .ladder-tag { background: var(--accent-dim); color: var(--accent); }
+  .ladder-step:nth-child(2) .ladder-tag { background: var(--emerald-dim); color: var(--emerald); }
+  .ladder-step:nth-child(3) .ladder-tag { background: var(--amber-dim); color: var(--amber); }
+
+  /* ---- FOOTER ---- */
+  footer {
+    padding: 60px 40px; text-align: center;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+  footer p { font-size: 14px; color: var(--text-dim); }
+
+  /* ---- DIVIDER ---- */
+  .divider {
+    max-width: 1200px; margin: 0 auto;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ---- FLOW SECTION ---- */
+  .flow-steps {
+    display: flex; gap: 0; margin-top: 60px; align-items: stretch;
+    overflow-x: auto; padding-bottom: 20px;
+  }
+  .flow-step {
+    flex: 1; min-width: 200px; padding: 28px 24px;
+    border: 1px solid var(--border); border-radius: 16px;
+    position: relative; background: var(--surface);
+  }
+  .flow-step:not(:last-child)::after {
+    content: '→'; position: absolute; right: -18px; top: 50%;
+    transform: translateY(-50%); font-size: 18px; color: var(--text-dim);
+    z-index: 1;
+  }
+  .flow-steps { gap: 28px; }
+  .flow-step .fs-num {
+    font-size: 11px; font-weight: 700; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+  }
+  .flow-step h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .flow-step p { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+  .flow-step .fs-tags {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-top: 14px;
+  }
+  .flow-step .fs-tag {
+    padding: 3px 10px; border-radius: 100px;
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .fs-tag.con { background: var(--accent-dim); color: var(--accent); }
+  .fs-tag.comp { background: var(--emerald-dim); color: var(--emerald); }
+  .fs-tag.com { background: var(--amber-dim); color: var(--amber); }
+
+  /* RESPONSIVE */
+  @media (max-width: 700px) {
+    section { padding: 60px 20px; }
+    nav { padding: 12px 20px; }
+    nav .pills { display: none; }
+    .flow-steps { flex-direction: column; }
+    .flow-step:not(:last-child)::after { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">AI <span>Banker</span></div>
+  <div class="pills">
+    <a href="#pillars">Three Pillars</a>
+    <a href="#journey">User Journey</a>
+    <a href="#screens">Screens</a>
+    <a href="#surfaces">Surfaces</a>
+    <a href="#trust">Trust Ladder</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>A banker that <span>understands</span>, remembers, and acts</h1>
+  <p>A financial companion with conscience from your data, companionship from conversation, and commerce that earns your trust before it earns your tap.</p>
+  <div class="pillars">
+    <div class="pillar-badge"><div class="dot" style="background:var(--accent)"></div> Conscience</div>
+    <div class="pillar-badge"><div class="dot" style="background:var(--emerald)"></div> Companionship</div>
+    <div class="pillar-badge"><div class="dot" style="background:var(--amber)"></div> Commerce</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- THREE PILLARS -->
+<section id="pillars">
+  <div class="section-label">The Three Pillars</div>
+  <div class="section-title">What makes a good banker?</div>
+  <div class="section-desc">A banker who's good at their job does three things. Today, no digital banking product does all three. Most don't do any of them well.</div>
+
+  <div class="pillars-grid">
+    <div class="pillar-card conscience">
+      <div class="pillar-icon">👁</div>
+      <h3>Conscience</h3>
+      <p>Everything the banker knows about you before you say a word. Derived from transaction data — what you spend, where, when, how often, how it's changing.</p>
+      <ul>
+        <li>Hidden totals nobody sees pile up</li>
+        <li>Spending creep that grew too slowly to notice</li>
+        <li>Frequency blindness — 18 orders in 30 days</li>
+        <li>Time signatures — 28% of spend in a 2-hour window</li>
+        <li>The shape of your month tells a story</li>
+      </ul>
+    </div>
+    <div class="pillar-card companionship">
+      <div class="pillar-icon">💬</div>
+      <h3>Companionship</h3>
+      <p>Everything the banker learns from talking to you. Turns a data engine into a relationship. Knows what you value, what you resent, what to protect.</p>
+      <ul>
+        <li>Structured decisions — goal, pace, sacred categories</li>
+        <li>Extracted preferences — "don't touch my SIPs"</li>
+        <li>Spend sentiment — joy vs. regret vs. meh</li>
+        <li>Context that data alone can't capture</li>
+        <li>Memory that persists across every session</li>
+      </ul>
+    </div>
+    <div class="pillar-card commerce">
+      <div class="pillar-icon">⚡</div>
+      <h3>Commerce</h3>
+      <p>The banker's ability to act. Not just observe and advise — execute. Set up an RD, start autosave, adjust a budget, lock surplus in an FD.</p>
+      <ul>
+        <li>Today: user confirms every action via banking UI</li>
+        <li>Near-term: pre-authorized action types</li>
+        <li>Long-term: autonomous within boundaries</li>
+        <li>Trust is earned, not assumed</li>
+        <li>Understanding is valuable before execution matures</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- USER JOURNEY -->
+<section id="journey">
+  <div class="section-label">User Journey</div>
+  <div class="section-title">From stranger to trusted banker</div>
+  <div class="section-desc">Four moments, each building the next. By the end of onboarding, the system understands you deeply. Steady state keeps understanding growing.</div>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="fs-num">Step 1</div>
+      <h4>Wrapped</h4>
+      <p>Spotify Wrapped for your bank account. Show the user something about themselves they didn't know. Earn curiosity.</p>
+      <div class="fs-tags"><span class="fs-tag con">Conscience</span></div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-num">Step 2</div>
+      <h4>Reality Check</h4>
+      <p>Quiz: how do you <em>think</em> you spend? Then: how you <em>actually</em> spend. The gap is the motivation.</p>
+      <div class="fs-tags"><span class="fs-tag con">Conscience</span><span class="fs-tag comp">Companionship</span></div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-num">Step 3</div>
+      <h4>Onboarding</h4>
+      <p>Set a goal, pick a pace, review budgets, activate a savings product. A conversation, not a form.</p>
+      <div class="fs-tags"><span class="fs-tag con">Conscience</span><span class="fs-tag comp">Companionship</span><span class="fs-tag com">Commerce</span></div>
+    </div>
+    <div class="flow-step">
+      <div class="fs-num">Ongoing</div>
+      <h4>Steady State</h4>
+      <p>Daily insights, affordability checks, spend ratings, progress tracking. The companion that stays.</p>
+      <div class="fs-tags"><span class="fs-tag con">Conscience</span><span class="fs-tag comp">Companionship</span><span class="fs-tag com">Commerce</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SCREENS -->
+<section id="screens">
+  <div class="section-label">Key Screens</div>
+  <div class="section-title">What the user sees</div>
+  <div class="section-desc">A few representative moments from the product. The experience is chat-first — insights and actions delivered through conversation, not dashboards.</div>
+
+  <!-- Row 1: Wrapped + Reality Check -->
+  <div class="screens-row">
+    <div class="screen-group">
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="phone-body" style="justify-content:center; align-items:center; text-align:center; padding:32px 24px;">
+            <div style="font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1.5px; font-weight:600;">Your Money Wrapped</div>
+            <div style="font-size:24px; font-weight:800; margin-top:12px; letter-spacing:-0.5px; line-height:1.2;">Death by a<br>thousand cuts</div>
+            <div style="font-size:14px; color:var(--text-dim); margin-top:10px; line-height:1.5;">187 purchases under ₹500.<br>Each felt like nothing.</div>
+            <div class="stat-card" style="margin-top:20px;">
+              <div class="stat-val">12 days</div>
+              <div class="stat-cap">Of your monthly income gone on small spends</div>
+            </div>
+            <div style="display:flex; gap:6px; justify-content:center; margin-top:24px;">
+              <div style="width:6px;height:6px;border-radius:50%;background:#ffffff30"></div>
+              <div style="width:6px;height:6px;border-radius:50%;background:#ffffff30"></div>
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--accent)"></div>
+              <div style="width:6px;height:6px;border-radius:50%;background:#ffffff30"></div>
+              <div style="width:6px;height:6px;border-radius:50%;background:#ffffff30"></div>
+              <div style="width:6px;height:6px;border-radius:50%;background:#ffffff30"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label"><span class="con">Conscience</span><br>Wrapped — real numbers the user has never seen</div>
+    </div>
+
+    <div class="screen-group">
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="phone-header">
+            <div class="ph-title">AI Banker</div>
+            <div class="ph-sub">Reality check</div>
+          </div>
+          <div class="phone-body">
+            <div class="bubble assistant" style="font-size:13px;">Alright, let's see how well you know yourself.</div>
+            <div class="bubble assistant">Honestly, how much do you save each month?</div>
+            <div class="bubble user">10–20%</div>
+            <div class="bubble special-reality" style="animation-delay:0.1s">
+              <strong>Reality check time 👀</strong><br><br>
+              Savings: You guessed 10–20% → actual ~8%<br>
+              Food: You guessed 10% → actual ~32%<br>
+              Persona: "Disciplined" → actually "Weekend Splurger" 😅<br><br>
+              Good news: you're not bad with money — your money just has habits.
+            </div>
+            <div class="chips">
+              <div class="chip">Help me save more</div>
+              <div class="chip">Help me control Food</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label"><span class="con">Conscience</span> <span class="comp">Companionship</span><br>The gap between perception and reality — motivation to act</div>
+    </div>
+  </div>
+
+  <!-- Row 2: Onboarding + Steady State -->
+  <div class="screens-row" style="margin-top:48px;">
+    <div class="screen-group">
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="phone-header">
+            <div class="ph-title">AI Banker</div>
+            <div class="ph-sub">Setting your pace</div>
+          </div>
+          <div class="phone-body">
+            <div class="bubble assistant">
+              <strong>Pace: Balanced (10 months)</strong><br><br>
+              To make this real, you'd need to cut ~₹5k/month.<br><br>
+              That's realistic — most of it can come from trimming food delivery and reducing weekend spending.<br><br>
+              Suggested action: Daily autosave of ₹167/day.
+            </div>
+            <div class="chips">
+              <div class="chip primary">✓ Looks good, continue</div>
+              <div class="chip">Change pace</div>
+            </div>
+            <div class="bubble user">✓ Looks good, continue</div>
+            <div class="bubble assistant">
+              Based on your last few months, I've set up these budgets:<br><br>
+              • Food & Delivery: ₹6,500<br>
+              • Shopping: ₹4,200<br>
+              • Entertainment: ₹2,800<br>
+              • Transport: ₹1,900<br>
+              • Buffer: ₹3,000<br><br>
+              This keeps you on track. Any edits?
+            </div>
+            <div class="chips">
+              <div class="chip primary">Looks good</div>
+              <div class="chip">Edit budgets</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label"><span class="con">Conscience</span> <span class="comp">Companionship</span> <span class="com">Commerce</span><br>Goal setup — every number from real data, confirmed by user</div>
+    </div>
+
+    <div class="screen-group">
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="phone-header">
+            <div class="ph-title">AI Banker</div>
+            <div class="ph-sub" style="color:var(--emerald);">Quit-job fund · ₹5L · 10 months · 3 days ahead ✓</div>
+          </div>
+          <div class="phone-body">
+            <div class="bubble special-insight">
+              <strong>₹520 at Zomato at 11:47pm. Classic.</strong><br><br>
+              Your after-10pm spending this month: ₹12k. That's 5 weeks added to your timeline.<br><br>
+              Everything after 10pm this year: ₹1.1L. Your night self has expensive taste.
+            </div>
+            <div class="chips">
+              <div class="chip accent">Can I afford…</div>
+              <div class="chip">Rate my spends</div>
+              <div class="chip">Progress</div>
+              <div class="chip">Understand my money</div>
+            </div>
+            <div class="bubble user">Can I afford ₹3k dinner this weekend?</div>
+            <div class="bubble assistant">
+              <strong>Can you afford ₹3,000?</strong><br><br>
+              💰 Buffer: ₹3k → ₹0 after<br>
+              📊 Goal impact: 2 days behind<br>
+              🚨 Rent due in 5 days<br>
+              📈 This is your 3rd dinner out this month<br><br>
+              Pattern emerging?
+            </div>
+            <div class="chips">
+              <div class="chip">Go for it anyway</div>
+              <div class="chip">Reduce to ₹2k</div>
+              <div class="chip">Show alternatives</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label"><span class="all">All Three Pillars</span><br>Steady state — insight + affordability check + decision support</div>
+    </div>
+  </div>
+
+  <!-- Row 3: Commerce confirmation -->
+  <div class="screens-row" style="margin-top:48px;">
+    <div class="screen-group">
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="phone-header">
+            <div class="ph-title">AI Banker</div>
+            <div class="ph-sub">Rate my spends</div>
+          </div>
+          <div class="phone-body" style="align-items:center; justify-content:center;">
+            <div style="width:240px; background:var(--surface); border-radius:20px; padding:24px; text-align:center; border:1px solid var(--border);">
+              <div style="width:44px; height:44px; border-radius:12px; background:var(--rose-dim); margin:0 auto 12px; display:flex; align-items:center; justify-content:center; font-size:20px;">🍕</div>
+              <div style="font-size:18px; font-weight:700;">Swiggy</div>
+              <div style="font-size:13px; color:var(--text-dim); margin-top:4px;">₹520 · Sat 10:05pm</div>
+              <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">Food & Delivery</div>
+              <div style="display:flex; justify-content:space-between; margin-top:24px; padding:0 8px;">
+                <div style="text-align:center;">
+                  <div style="width:44px; height:44px; border-radius:50%; background:var(--rose-dim); display:flex; align-items:center; justify-content:center; font-size:18px;">←</div>
+                  <div style="font-size:10px; color:var(--rose); margin-top:6px; font-weight:600;">Regret</div>
+                </div>
+                <div style="text-align:center;">
+                  <div style="width:44px; height:44px; border-radius:50%; background:#ffffff10; display:flex; align-items:center; justify-content:center; font-size:18px;">↑</div>
+                  <div style="font-size:10px; color:var(--text-dim); margin-top:6px; font-weight:600;">Meh</div>
+                </div>
+                <div style="text-align:center;">
+                  <div style="width:44px; height:44px; border-radius:50%; background:var(--emerald-dim); display:flex; align-items:center; justify-content:center; font-size:18px;">→</div>
+                  <div style="font-size:10px; color:var(--emerald); margin-top:6px; font-weight:600;">Worth it</div>
+                </div>
+              </div>
+            </div>
+            <div style="font-size:11px; color:var(--text-dim); text-align:center; margin-top:12px;">4 of 10 rated</div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label"><span class="comp">Companionship</span><br>Rate My Spends — teaching the system what you value</div>
+    </div>
+
+    <div class="screen-group">
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="phone-header">
+            <div class="ph-title">AI Banker</div>
+            <div class="ph-sub">Setting up autosave</div>
+          </div>
+          <div class="phone-body">
+            <div class="bubble assistant">
+              Based on your balanced pace, I'd recommend a daily autosave of ₹167/day. That quietly moves money to your quit-job fund before you can spend it.<br><br>
+              ₹167/day → ₹5k/month → quit-job fund in 10 months.
+            </div>
+            <div class="chips">
+              <div class="chip primary">✓ Start ₹167/day autosave</div>
+              <div class="chip">Make it smaller</div>
+              <div class="chip">Skip for now</div>
+            </div>
+            <div class="bubble user">✓ Start ₹167/day autosave</div>
+            <div class="bubble special-success">
+              <div style="font-size:28px; margin-bottom:8px;">✓</div>
+              <strong>Autosave is now active.</strong><br><br>
+              ₹167/day starting tomorrow.<br>
+              You'll hit quit-job fund in 10 months.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label"><span class="com">Commerce</span><br>User confirms action — dropped on summary, they tap confirm</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SURFACES -->
+<section id="surfaces">
+  <div class="section-label">Engagement Surfaces</div>
+  <div class="section-title">Where the banker lives</div>
+  <div class="section-desc">The right surface for the right moment. Widget for daily glance, app for deep interaction, WhatsApp for high-signal interruptions.</div>
+
+  <div class="surfaces-grid">
+    <!-- Widget -->
+    <div class="surface-card">
+      <div class="surface-mock" style="background:linear-gradient(135deg, #1a1a24, #13131a);">
+        <div class="widget-mock">
+          <div class="widget-header">
+            <div class="wh-icon">₹</div>
+            <div class="wh-text">AI Banker · Today</div>
+          </div>
+          <div class="widget-body">
+            <div class="wb-headline">Food delivery down 18% from last month.</div>
+            <div class="wb-detail">Something's working. You saved ₹1.4k compared to this time last month. Lock the difference?</div>
+            <div class="wb-action">Tap to explore →</div>
+          </div>
+        </div>
+      </div>
+      <div class="surface-info">
+        <h3>Home Screen Widget</h3>
+        <p>Primary recurring surface. A daily insight card the user glances at without opening the app. Non-intrusive, always fresh, no notification fatigue. Cheaper and less annoying than daily WhatsApp.</p>
+        <div class="when">When: Daily, passive, glanceable</div>
+      </div>
+    </div>
+
+    <!-- In-app -->
+    <div class="surface-card">
+      <div class="surface-mock" style="background:linear-gradient(135deg, #1a1a24, #13131a);">
+        <div class="inapp-mini">
+          <div class="im-header">AI Banker</div>
+          <div class="im-body">
+            <div class="im-msg a">Your average Swiggy order was ₹290 in Jan. Now it's ₹420. Same orders, 45% more money. 🤔</div>
+            <div class="im-msg u">Huh, didn't notice that</div>
+            <div class="im-msg a">That's ₹1.6k/month extra going to Swiggy without any change in what you order. Want to set a cap?</div>
+            <div class="im-chips">
+              <div class="im-chip">Set ₹350 cap</div>
+              <div class="im-chip">Tell me more</div>
+              <div class="im-chip">It's fine</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="surface-info">
+        <h3>In-App Chat</h3>
+        <p>The deep interaction surface. Full context: financial data, conversation memory, guided chip flows, free-form AI chat. Where Companionship deepens and Commerce happens.</p>
+        <div class="when">When: User taps widget, opens app, or wants to explore</div>
+      </div>
+    </div>
+
+    <!-- WhatsApp -->
+    <div class="surface-card">
+      <div class="surface-mock" style="background:linear-gradient(135deg, #1a1a24, #13131a);">
+        <div class="wa-mock">
+          <div class="wa-header-bar">
+            <div class="wa-avatar">₹</div>
+            <div class="wa-name">AI Banker</div>
+          </div>
+          <div class="wa-body">
+            <div class="wa-bubble">
+              💰 Your salary just landed!<br><br>
+              Last month, ₹18k disappeared in the first 3 days. Want to auto-save ₹5k before it happens again?
+              <div class="wa-time">9:15 AM</div>
+            </div>
+            <div class="wa-buttons">
+              <div class="wa-btn">Yes, save ₹5k now</div>
+              <div class="wa-btn">Remind me tomorrow</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="surface-info">
+        <h3>WhatsApp</h3>
+        <p>High-signal, low-frequency outreach. Not daily insights — that's annoying and expensive. Reserved for moments where the interruption is worth it: salary day, goal milestones, bill warnings.</p>
+        <div class="when">When: Salary credited, milestone approaching, bill risk</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TRUST LADDER -->
+<section id="trust">
+  <div class="section-label">Commerce Strategy</div>
+  <div class="section-title">Trust is earned, not assumed</div>
+  <div class="section-desc">The initial goal is to maximize the depth of Conscience and Companionship. Commerce starts with the user firmly in control and grows as trust builds.</div>
+
+  <div class="ladder">
+    <div class="ladder-step">
+      <div class="ladder-dot">1</div>
+      <div class="ladder-content">
+        <h4>Present: User confirms every action</h4>
+        <p>The AI does all the analysis, builds the recommendation, and prepares the action. The final step is always the user's. When someone confirms a savings product, we drop them on the summary screen of the existing banking flow. They tap confirm. The button press is theirs.</p>
+        <div class="ladder-tag">Maximize Conscience + Companionship</div>
+      </div>
+    </div>
+    <div class="ladder-step">
+      <div class="ladder-dot">2</div>
+      <div class="ladder-content">
+        <h4>Near-term: Pre-authorized actions</h4>
+        <p>User opts into specific action types: "auto-save ₹70/day, don't ask me each time." The banker acts within explicit boundaries. User gets a receipt, not a permission prompt.</p>
+        <div class="ladder-tag">Earned autonomy</div>
+      </div>
+    </div>
+    <div class="ladder-step">
+      <div class="ladder-dot">3</div>
+      <div class="ladder-content">
+        <h4>Long-term: Autonomous within boundaries</h4>
+        <p>The banker proactively moves money, adjusts budgets, parks surplus — all within pre-authorized rules. User reviews after the fact. A real banker, not a chatbot.</p>
+        <div class="ladder-tag">Full commerce</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CLOSING -->
+<section>
+  <div class="section-title" style="max-width:700px;">The product is designed to be valuable even if Commerce never goes beyond "user taps confirm."</div>
+  <div class="section-desc" style="max-width:600px; margin-top:20px;">
+    Understanding your money better and having a financial companion that remembers your preferences — that's useful on its own. The actions are the reward for building that understanding.
+  </div>
+  <div style="display:flex; gap:16px; margin-top:40px; flex-wrap:wrap;">
+    <div class="pillar-badge"><div class="dot" style="background:var(--accent)"></div> Conscience — understand from data</div>
+    <div class="pillar-badge"><div class="dot" style="background:var(--emerald)"></div> Companionship — understand from conversation</div>
+    <div class="pillar-badge"><div class="dot" style="background:var(--amber)"></div> Commerce — act on behalf of the user</div>
+  </div>
+</section>
+
+<footer>
+  <p>AI Banker · Product Vision · February 2026</p>
+</footer>
+
+</body>
+</html>

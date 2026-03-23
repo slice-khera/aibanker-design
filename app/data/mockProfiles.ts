@@ -308,13 +308,13 @@ export const weekendBallerProfile: MockProfile = {
     {
       id: "goal-1",
       type: "goal",
-      message: "You're ahead of goal pace this week. Don't fumble 😌\nWant to lock it in with autosave?",
+      message: "You're ahead of your weekly goal pace.\nWant to lock it in with autosave?",
       chips: ["Auto-save", "Show progress", "Worth it?"],
     },
     {
       id: "goal-2",
       type: "goal",
-      message: "You're on pace for the quit-job fund. Keep the weekends chill and you'll stay there.",
+      message: "You're on pace for the quit-job fund.\nKeep weekend spending steady and you'll stay there.",
       chips: ["Boost goal", "Progress", "Rate my spends"],
     },
     {
@@ -327,13 +327,13 @@ export const weekendBallerProfile: MockProfile = {
     {
       id: "risk-1",
       type: "risk",
-      message: "Uh oh — you might run short for a bill due soon.\nWant a mini survival plan?",
+      message: "Your buffer may not cover an upcoming bill.\nWant to review the plan?",
       chips: ["Make a plan", "Show bills", "Can I afford…"],
     },
     {
       id: "risk-2",
       type: "risk",
-      message: "Weekend spike incoming. Keep a buffer so Monday doesn't sting.",
+      message: "Weekend spending tends to spike. A buffer would keep the week balanced.",
       chips: ["Set buffer", "Can I afford…", "Rate my spends"],
     },
     {
@@ -346,8 +346,8 @@ export const weekendBallerProfile: MockProfile = {
     {
       id: "behavior-1",
       type: "behavior",
-      message: "Late-night munchies are back 👀\nIs this joy or regret?",
-      chips: ["Joy", "Regret", "Mute this"],
+      message: "Food delivery orders after 10pm increased this week.\nWorth rating these?",
+      chips: ["Rate my spends", "Mute this", "Not now"],
     },
     {
       id: "behavior-2",
@@ -365,7 +365,7 @@ export const weekendBallerProfile: MockProfile = {
     {
       id: "opportunity-1",
       type: "opportunity",
-      message: "You could safely save a bit today without affecting your buffer.",
+      message: "Your buffer has enough headroom to start a ₹70/day auto-save without impact.",
       chips: ["Auto-save ₹70", "Not now", "Explain"],
     },
     {
@@ -380,17 +380,16 @@ export const weekendBallerProfile: MockProfile = {
       message: "You've had surplus sitting untouched for weeks.\nWant to park it in an FD (still goal-aligned)?",
       chips: ["Create FD", "Keep liquid", "Explain FD vs RD"],
     },
-    // Playful tea (2)
     {
       id: "play-1",
-      type: "playful",
-      message: "Tea ☕ Your food spends are in a committed relationship with Friday night.",
+      type: "behavior",
+      message: "Food spending consistently peaks on Friday nights.\nWant to see the pattern?",
       chips: ["Rate my spends", "Can I afford…", "Mute this"],
     },
     {
       id: "play-2",
-      type: "playful",
-      message: "Your wallet says: \"I can quit the job\" — your UPI says: \"order dessert.\"",
+      type: "behavior",
+      message: "Your savings rate and spending patterns point in different directions.\nWant a clearer picture?",
       chips: ["Rate my spends", "Progress", "Understand my money"],
     },
   ],
@@ -406,9 +405,7 @@ export function getRealityCheckText(profile: MockProfile, userResponses: {
   const savingsGuess = userResponses.savingsGuess || profile.persona.user_guess_savings_pct;
   const personaGuess = userResponses.personaGuess || profile.persona.persona_guess;
 
-  return `Reality check time 👀
-
-Here's how close you were:
+  return `Here's how your estimates compare to the actual data:
 
 Savings
 Your guess: ${savingsGuess}  →  Actual: ${profile.persona.actual_savings_pct}
@@ -419,12 +416,11 @@ Your guess: ${profile.persona.user_guess_category_pct}  →  Actual: ${profile.p
 Gap: ${profile.persona.category_gap}
 
 Persona
-Your guess: ${personaGuess}  →  Reality: ${profile.persona.persona_actual} 😅
+Your guess: ${personaGuess}  →  Actual: ${profile.persona.persona_actual}
 
 ━━━━━━━━━━━━━━━━━━━
 
-Good news: you're not "bad with money."
-Your money just has habits.`;
+The gap between estimate and actual is where patterns hide.`;
 }
 
 export function getPacePreset(
@@ -464,12 +460,12 @@ export function getOffTrackText(profile: MockProfile): string {
 
 // Helper for on-track message
 export function getOnTrackText(): string {
-  return `Honestly? You're closer than you think.\nKeep your current habits and you'll still land it.`;
+  return `You're closer to the goal than the numbers suggest.\nCurrent habits are enough to get there.`;
 }
 
 // Helper for autosave suggestion
 export function getAutosaveSuggestion(profile: MockProfile): string {
-  return `Option 1: Cut ${profile.action.suggested_cut_category} by ${profile.action.suggested_cut_amount_month}/month.\nI can set up a ${profile.action.suggested_autosave_day}/day autosave so it quietly disappears before you spend it.`;
+  return `Option 1: Reduce ${profile.action.suggested_cut_category} by ${profile.action.suggested_cut_amount_month}/month.\nA ${profile.action.suggested_autosave_day}/day autosave would move that amount automatically at the start of each day.`;
 }
 
 // Helper for RD suggestion
@@ -489,17 +485,17 @@ export function getAffordOutcome(amount: string, timing: string): { status: "saf
   if (amountNum <= 1500) {
     return {
       status: "safe",
-      message: `${amount} ${timing.toLowerCase()}? Safe.\nYou'll still have buffer for bills and your goal stays on track.`,
+      message: `${amount} ${timing.toLowerCase()} — within budget.\nBuffer stays intact and goal remains on track.`,
     };
   } else if (amountNum <= 3000) {
     return {
       status: "tight",
-      message: `${amount} ${timing.toLowerCase()}? Tight.\nDoable, but you'd eat into your buffer. Maybe skip one delivery this week?`,
+      message: `${amount} ${timing.toLowerCase()} — tight.\nThis would reduce your buffer. Goal timeline stays the same.`,
     };
   } else {
     return {
       status: "risky",
-      message: `${amount} ${timing.toLowerCase()}? Risky.\nThis would put you behind on your goal by ~2 days. Is it a treat or a plan?`,
+      message: `${amount} ${timing.toLowerCase()} — over buffer.\nThis pushes your goal back by ~2 days.`,
     };
   }
 }

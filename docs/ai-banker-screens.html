@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Banker — Screens</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #08080c; color: #f0f0f5;
+    padding: 40px 20px 80px;
+  }
+  h1 { text-align: center; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .subtitle { text-align: center; font-size: 14px; color: #888; margin-bottom: 48px; }
+  .row-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: #a78bfa; margin-bottom: 8px; padding-left: 4px;
+  }
+  .row-desc { font-size: 13px; color: #666; margin-bottom: 24px; padding-left: 4px; max-width: 600px; }
+  .row {
+    display: flex; gap: 28px; overflow-x: auto;
+    padding-bottom: 20px; margin-bottom: 56px;
+    scroll-snap-type: x mandatory;
+  }
+  .row::-webkit-scrollbar { height: 0; }
+
+  /* ===== PHONE ===== */
+  .phone {
+    width: 300px; min-width: 300px; scroll-snap-align: start;
+    background: #1a1a22; border-radius: 40px; padding: 10px;
+    box-shadow: 0 30px 60px #00000050, inset 0 0 0 1px #ffffff0a;
+  }
+  .scr {
+    background: #0c0c12; border-radius: 32px; overflow: hidden;
+    height: 600px; display: flex; flex-direction: column;
+    position: relative;
+  }
+  .phone .cap { text-align: center; font-size: 11px; color: #555; padding: 8px 0 0; font-weight: 500; }
+
+  /* Status bar */
+  .sb {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 20px 4px; font-size: 12px; font-weight: 600; color: #fff;
+    position: relative; z-index: 2;
+  }
+  .sb .r { display: flex; gap: 4px; align-items: center; font-size: 11px; }
+
+  /* Dynamic island */
+  .di {
+    position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    width: 90px; height: 24px; background: #000; border-radius: 20px; z-index: 3;
+  }
+
+  /* ===== CHAT SCREENS ===== */
+  .ch { padding: 6px 16px 10px; border-bottom: 1px solid #ffffff08; }
+  .ch-t { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+  .ch-s { font-size: 10px; color: #888; margin-top: 1px; }
+  .ch-g { font-size: 10px; color: #34d399; margin-top: 1px; font-weight: 600; }
+  .cb { flex: 1; padding: 12px 12px 8px; display: flex; flex-direction: column; gap: 7px; overflow: hidden; justify-content: flex-end; }
+
+  /* Bubbles */
+  .b { max-width: 88%; padding: 9px 13px; font-size: 12px; line-height: 1.5; border-radius: 16px; }
+  .b.a { background: #ffffff0d; align-self: flex-start; border-bottom-left-radius: 4px; }
+  .b.u { background: #fff; color: #111; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .b.rc { background: linear-gradient(135deg, #7c3aed15, #a78bfa0c); border: 1px solid #a78bfa22; align-self: flex-start; border-bottom-left-radius: 4px; }
+  .b.ins { background: linear-gradient(135deg, #f59e0b10, #fbbf2408); border: 1px solid #fbbf2420; align-self: flex-start; border-bottom-left-radius: 4px; }
+  .b.ok { background: linear-gradient(135deg, #10b98110, #34d39908); border: 1px solid #34d39920; align-self: flex-start; border-bottom-left-radius: 4px; text-align: center; }
+  .b strong { font-weight: 600; }
+  .dm { color: #999; }
+  .nm { font-weight: 700; color: #a78bfa; }
+
+  /* Stat */
+  .st { margin-top: 8px; padding: 12px; background: #ffffff08; border-radius: 12px; text-align: center; }
+  .st .sv { font-size: 24px; font-weight: 800; letter-spacing: -1px; background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .st .sc { font-size: 10px; color: #777; margin-top: 2px; }
+
+  /* Chips */
+  .cs { display: flex; flex-wrap: wrap; gap: 5px; padding: 2px 0; }
+  .cc { padding: 7px 12px; border-radius: 100px; font-size: 11px; font-weight: 500; background: #ffffff0d; border: 1px solid #ffffff12; white-space: nowrap; }
+  .cc.g { background: #34d39915; border-color: #34d39928; color: #34d399; }
+  .cc.v { background: #a78bfa15; border-color: #a78bfa28; color: #a78bfa; }
+
+  /* Input bar */
+  .ib { padding: 8px 12px; border-top: 1px solid #ffffff08; display: flex; align-items: center; gap: 8px; }
+  .ib .f { flex: 1; background: #ffffff08; border-radius: 20px; padding: 8px 14px; font-size: 11px; color: #555; }
+  .ib .sn { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #a78bfa, #7c3aed); display: flex; align-items: center; justify-content: center; }
+  .ib .sn svg { width: 13px; height: 13px; fill: #fff; }
+  .arrow-svg { width: 13px; height: 13px; fill: #fff; }
+
+  /* ===== iOS HOME SCREEN ===== */
+  .ios {
+    background: linear-gradient(165deg, #1a1e3a 0%, #0f1628 40%, #141428 100%);
+    display: flex; flex-direction: column; height: 600px;
+  }
+  .ios-t { text-align: center; font-size: 48px; font-weight: 200; letter-spacing: -1px; margin-top: 4px; color: #fff; }
+  .ios-d { text-align: center; font-size: 12px; color: #ffffffaa; font-weight: 500; margin-top: 0; }
+
+  /* Widget grid area */
+  .wg { padding: 14px 14px 0; display: flex; flex-direction: column; gap: 10px; }
+
+  /* Medium widget (4x2) — other apps */
+  .wm {
+    background: #1e1e30dd; backdrop-filter: blur(30px);
+    border-radius: 18px; padding: 12px 14px;
+    display: flex; gap: 12px; align-items: center;
+    border: 1px solid #ffffff0a;
+  }
+  .wm-icon {
+    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 800; color: #fff;
+  }
+  .wm-body { flex: 1; min-width: 0; }
+  .wm-title { font-size: 12.5px; font-weight: 600; color: #fff; line-height: 1.3; }
+  .wm-sub { font-size: 10.5px; color: #ffffff60; margin-top: 2px; line-height: 1.3; }
+
+  /* AI Banker widget — single combined widget (insight + goal) */
+  .wb {
+    background: #1e1e30dd; backdrop-filter: blur(30px);
+    border-radius: 18px; border: 1px solid #ffffff0a;
+    overflow: hidden;
+  }
+  .wb-top {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px 0;
+  }
+  .wb-icon {
+    width: 24px; height: 24px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: #fff;
+  }
+  .wb-app { font-size: 10px; color: #ffffff50; font-weight: 600; }
+  .wb-insight {
+    padding: 6px 14px 8px;
+  }
+  .wb-headline { font-size: 12.5px; font-weight: 600; color: #fff; line-height: 1.35; }
+  .wb-detail { font-size: 10.5px; color: #ffffff55; margin-top: 3px; line-height: 1.35; }
+  .wb-goal {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 14px 10px; border-top: 1px solid #ffffff08;
+  }
+  .wb-goal-bar {
+    flex: 1; height: 4px; background: #ffffff10; border-radius: 2px; overflow: hidden;
+  }
+  .wb-goal-fill { height: 4px; border-radius: 2px; }
+  .wb-goal-status { font-size: 9.5px; font-weight: 600; white-space: nowrap; }
+  .wb-cta { font-size: 9px; color: #ffffff35; padding: 0 14px 9px; }
+
+  /* Small widget (2x2) */
+  .ws {
+    background: #1e1e30dd; backdrop-filter: blur(30px);
+    border-radius: 18px; padding: 10px 12px; flex: 1;
+    border: 1px solid #ffffff0a;
+    display: flex; flex-direction: column; justify-content: space-between;
+    min-height: 68px;
+  }
+  .ws-top { display: flex; align-items: center; gap: 6px; }
+  .ws-icon {
+    width: 22px; height: 22px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; color: #fff;
+  }
+  .ws-app { font-size: 9px; color: #ffffff50; font-weight: 600; }
+  .ws-val { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; margin-top: 4px; color: #fff; }
+  .ws-cap { font-size: 9.5px; color: #ffffff45; margin-top: 1px; }
+  .ws-row { display: flex; gap: 10px; }
+
+  /* Other widgets (non-banker) */
+  .wo-weather .wm-icon { background: linear-gradient(135deg, #3b82f6, #06b6d4); }
+  .wo-calendar .wm-icon { background: #fff; color: #ef4444; font-size: 11px; }
+  .wo-calendar .wm-icon .cal-month { font-size: 8px; color: #ef4444; font-weight: 700; text-transform: uppercase; }
+  .wo-calendar .wm-icon .cal-day { font-size: 16px; color: #1a1a1a; font-weight: 800; line-height: 1; }
+
+  /* App icon grid */
+  .ig {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 8px; padding: 14px 20px 0;
+    justify-items: center;
+  }
+  .ai {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .ai-i {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  .ai-l { font-size: 9px; color: #ffffffaa; font-weight: 500; }
+
+  /* Dock */
+  .dk {
+    margin-top: auto;
+    display: flex; justify-content: space-around;
+    padding: 10px 28px 6px;
+    background: #ffffff0a; border-radius: 26px;
+    margin: auto 10px 6px;
+  }
+  .dk .ai-i { width: 44px; height: 44px; border-radius: 11px; font-size: 18px; }
+
+  /* Home indicator */
+  .hi { width: 100px; height: 4px; background: #ffffff30; border-radius: 2px; margin: 6px auto 4px; }
+
+  /* ===== SWIPE ===== */
+  .sw-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px; gap: 10px; }
+  .sw-card {
+    width: 220px; background: #161620; border-radius: 22px; padding: 24px 20px;
+    text-align: center; border: 1px solid #ffffff0d; box-shadow: 0 10px 30px #00000030;
+    transform: rotate(-1.5deg);
+  }
+  .sw-card .sw-e { font-size: 28px; margin-bottom: 8px; }
+  .sw-card .sw-m { font-size: 17px; font-weight: 700; }
+  .sw-card .sw-a { font-size: 13px; color: #aaa; margin-top: 3px; }
+  .sw-card .sw-d { font-size: 10px; color: #666; margin-top: 2px; }
+  .sw-btns { display: flex; gap: 16px; }
+  .sw-b {
+    width: 46px; height: 46px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; border: 2px solid #ffffff12;
+  }
+  .sw-b.rg { border-color: #fb718535; color: #fb7185; background: #fb71850c; }
+  .sw-b.mh { border-color: #ffffff12; color: #888; background: #ffffff06; }
+  .sw-b.wt { border-color: #34d39935; color: #34d399; background: #34d3990c; }
+  .sw-labels { display: flex; gap: 14px; font-size: 9px; color: #555; }
+  .sw-labels .rg { color: #fb7185; }
+  .sw-labels .wt { color: #34d399; }
+  .sw-prog { font-size: 10px; color: #444; }
+
+  /* ===== WHATSAPP ===== */
+  .wa { background: #0b141a; display: flex; flex-direction: column; height: 600px; }
+  .wa-bar { background: #1f2c34; padding: 6px 12px; display: flex; align-items: center; gap: 8px; }
+  .wa-bk { color: #00a884; font-size: 16px; }
+  .wa-av { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #a78bfa, #6d5acf); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; }
+  .wa-nm { font-size: 14px; font-weight: 600; color: #e9edef; }
+  .wa-st { font-size: 10px; color: #8696a0; }
+  .wa-bd { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 5px; justify-content: flex-end; }
+  .wa-m { max-width: 88%; padding: 7px 10px; border-radius: 10px; font-size: 12px; line-height: 1.5; }
+  .wa-m.i { background: #1f2c34; align-self: flex-start; border-top-left-radius: 2px; color: #e9edef; }
+  .wa-m.o { background: #005c4b; align-self: flex-end; border-top-right-radius: 2px; color: #e9edef; }
+  .wa-m .t { font-size: 9px; color: #ffffff35; text-align: right; margin-top: 2px; }
+  .wa-bs { display: flex; flex-direction: column; gap: 2px; margin-top: 2px; }
+  .wa-bt { text-align: center; padding: 9px; font-size: 12px; color: #00a884; font-weight: 500; background: #1f2c34; border-radius: 8px; }
+  .wa-ib { padding: 6px 8px; display: flex; gap: 6px; align-items: center; }
+  .wa-fi { flex: 1; background: #1f2c34; border-radius: 20px; padding: 8px 12px; font-size: 11px; color: #8696a0; }
+  .wa-sn { width: 32px; height: 32px; border-radius: 50%; background: #00a884; display: flex; align-items: center; justify-content: center; }
+</style>
+</head>
+<body>
+
+<h1>AI Banker — Screens</h1>
+<p class="subtitle">Key interfaces across the product</p>
+
+<!-- ========== ONBOARDING ========== -->
+<div class="row-label">Onboarding</div>
+<div class="row-desc">Wrapped → Reality Check → Goal setup. Build understanding before asking for commitment.</div>
+<div class="row">
+
+  <!-- Wrapped -->
+  <div class="phone"><div class="scr">
+    <div class="di"></div>
+    <div class="sb"><span>9:41</span><div class="r">📶 🔋</div></div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;">
+      <div style="font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;">Your Money Wrapped</div>
+      <div style="font-size:22px;font-weight:800;margin-top:14px;letter-spacing:-0.5px;line-height:1.2;">Death by a<br>thousand cuts</div>
+      <div style="font-size:13px;color:#888;margin-top:10px;line-height:1.5;">187 purchases under ₹500.<br>Each felt like nothing.</div>
+      <div class="st" style="margin-top:18px;width:100%;">
+        <div class="sv">12 days</div>
+        <div class="sc">Of your monthly income gone on small spends</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:24px;">
+        <div style="height:6px;width:6px;border-radius:50%;background:#ffffff22"></div>
+        <div style="height:6px;width:6px;border-radius:50%;background:#ffffff22"></div>
+        <div style="height:6px;width:6px;border-radius:50%;background:#a78bfa"></div>
+        <div style="height:6px;width:6px;border-radius:50%;background:#ffffff22"></div>
+        <div style="height:6px;width:6px;border-radius:50%;background:#ffffff22"></div>
+        <div style="height:6px;width:6px;border-radius:50%;background:#ffffff22"></div>
+      </div>
+    </div>
+    <div class="hi"></div>
+  </div><div class="cap">Wrapped — slide 3 of 6</div></div>
+
+  <!-- Reality Check -->
+  <div class="phone"><div class="scr">
+    <div class="di"></div>
+    <div class="sb"><span>9:41</span><div class="r">📶 🔋</div></div>
+    <div class="ch"><div class="ch-t">AI Banker</div><div class="ch-s">Getting to know you</div></div>
+    <div class="cb">
+      <div class="b a">How much do you save each month?</div>
+      <div class="b u">10–20%</div>
+      <div class="b a">Where does most disposable money go?</div>
+      <div class="b u">Food</div>
+      <div class="b rc">
+        <strong>Reality check 👀</strong><br><br>
+        Savings: You said 10–20% → actual <strong class="nm">~8%</strong><br>
+        Food: You said ~10% → actual <strong class="nm">~32%</strong><br>
+        Persona: "Disciplined" → <strong class="nm">"Weekend Splurger"</strong><br><br>
+        <span class="dm">You're not bad with money — your money just has habits.</span>
+      </div>
+      <div class="cs">
+        <div class="cc">Help me save more</div>
+        <div class="cc">Help me control Food</div>
+      </div>
+    </div>
+    <div class="hi"></div>
+  </div><div class="cap">Reality Check — the gap motivates</div></div>
+
+  <!-- Pace -->
+  <div class="phone"><div class="scr">
+    <div class="di"></div>
+    <div class="sb"><span>9:41</span><div class="r">📶 🔋</div></div>
+    <div class="ch"><div class="ch-t">AI Banker</div><div class="ch-s">Building your plan</div></div>
+    <div class="cb">
+      <div class="b u">Emergency fund</div>
+      <div class="b u">₹5L in 12 months</div>
+      <div class="b a">
+        <strong>Pace: Balanced (10 months)</strong><br><br>
+        Cut ~₹5k/month to make this real.<br><br>
+        Top ways: trim food delivery (₹2k), reduce weekend shopping (₹1.5k), pause 2 subscriptions (₹1k).<br><br>
+        <span class="dm">Suggested: ₹167/day autosave</span>
+      </div>
+      <div class="cs">
+        <div class="cc g">✓ Looks good</div>
+        <div class="cc">Change pace</div>
+      </div>
+    </div>
+    <div class="hi"></div>
+  </div><div class="cap">Pace — real numbers, real levers</div></div>
+
+  <!-- Success -->
+  <div class="phone"><div class="scr">
+    <div class="di"></div>
+    <div class="sb"><span>9:41</span><div class="r">📶 🔋</div></div>
+    <div class="ch"><div class="ch-t">AI Banker</div><div class="ch-s">Budget review</div></div>
+    <div class="cb">
+      <div class="b a">
+        Your budgets based on real spending:<br><br>
+        • Food & Delivery: <strong>₹6,500</strong><br>
+        • Shopping: <strong>₹4,200</strong><br>
+        • Entertainment: <strong>₹2,800</strong><br>
+        • Transport: <strong>₹1,900</strong><br>
+        • Buffer: <strong>₹3,000</strong><br><br>
+        <span class="dm">Keeps you on track for balanced pace.</span>
+      </div>
+      <div class="cs"><div class="cc g">Looks good</div><div class="cc">Edit budgets</div></div>
+      <div class="b u">Looks good</div>
+      <div class="b ok">
+        <div style="font-size:22px;margin-bottom:4px;">✓</div>
+        <strong>Autosave is active.</strong><br>
+        ₹167/day starting tomorrow.<br>
+        <span class="dm">Emergency fund in 10 months.</span>
+      </div>
+    </div>
+    <div class="hi"></div>
+  </div><div class="cap">Commerce — user confirms, we execute</div></div>
+</div>
+
+<!-- ========== STEADY STATE ========== -->
+<div class="row-label">Steady State</div>
+<div class="row-desc">Day-to-day companion. Insights, decisions, ratings, progress.</div>
+<div class="row">
+
+  <!-- Home -->
+  <div class="phone"><div class="scr">
+    <div class="di"></div>
+    <div class="sb"><span>9:41</span><div class="r">📶 🔋</div></div>
+    <div class="ch"><div class="ch-t">AI Banker</div><div class="ch-g">Emergency fund · ₹5L · 3 days ahead ✓</div></div>
+    <div class="cb">
+      <div class="b ins">
+        ₹520 at Zomato at 11:47pm. Classic.<br><br>
+        After-10pm spending this month: <strong class="nm">₹12k</strong>. That's 5 weeks added to your timeline.<br><br>
+        <span class="dm">Your night self has expensive taste.</span>
+      </div>
+      <div class="cs">
+        <div class="cc v">Can I afford…</div>
+        <div class="cc">Rate my spends</div>
+        <div class="cc">Progress</div>
+        <div class="cc">Understand my money</div>
+      </div>
+    </div>
+    <div class="ib">
+      <div class="f">Ask me anything…</div>
+      <div class="sn"><svg viewBox="0 0 24 24" class="arrow-svg"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></div>
+    </div>
+    <div class="hi"></div>
+  </div><div class="cap">Home — insight + chips + free chat</div></div>
+
+  <!-- Can I Afford -->
+  <div class="phone"><div class="scr">
+    <div class="di"></div>
+    <div class="sb"><span>9:41</span><div class="r">📶 🔋</div></div>
+    <div class="ch"><div class="ch-t">AI Banker</div><div class="ch-g">Emergency fund · ₹5L · 3 days ahead ✓</div></div>
+    <div class="cb">
+      <div class="b u">Can I afford ₹3k dinner?</div>
+      <div class="b a">
+        <strong>₹3,000 — here's the picture:</strong><br><br>
+        💰 Buffer: ₹3k → ₹0<br>
+        📊 Goal: 2 days behind<br>
+        🚨 Rent due in 5 days<br>
+        📈 3rd dinner this month<br><br>
+        <span class="dm">Pattern emerging?</span>
+      </div>
+      <div class="cs">
+        <div class="cc">Go for it anyway</div>
+        <div class="cc">Reduce to ₹2k</div>
+        <div class="cc">Show alternatives</div>
+      </div>
+    </div>
+    <div class="ib">
+      <div class="f">Ask me anything…</div>
+      <div class="sn"><svg viewBox="0 0 24 24" class="arrow-svg"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></div>
+    </div>
+    <div class="hi"></div>
+  </div><div class="cap">Can I Afford — full decision context</div></div>
+
+  <!-- Swipe -->
+  <div class="phone"><div class="scr">
+    <div class="di"></div>
+    <div class="sb"><span>9:41</span><div class="r">📶 🔋</div></div>
+    <div class="ch"><div class="ch-t">Rate My Spends</div><div class="ch-s">Swipe to rate</div></div>
+    <div class="sw-area">
+      <div class="sw-card">
+        <div class="sw-e">🍕</div>
+        <div class="sw-m">Swiggy</div>
+        <div class="sw-a">₹520</div>
+        <div class="sw-d">Saturday · 10:05pm · Food & Delivery</div>
+      </div>
+      <div class="sw-btns">
+        <div class="sw-b rg">←</div>
+        <div class="sw-b mh">↑</div>
+        <div class="sw-b wt">→</div>
+      </div>
+      <div class="sw-labels"><span class="rg">Regret</span><span>Meh</span><span class="wt">Worth it</span></div>
+      <div class="sw-prog">4 of 10</div>
+    </div>
+    <div class="hi"></div>
+  </div><div class="cap">Rate My Spends — swipe to teach</div></div>
+
+  <!-- Progress -->
+  <div class="phone"><div class="scr">
+    <div class="di"></div>
+    <div class="sb"><span>9:41</span><div class="r">📶 🔋</div></div>
+    <div class="ch"><div class="ch-t">AI Banker</div><div class="ch-g">Emergency fund · ₹5L · 3 days ahead ✓</div></div>
+    <div class="cb">
+      <div class="b u">Progress</div>
+      <div class="b a">
+        <strong>Emergency fund: ₹1.4L / ₹5L</strong><br>
+        28% · 8 months left<br>
+        <div style="height:5px;background:#ffffff0c;border-radius:3px;margin:8px 0 4px;">
+          <div style="height:5px;width:28%;background:linear-gradient(90deg,#34d399,#60a5fa);border-radius:3px;"></div>
+        </div>
+        Status: <strong style="color:#34d399;">3 days ahead</strong> ✓<br>
+        Savings rate: 12% (need 10%)<br><br>
+        <span class="dm">You're beating your balanced pace.</span>
+      </div>
+      <div class="cs">
+        <div class="cc">Relax my pace</div>
+        <div class="cc g">Finish faster</div>
+        <div class="cc">Lock it in</div>
+        <div class="cc">Keep as is</div>
+      </div>
+    </div>
+    <div class="ib">
+      <div class="f">Ask me anything…</div>
+      <div class="sn"><svg viewBox="0 0 24 24" class="arrow-svg"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></div>
+    </div>
+    <div class="hi"></div>
+  </div><div class="cap">Progress — ahead? Relax or push</div></div>
+</div>
+
+<!-- ========== SURFACES ========== -->
+<div class="row-label">Surfaces</div>
+<div class="row-desc">Widget for daily glance, app for depth, WhatsApp for high-signal interruptions.</div>
+<div class="row">
+
+  <!-- iOS Home: insight widget -->
+  <div class="phone"><div class="scr ios">
+    <div class="di"></div>
+    <div class="sb"><span>9:41</span><div class="r">📶 🔋</div></div>
+    <div class="ios-t">9:41</div>
+    <div class="ios-d">Monday, February 23</div>
+
+    <div class="wg">
+      <!-- Weather widget -->
+      <div class="wm wo-weather">
+        <div class="wm-icon">☀️</div>
+        <div class="wm-body">
+          <div class="wm-title">28° Bangalore</div>
+          <div class="wm-sub">Sunny. High 32°, Low 19°</div>
+        </div>
+      </div>
+
+      <!-- AI Banker: single combined widget (insight + goal bar) -->
+      <div class="wb" style="background:linear-gradient(135deg, #1e1e30ee, #1a1830ee); border-color:#a78bfa12;">
+        <div class="wb-top">
+          <div class="wb-icon" style="background:linear-gradient(135deg, #a78bfa, #6d5acf);">₹</div>
+          <div class="wb-app">AI Banker</div>
+        </div>
+        <div class="wb-insight">
+          <div class="wb-headline">Food delivery down 18% this month.</div>
+          <div class="wb-detail">Something's working. Tap to see details.</div>
+        </div>
+        <div class="wb-goal">
+          <div class="wb-goal-bar"><div class="wb-goal-fill" style="width:28%;background:linear-gradient(90deg,#a78bfa,#60a5fa);"></div></div>
+          <div class="wb-goal-status" style="color:#a78bfa;">On track ✓</div>
+        </div>
+      </div>
+
+      <!-- Calendar small widget -->
+      <div class="wm">
+        <div class="wm-icon" style="background:#fff;color:#ef4444;font-size:14px;font-weight:800;">23</div>
+        <div class="wm-body">
+          <div class="wm-title">Team standup</div>
+          <div class="wm-sub">10:00 AM · Google Meet</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ig">
+      <div class="ai"><div class="ai-i" style="background:#34d399;">📸</div><div class="ai-l">Camera</div></div>
+      <div class="ai"><div class="ai-i" style="background:#3b82f6;">📧</div><div class="ai-l">Mail</div></div>
+      <div class="ai"><div class="ai-i" style="background:#ef4444;">🎵</div><div class="ai-l">Music</div></div>
+      <div class="ai"><div class="ai-i" style="background:#8b5cf6;">🗂</div><div class="ai-l">Files</div></div>
+      <div class="ai"><div class="ai-i" style="background:#f59e0b;">🗺</div><div class="ai-l">Maps</div></div>
+      <div class="ai"><div class="ai-i" style="background:#06b6d4;">⛅</div><div class="ai-l">Weather</div></div>
+      <div class="ai"><div class="ai-i" style="background:#ec4899;">🛍</div><div class="ai-l">Shopping</div></div>
+      <div class="ai"><div class="ai-i" style="background:#10b981;">💬</div><div class="ai-l">Messages</div></div>
+    </div>
+
+    <div class="dk">
+      <div class="ai-i" style="background:#22c55e;font-size:16px;">📞</div>
+      <div class="ai-i" style="background:#3b82f6;font-size:16px;">🧭</div>
+      <div class="ai-i" style="background:#25d366;font-size:16px;">💬</div>
+      <div class="ai-i" style="background:linear-gradient(135deg,#a78bfa,#6d5acf);font-size:12px;font-weight:800;color:#fff;">₹</div>
+    </div>
+    <div class="hi"></div>
+  </div><div class="cap">Widget — daily insight + goal bar</div></div>
+
+  <!-- iOS Home: celebration variant -->
+  <div class="phone"><div class="scr ios">
+    <div class="di"></div>
+    <div class="sb"><span>8:14</span><div class="r">📶 🔋</div></div>
+    <div class="ios-t">8:14</div>
+    <div class="ios-d">Thursday, February 27</div>
+
+    <div class="wg">
+      <div class="wm wo-weather">
+        <div class="wm-icon">🌤</div>
+        <div class="wm-body">
+          <div class="wm-title">26° Bangalore</div>
+          <div class="wm-sub">Partly cloudy. High 30°</div>
+        </div>
+      </div>
+
+      <div class="wb" style="background:linear-gradient(135deg, #1a2e25ee, #1a2830ee); border-color:#34d39912;">
+        <div class="wb-top">
+          <div class="wb-icon" style="background:linear-gradient(135deg, #34d399, #059669);">₹</div>
+          <div class="wb-app">AI Banker</div>
+        </div>
+        <div class="wb-insight">
+          <div class="wb-headline" style="color:#34d399;">8 days under budget 🔥</div>
+          <div class="wb-detail">Longest streak in 3 months. Keep it going.</div>
+        </div>
+        <div class="wb-goal">
+          <div class="wb-goal-bar"><div class="wb-goal-fill" style="width:32%;background:linear-gradient(90deg,#34d399,#60a5fa);"></div></div>
+          <div class="wb-goal-status" style="color:#34d399;">Ahead ✓</div>
+        </div>
+      </div>
+
+      <div class="wm">
+        <div class="wm-icon" style="background:#fff;color:#ef4444;font-size:14px;font-weight:800;">27</div>
+        <div class="wm-body">
+          <div class="wm-title">Design review</div>
+          <div class="wm-sub">2:00 PM · Zoom</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ig">
+      <div class="ai"><div class="ai-i" style="background:#34d399;">📸</div><div class="ai-l">Camera</div></div>
+      <div class="ai"><div class="ai-i" style="background:#3b82f6;">📧</div><div class="ai-l">Mail</div></div>
+      <div class="ai"><div class="ai-i" style="background:#ef4444;">🎵</div><div class="ai-l">Music</div></div>
+      <div class="ai"><div class="ai-i" style="background:#8b5cf6;">🗂</div><div class="ai-l">Files</div></div>
+      <div class="ai"><div class="ai-i" style="background:#f59e0b;">🗺</div><div class="ai-l">Maps</div></div>
+      <div class="ai"><div class="ai-i" style="background:#06b6d4;">⛅</div><div class="ai-l">Weather</div></div>
+      <div class="ai"><div class="ai-i" style="background:#ec4899;">🛍</div><div class="ai-l">Shopping</div></div>
+      <div class="ai"><div class="ai-i" style="background:#10b981;">💬</div><div class="ai-l">Messages</div></div>
+    </div>
+
+    <div class="dk">
+      <div class="ai-i" style="background:#22c55e;font-size:16px;">📞</div>
+      <div class="ai-i" style="background:#3b82f6;font-size:16px;">🧭</div>
+      <div class="ai-i" style="background:#25d366;font-size:16px;">💬</div>
+      <div class="ai-i" style="background:linear-gradient(135deg,#a78bfa,#6d5acf);font-size:12px;font-weight:800;color:#fff;">₹</div>
+    </div>
+    <div class="hi"></div>
+  </div><div class="cap">Widget — celebration, no amounts</div></div>
+
+  <!-- iOS Home: warning variant -->
+  <div class="phone"><div class="scr ios">
+    <div class="di"></div>
+    <div class="sb"><span>11:23</span><div class="r">📶 🔋</div></div>
+    <div class="ios-t">11:23</div>
+    <div class="ios-d">Saturday, March 1</div>
+
+    <div class="wg">
+      <div class="wm wo-weather">
+        <div class="wm-icon">☁️</div>
+        <div class="wm-body">
+          <div class="wm-title">24° Bangalore</div>
+          <div class="wm-sub">Overcast. Rain expected PM</div>
+        </div>
+      </div>
+
+      <div class="wb" style="background:linear-gradient(135deg, #2e281aee, #281e1aee); border-color:#fbbf2412;">
+        <div class="wb-top">
+          <div class="wb-icon" style="background:linear-gradient(135deg, #f59e0b, #d97706);">₹</div>
+          <div class="wb-app">AI Banker</div>
+        </div>
+        <div class="wb-insight">
+          <div class="wb-headline" style="color:#fbbf24;">Spending faster than usual.</div>
+          <div class="wb-detail">Tap to check your budget and plan.</div>
+        </div>
+        <div class="wb-goal">
+          <div class="wb-goal-bar"><div class="wb-goal-fill" style="width:26%;background:linear-gradient(90deg,#f59e0b,#fb923c);"></div></div>
+          <div class="wb-goal-status" style="color:#fbbf24;">Slipping</div>
+        </div>
+      </div>
+
+      <div class="wm">
+        <div class="wm-icon" style="background:#fff;color:#ef4444;font-size:14px;font-weight:800;">1</div>
+        <div class="wm-body">
+          <div class="wm-title">Brunch with friends</div>
+          <div class="wm-sub">12:30 PM · Indiranagar</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ig">
+      <div class="ai"><div class="ai-i" style="background:#34d399;">📸</div><div class="ai-l">Camera</div></div>
+      <div class="ai"><div class="ai-i" style="background:#3b82f6;">📧</div><div class="ai-l">Mail</div></div>
+      <div class="ai"><div class="ai-i" style="background:#ef4444;">🎵</div><div class="ai-l">Music</div></div>
+      <div class="ai"><div class="ai-i" style="background:#8b5cf6;">🗂</div><div class="ai-l">Files</div></div>
+      <div class="ai"><div class="ai-i" style="background:#f59e0b;">🗺</div><div class="ai-l">Maps</div></div>
+      <div class="ai"><div class="ai-i" style="background:#06b6d4;">⛅</div><div class="ai-l">Weather</div></div>
+      <div class="ai"><div class="ai-i" style="background:#ec4899;">🛍</div><div class="ai-l">Shopping</div></div>
+      <div class="ai"><div class="ai-i" style="background:#10b981;">💬</div><div class="ai-l">Messages</div></div>
+    </div>
+
+    <div class="dk">
+      <div class="ai-i" style="background:#22c55e;font-size:16px;">📞</div>
+      <div class="ai-i" style="background:#3b82f6;font-size:16px;">🧭</div>
+      <div class="ai-i" style="background:#25d366;font-size:16px;">💬</div>
+      <div class="ai-i" style="background:linear-gradient(135deg,#a78bfa,#6d5acf);font-size:12px;font-weight:800;color:#fff;">₹</div>
+    </div>
+    <div class="hi"></div>
+  </div><div class="cap">Widget — nudge, no figures exposed</div></div>
+
+  <!-- WhatsApp -->
+  <div class="phone"><div class="scr wa">
+    <div class="di"></div>
+    <div class="sb"><span>9:15</span><div class="r">📶 🔋</div></div>
+    <div class="wa-bar">
+      <div class="wa-bk">‹</div>
+      <div class="wa-av">₹</div>
+      <div style="flex:1;"><div class="wa-nm">AI Banker</div><div class="wa-st">online</div></div>
+    </div>
+    <div class="wa-bd">
+      <div class="wa-m i">
+        💰 Your salary just landed!<br><br>
+        Last month, ₹18k vanished in the first 3 days. Auto-save ₹5k before it happens again?
+        <div class="t">9:15 AM</div>
+      </div>
+      <div class="wa-bs">
+        <div class="wa-bt">Yes, save ₹5k now</div>
+        <div class="wa-bt">Remind me tomorrow</div>
+      </div>
+      <div class="wa-m o">Yes, save ₹5k now<div class="t">9:16 AM ✓✓</div></div>
+      <div class="wa-m i">
+        Done — ₹5k moved to emergency fund 🎯<br><br>
+        You're at ₹1.9L now. 38% of target.<br>
+        4 months in, 6 to go.
+        <div class="t">9:16 AM</div>
+      </div>
+    </div>
+    <div class="wa-ib">
+      <div class="wa-fi">Type a message</div>
+      <div class="wa-sn"><svg viewBox="0 0 24 24" class="arrow-svg"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></div>
+    </div>
+    <div class="hi" style="background:#ffffff15;"></div>
+  </div><div class="cap">WhatsApp — salary day, high-signal only</div></div>
+
+</div>
+
+</body>
+</html>

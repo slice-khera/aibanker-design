@@ -1,0 +1,38 @@
+{
+  "userId": "0524489d-6860-4d7e-8984-6679ec13e6e5",
+  "onboardingComplete": true,
+  "currentStep": "home",
+  "personaStage": "q1",
+  "goalStage": "plan",
+  "budgetStage": "digest",
+  "personaAnswers": {},
+  "goal": {
+    "name": "Trip",
+    "timeline": "3 months",
+    "timelineMonths": 3,
+    "amount": "₹5L",
+    "amountNum": 500000,
+    "savingsAllocated": 0,
+    "paceId": "aggressive",
+    "createdAt": "2026-03-17T08:53:46.053Z"
+  },
+  "budgetOverrides": {},
+  "budgetStyle": null,
+  "bufferAmount": 4000,
+  "bufferRemaining": 4000,
+  "products": [
+    {
+      "type": "rd",
+      "amount": 170000,
+      "frequency": "monthly",
+      "activatedAt": "2026-03-17T08:53:46.053Z",
+      "active": true
+    }
+  ],
+  "preferences": [],
+  "spendRatings": [],
+  "nudges": [],
+  "activeFlow": null,
+  "lastActiveAt": "2026-03-17T08:57:36.719Z",
+  "createdAt": "2026-03-17T08:35:03.869Z"
+}

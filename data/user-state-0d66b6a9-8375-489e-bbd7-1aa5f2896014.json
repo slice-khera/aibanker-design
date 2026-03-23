@@ -1,0 +1,30 @@
+{
+  "userId": "0d66b6a9-8375-489e-bbd7-1aa5f2896014",
+  "onboardingComplete": false,
+  "currentStep": "home",
+  "personaStage": "q1",
+  "goalStage": "choice",
+  "budgetStage": "digest",
+  "personaAnswers": {},
+  "goal": null,
+  "budgetOverrides": {},
+  "budgetStyle": null,
+  "bufferAmount": 4000,
+  "bufferRemaining": null,
+  "products": [],
+  "preferences": [],
+  "spendRatings": [
+    {
+      "txnId": "rtxn-2025-06-07-591",
+      "category": "Other / Uncategorized",
+      "amount": 591,
+      "rating": "regret",
+      "timeOfDay": "morning",
+      "ratedAt": "2026-03-23T11:10:55.221Z"
+    }
+  ],
+  "nudges": [],
+  "activeFlow": null,
+  "lastActiveAt": "2026-03-23T11:11:33.057Z",
+  "createdAt": "2026-03-23T11:01:28.819Z"
+}

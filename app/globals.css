@@ -5,18 +5,18 @@
   --foreground: #ededed;
   --chat-surface: #ffffff;
   --chat-surface-soft: #f6f9fc;
-  --chat-surface-soft-2: #eef2f5;
-  --chat-user-bubble: #f7edfb;
-  --chat-border-subtle: #eef2f5;
+  --chat-surface-soft-2: #f0f4f7;
+  --chat-user-bubble: #fae2fa;
+  --chat-border-subtle: #f0f4f7;
   --chat-text-primary: rgba(0, 0, 0, 0.9);
-  --chat-text-tertiary: rgba(0, 0, 0, 0.4);
+  --chat-text-tertiary: rgba(0, 0, 0, 0.5);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-rubik);
+  --font-mono: var(--font-rubik);
 }
 
 * {
@@ -29,7 +29,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-rubik), sans-serif;
 }
 
 /* ============ ANIMATIONS ============ */
@@ -161,10 +161,10 @@ body {
 
 @keyframes glow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 0 20px rgba(0, 166, 62, 0.2);
   }
   50% {
-    box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 30px rgba(0, 166, 62, 0.4);
   }
 }
 
@@ -259,6 +259,15 @@ body {
   animation: glow 2s ease-in-out infinite;
 }
 
+.animate-thinking-pulse {
+  animation: thinkingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes thinkingPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
 /* Staggered delays for chips */
 .animate-delay-1 { animation-delay: 0.05s; }
 .animate-delay-2 { animation-delay: 0.1s; }
@@ -331,7 +340,7 @@ body {
 }
 
 .text-gradient-success {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, #00a63e 0%, #3dbb6c 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -372,11 +381,11 @@ body {
   content: "";
   position: absolute;
   inset: 8px;
-  border-radius: 30px;
+  border-radius: 24px;
   background: #fff;
   box-shadow:
     0 0 0 0.5px rgba(255, 255, 255, 0.95),
-    0 0 10px 2px rgba(255, 255, 255, 0.55),
+    0 0 10px 2px rgba(255, 255, 255, 0.85),
     0 0 22px 8px rgba(255, 255, 255, 0.72);
   transition: box-shadow 220ms ease;
   opacity: 0;
@@ -416,4 +425,54 @@ body {
   .phone-screen-processing-band::before {
     animation: none;
   }
+}
+
+/* Variant for use inside the chat sheet — uses inset box-shadow ring instead
+   of the background+mask technique, so chat content is never covered */
+.phone-screen-processing-band--sheet::before,
+.phone-screen-processing-band--sheet::after {
+  display: none;
+}
+
+.phone-screen-processing-band--sheet.is-active {
+  background: transparent;
+  animation: sheetGlowCycle 1.8s linear infinite;
+}
+
+@keyframes sheetGlowCycle {
+  0%   { box-shadow: inset 0 0 8px 4px rgba(111,157,255,0.85); }
+  20%  { box-shadow: inset 0 0 8px 4px rgba(99,213,255,0.85);  }
+  40%  { box-shadow: inset 0 0 8px 4px rgba(206,120,255,0.85); }
+  60%  { box-shadow: inset 0 0 8px 4px rgba(255,103,191,0.85); }
+  80%  { box-shadow: inset 0 0 8px 4px rgba(255,178,77,0.85);  }
+  100% { box-shadow: inset 0 0 8px 4px rgba(111,157,255,0.85); }
+}
+
+/* ── DLS-branded glow variants ── */
+
+/* DLS base (conic gradient): Valentino ↔ Blue sweep */
+.phone-screen-processing-band.is-active.glow-dls {
+  background: conic-gradient(
+    from 0deg,
+    #2b6acf 0deg,
+    #6795d9 60deg,
+    #e87ae9 120deg,
+    #d30ad7 180deg,
+    #e040e2 240deg,
+    #4980d1 300deg,
+    #2b6acf 360deg
+  );
+}
+
+/* DLS sheet (inset box-shadow): Valentino ↔ Blue cycle */
+.phone-screen-processing-band--sheet.is-active.glow-dls {
+  animation: sheetGlowCycleDls 1.8s linear infinite;
+}
+
+@keyframes sheetGlowCycleDls {
+  0%   { box-shadow: inset 0 0 8px 4px rgba(43,106,207,0.8);  }
+  25%  { box-shadow: inset 0 0 8px 4px rgba(224,64,226,0.85);  }
+  50%  { box-shadow: inset 0 0 8px 4px rgba(211,10,215,0.85);  }
+  75%  { box-shadow: inset 0 0 8px 4px rgba(103,149,217,0.8);  }
+  100% { box-shadow: inset 0 0 8px 4px rgba(43,106,207,0.8);   }
 }

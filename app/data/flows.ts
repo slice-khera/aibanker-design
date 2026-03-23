@@ -103,23 +103,23 @@ export const amountChips: ChipOption[] = [
   { id: "1l", label: "₹1L", value: "₹1L" },
   { id: "5l", label: "₹5L", value: "₹5L" },
   { id: "10l", label: "₹10L", value: "₹10L" },
-  { id: "skip", label: "Not sure", value: "Not set" },
+];
+
+export const planConfirmChips: ChipOption[] = [
+  { id: "start-plan", label: "Start this plan" },
+  { id: "adjust-plan", label: "Adjust" },
+];
+
+export const planAdjustChips: ChipOption[] = [
+  { id: "change-pace", label: "Change pace" },
+  { id: "less-savings", label: "Use less savings" },
+  { id: "skip-auto", label: "Skip automation" },
 ];
 
 export const paceChoiceChips: ChipOption[] = [
   { id: "aggressive", label: "Aggressive" },
   { id: "balanced", label: "Balanced" },
   { id: "relaxed", label: "Relaxed" },
-];
-
-export const paceContinueChips: ChipOption[] = [
-  { id: "continue", label: "Continue to plan" },
-  { id: "tweak-pace", label: "Change pace" },
-];
-
-export const budgetReviewChips: ChipOption[] = [
-  { id: "approve-budget", label: "Looks good" },
-  { id: "edit-budget", label: "Edit budgets" },
 ];
 
 export const pinnedGoalChips: ChipOption[] = [
@@ -251,7 +251,7 @@ export function buildWrappedSlides(stats: ComputedStats): WrappedSlide[] {
     },
     {
       id: "wrapped-4",
-      headline: "Weekend warrior?",
+      headline: "Weekend spending",
       punchline: `Weekends account for ${stats.weekendPct}% of your lifestyle spending.`,
       stat: {
         label: "",
@@ -271,8 +271,8 @@ export function buildWrappedSlides(stats: ComputedStats): WrappedSlide[] {
     },
     {
       id: "wrapped-6",
-      headline: "Ready for reality?",
-      punchline: "Tell me what you think you do. Then I'll show you the receipts.",
+      headline: "How close were you?",
+      punchline: "Tell us what you think. Then see the actual data.",
     },
   ];
 }
