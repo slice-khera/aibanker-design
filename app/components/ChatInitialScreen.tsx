@@ -64,7 +64,7 @@ function LeakIcon() {
 const GREETINGS = [
   "Ready when you are, Rajan.",
   "What's on your mind, Rajan?",
-  "Rajan, let's look at the numbers.",
+  "Rajan, let's talk numbers.",
   "Rajan, where should we start?",
   "What are we solving today, Rajan?",
   "Rajan, how can I help?",

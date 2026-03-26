@@ -226,7 +226,7 @@ export function buildWrappedSlides(stats: ComputedStats): WrappedSlide[] {
   return [
     {
       id: "wrapped-1",
-      headline: "Your money wrapped",
+      headline: "Behind the numbers",
       punchline: `${stats.months} months analyzed. ${stats.totalTransactions} transactions. Here's what you need to see.`,
     },
     {

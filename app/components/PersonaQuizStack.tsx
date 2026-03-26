@@ -27,7 +27,7 @@ type PersonaQuizStackProps = {
 
 // ── Per-slide accent colors (tag bg/text and stat number) ───────
 const SLIDE_ACCENTS: { tag: string; color: string; tagBg: string }[] = [
-  { tag: "YOUR MONEY",      color: "#d30ad7", tagBg: "#fae2fa" }, // Valentino
+  { tag: "YOUR MONEY",       color: "#d30ad7", tagBg: "#fae2fa" }, // Valentino
   { tag: "TOP CATEGORY",    color: "#ff9a17", tagBg: "#fff3e3" }, // Orange
   { tag: "SMALL SPENDS",    color: "#ce1d26", tagBg: "#f9e4e5" }, // Red
   { tag: "WEEKENDS",        color: "#2b6acf", tagBg: "#e6edf9" }, // Blue
@@ -201,7 +201,7 @@ export default function PersonaQuizStack({
                   </h2>
 
                   {/* Body */}
-                  <p className="mt-3" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.7)", maxWidth: "90%" }}>
+                  <p className="mt-3" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.7)", maxWidth: "90%", whiteSpace: "pre-line" }}>
                     {slides[storyIndex].punchline}
                   </p>
 

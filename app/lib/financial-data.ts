@@ -191,14 +191,14 @@ export function computeWrappedSlides(): WrappedSlide[] {
   return [
     {
       id: "wrapped-1",
-      headline: "Your money wrapped",
-      punchline: `${months} months. \u20B9${totalFlowCr}Cr. ${data.dateRange.totalTransactions} transactions. Here's what we found hiding in them.`,
+      headline: "Behind the numbers",
+      punchline: `${months} months\n₹${totalFlowCr}Cr\n${data.dateRange.totalTransactions} transactions\n\nHere's what we found hiding in them.`,
     },
     {
       id: "wrapped-2",
       headline: "We found your Sri Lanka trip",
       punchline:
-        "Jan 29 \u2014 Colombo airport ATM. Feb 1 \u2014 Bentota beach resort. Then 5 ATM runs the day you got back.",
+        "Jan 29 — Colombo airport ATM\nFeb 1 — Bentota beach resort\n5 ATM runs the day you got back",
       stat: {
         label: "",
         value: formatINR(tripTotal),

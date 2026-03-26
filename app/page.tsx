@@ -103,6 +103,40 @@ const dynamicCategoryChips = buildDynamicAffordCategoryChips(
   lifestyleCategories.map((c) => c.name)
 );
 
+// Hard-coded insight slides for visual exploration
+const INSIGHT_SLIDES: import("./data/flows").WrappedSlide[] = [
+  {
+    id: "insight-1",
+    headline: "January 2026",
+    punchline: "6 transactions, 6 merchants",
+    stat: { label: "", value: "6", caption: "Your biggest spend was ₹160 at Dilkush." },
+  },
+  {
+    id: "insight-2",
+    headline: "0% needs, 100% wants",
+    punchline: "You spent ₹493 more than you earned this month.",
+    stat: { label: "", value: "-₹493", caption: "Down from last month." },
+  },
+  {
+    id: "insight-3",
+    headline: "S S B Enterprises overdue",
+    punchline: "S S B Enterprises is 92 days overdue.",
+    stat: { label: "", value: "92", caption: "This has been regular for 3 consecutive payments — worth checking." },
+  },
+  {
+    id: "insight-4",
+    headline: "Deepak N for 3 months",
+    punchline: "You've sent a total of ₹97,500 to DEEPAK N over the last 3 months!",
+    stat: { label: "", value: "₹97,500" },
+  },
+  {
+    id: "insight-5",
+    headline: "17 subscriptions dropped",
+    punchline: "You dropped 17 subscriptions this month, saving around ₹28,376!",
+    stat: { label: "", value: "₹28,376" },
+  },
+];
+
 // Category spending — initialized from real monthly averages (never mutates)
 const categorySpending: Record<string, number> = {};
 for (const cat of lifestyleCategories.slice(0, 6)) {
@@ -487,6 +521,7 @@ export default function Home() {
   const [personaRevealVisible, setPersonaRevealVisible] = useState(false);
   const [personaRevealData, setPersonaRevealData] = useState<RevealData | undefined>();
   const [personaStoryIndex, setPersonaStoryIndex] = useState(-1);
+  const [insightsMode, setInsightsMode] = useState(false);
 
   // Data-driven state (transient)
   const [dynamicPacePresets, setDynamicPacePresets] = useState<PacePreset[]>(profile.pace_presets);
@@ -1402,14 +1437,19 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
   };
 
   // ============ WRAPPED COMPLETE ============
+  const activeSlides = insightsMode ? INSIGHT_SLIDES : dynamicWrappedSlides;
   const handleStoryAdvance = useCallback(() => {
-    if (personaStoryIndex < dynamicWrappedSlides.length - 1) {
+    if (personaStoryIndex < activeSlides.length - 1) {
       setPersonaStoryIndex(personaStoryIndex + 1);
+    } else if (insightsMode) {
+      // Insights done — exit back to home
+      setInsightsMode(false);
+      mutate({ currentStep: "home" });
     } else {
       // Stories done — go straight to quiz Q1 (no cover card)
       setPersonaStoryIndex(-1);
     }
-  }, [personaStoryIndex]);
+  }, [personaStoryIndex, activeSlides.length, insightsMode, mutate]);
 
   const handleStoryBack = useCallback(() => {
     if (personaStoryIndex > 0) {
@@ -1432,6 +1472,26 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     setPersonaSubmitting(false);
     setPersonaRevealVisible(false);
     setPersonaStoryIndex(0);
+    setInsightsMode(false);
+    mutate({ currentStep: "persona", personaStage: "q1" });
+  }, [mutate]);
+
+  const openInsights = useCallback(() => {
+    setChatVisible(false);
+    setChatScreenPhase("closed");
+    setReviewMessages(null);
+    setGoalDetail(null);
+    setRdDetailVisible(false);
+    setMessages([]);
+    setActiveChips([]);
+    setPersonaDraftAnswers({});
+    setPersonaActiveIndex(0);
+    setPersonaCoverVisible(false);
+    setPersonaTransitioning(false);
+    setPersonaSubmitting(false);
+    setPersonaRevealVisible(false);
+    setPersonaStoryIndex(0);
+    setInsightsMode(true);
     mutate({ currentStep: "persona", personaStage: "q1" });
   }, [mutate]);
 
@@ -4008,7 +4068,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
               {step === "persona" ? (
                 <div className="absolute inset-0 z-30">
                   <PersonaQuizStack
-                    slides={dynamicWrappedSlides}
+                    slides={activeSlides}
                     storyIndex={personaStoryIndex}
                     onStoryAdvance={handleStoryAdvance}
                     onStoryBack={handleStoryBack}
@@ -4608,6 +4668,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
               <DbgRow label="Screens">
                 <DbgBtn onClick={closeChatOverlay}>Home</DbgBtn>
                 <DbgBtn onClick={openWrappedStories}>Stories v2</DbgBtn>
+                <DbgBtn onClick={openInsights}>Insights</DbgBtn>
               </DbgRow>
               <DbgRow label="Session">
                 <DbgBtn onClick={resetFlow}>Restart</DbgBtn>
