@@ -6,6 +6,28 @@ import ChatCard, { type ChatCardData } from "./ChatCards";
 import { AppBar, FooterInset, GestureNav, NavButton } from "./AppChrome";
 import { typography } from "../lib/typography";
 
+// ── Highlight currency & percentage values in assistant text ──
+const VALUE_RE = /₹[\d,.]+\s*[Lk]?|[\d,.]+%/g;
+
+function highlightValues(text: string): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = VALUE_RE.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    parts.push(
+      <span key={match.index} style={typography.buttonSmall}>{match[0]}</span>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts.length > 0 ? parts : text;
+}
+
 // ── Token-speed typewriter for scripted assistant messages ──
 // Reveals text ~3-5 chars at a time at ~30ms, matching Claude's streaming cadence.
 function useTypewriter(fullText: string, active: boolean, onComplete?: () => void) {
@@ -147,6 +169,7 @@ function ChatAppBar({
   hasScrolledContent = false,
   dragHandleOpacity = 1,
   hasUserMessages = false,
+  floating = false,
 }: {
   dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
   onClose?: () => void;
@@ -155,6 +178,7 @@ function ChatAppBar({
   hasScrolledContent?: boolean;
   dragHandleOpacity?: number;
   hasUserMessages?: boolean;
+  floating?: boolean;
 }) {
   if (isSheetMinimized) {
     return (
@@ -171,8 +195,7 @@ function ChatAppBar({
         {/* Label + chevron — truly centered in full 72px */}
         <div className="flex items-center w-full">
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 1 }}>
-            <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)", margin: 0 }}>AI Banker</p>
-            <p style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)", margin: 0 }}>
+            <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)", margin: 0 }}>
               {hasUserMessages ? "Continue chat" : "Start chat"}
             </p>
           </div>
@@ -190,14 +213,39 @@ function ChatAppBar({
     );
   }
 
+  const closeIcon = (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M18 6L6 18M6 6l12 12" stroke="rgba(0,0,0,0.7)" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+
   return (
-    <div className="w-full bg-white shrink-0">
+    <div className="w-full shrink-0">
       <AppBar
-        title="AI Banker"
-        shadow={hasScrolledContent}
+        backgroundColor={floating ? "transparent" : "#fff"}
         leading={(
           <div onPointerDown={(e) => e.stopPropagation()}>
-            <NavButton kind="close" onClick={onClose} ariaLabel="Close chat" />
+            {floating ? (
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close chat"
+                className="flex items-center justify-center rounded-full bg-white"
+                style={{ width: 48, height: 48, border: "1px solid rgba(0,0,0,0.08)" }}
+              >
+                {closeIcon}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close chat"
+                className="flex items-center justify-center"
+                style={{ width: 48, height: 48, background: "transparent", border: "none", cursor: "pointer", padding: 12 }}
+              >
+                {closeIcon}
+              </button>
+            )}
           </div>
         )}
       />
@@ -221,11 +269,10 @@ function TypeBox({
   return (
     <>
       <FooterInset
-        backgroundColor="#fff"
+        backgroundColor="transparent"
         paddingX={16}
         paddingTop={8}
         minBottomPadding={0}
-        boxShadow={showElevation ? "0 -12px 28px rgba(0,0,0,0.05)" : "none"}
       >
         {/* Type box — mirrors ChatInitialScreen exactly */}
         <div>
@@ -293,7 +340,7 @@ function Bubble({ message, typewrite = false }: { message: ChatMessage; typewrit
           </div>
         ) : (
           <p className="whitespace-pre-line text-[var(--chat-text-primary)] w-full" style={typography.bodySmall}>
-            {displayedText}
+            {highlightValues(displayedText)}
           </p>
         )
       )}
@@ -335,31 +382,30 @@ function AssistantOptionsCard({
     <div className="flex flex-col items-start w-full" style={{ gap: 16 }}>
       {surfaceText && (
         <p className="whitespace-pre-line text-[var(--chat-text-primary)] w-full" style={typography.bodySmall}>
-          {displayedSurface}
+          {highlightValues(displayedSurface)}
         </p>
       )}
       {(surfaceDone || !surfaceText) && (
-        <div className="w-full rounded-2xl bg-[var(--chat-surface-soft-2)] p-2">
-          <div
-            className={`overflow-hidden rounded-2xl bg-white transition-[max-height,opacity,margin] duration-250 ease-out ${
-              resolvedShowOptions ? "max-h-[420px] opacity-100" : "max-h-0 opacity-0"
-            }`}
-          >
-            {chips.slice(0, 6).map((chip, index) => (
-              <button
-                key={chip.id}
-                type="button"
-                onClick={() => onChipSelect(chip)}
-                disabled={!resolvedShowOptions}
-                className={`flex w-full items-center px-4 py-3 text-left transition hover:bg-[#f6f9fc] active:bg-[#f0f4f7] ${
-                  index > 0 ? "border-t border-[#f0f4f7]" : ""
-                }`}
-                style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.9)" }}
-              >
-                <span>{chip.label}</span>
-              </button>
-            ))}
-          </div>
+        <div
+          className={`w-full overflow-hidden transition-[max-height,opacity] duration-250 ease-out ${
+            resolvedShowOptions ? "max-h-[420px] opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          {chips.slice(0, 6).map((chip) => (
+            <button
+              key={chip.id}
+              type="button"
+              onClick={() => onChipSelect(chip)}
+              disabled={!resolvedShowOptions}
+              className="flex w-full items-center text-left transition active:bg-[rgba(0,0,0,0.05)]"
+              style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)", padding: "8px 0", minHeight: 48 }}
+            >
+              <span>{chip.label}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginLeft: 8 }}>
+                <path d="M9 6l6 6-6 6" stroke="rgba(0,0,0,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          ))}
         </div>
       )}
     </div>
@@ -378,27 +424,21 @@ function OptionList({
   if (chips.length === 0) return null;
 
   return (
-    <div className={`mr-auto w-full rounded-2xl bg-[var(--chat-surface-soft-2)] p-1 ${compactTop ? "mt-1" : ""}`}>
-      {!compactTop ? (
-        <div className="rounded-2xl bg-[var(--chat-surface-soft-2)] px-3 pt-3 pb-2">
-          <div className="h-2" />
-        </div>
-      ) : null}
-      <div className="overflow-hidden rounded-2xl bg-white">
-        {chips.slice(0, 6).map((chip, index) => (
-          <button
-            key={chip.id}
-            type="button"
-            onClick={() => onChipSelect(chip)}
-            className={`flex w-full items-center px-4 py-3 text-left transition hover:bg-[#f6f9fc] active:bg-[#f0f4f7] ${
-              index > 0 ? "border-t border-[#f0f4f7]" : ""
-            }`}
-            style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.9)" }}
-          >
-            <span className="truncate">{chip.label}</span>
-          </button>
-        ))}
-      </div>
+    <div className={`w-full ${compactTop ? "mt-1" : ""}`}>
+      {chips.slice(0, 6).map((chip) => (
+        <button
+          key={chip.id}
+          type="button"
+          onClick={() => onChipSelect(chip)}
+          className="flex w-full items-center text-left transition active:bg-[rgba(0,0,0,0.05)]"
+          style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)", padding: "8px 0", minHeight: 48 }}
+        >
+          <span className="truncate">{chip.label}</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginLeft: 8 }}>
+            <path d="M9 6l6 6-6 6" stroke="rgba(0,0,0,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      ))}
     </div>
   );
 }
@@ -705,18 +745,20 @@ export default function Chat({
 
       style={{ fontFamily: 'var(--font-rubik), var(--font-sans), system-ui, sans-serif', pointerEvents: 'none' }}
     >
-      {/* AppBar is always interactive — it holds the drag handle */}
-      <div style={{ pointerEvents: 'auto' }}>
-        <ChatAppBar
-          dragHandleProps={appBarDragHandleProps}
-          onClose={onSheetClose}
-          onExpand={onSheetExpand}
-          isSheetMinimized={isSheetMinimized}
-          hasScrolledContent={hasScrolledContent}
-          dragHandleOpacity={1}
-          hasUserMessages={messages.some((m) => m.role === "user")}
-        />
-      </div>
+      {/* AppBar in normal flow — for minimized mode and initial prompt screen */}
+      {(isSheetMinimized || initialPromptVisible) && (
+        <div style={{ pointerEvents: 'auto' }}>
+          <ChatAppBar
+            dragHandleProps={appBarDragHandleProps}
+            onClose={onSheetClose}
+            onExpand={onSheetExpand}
+            isSheetMinimized={isSheetMinimized}
+            hasScrolledContent={hasScrolledContent}
+            dragHandleOpacity={1}
+            hasUserMessages={messages.some((m) => m.role === "user")}
+          />
+        </div>
+      )}
 
       {/* Body — disabled when sheet is minimized so My Money behind receives all events */}
       <div
@@ -746,13 +788,28 @@ export default function Chat({
             <GestureNav />
           </>
         ) : (
-          <>
+          <div className="relative flex-1 overflow-hidden">
+            {/* Floating app bar — overlays scroll content */}
+            <div className="absolute top-0 left-0 right-0 z-10" style={{ pointerEvents: 'none' }}>
+              <div style={{ pointerEvents: 'auto' }}>
+                <ChatAppBar
+                  onClose={onSheetClose}
+                  isSheetMinimized={false}
+                  hasScrolledContent={hasScrolledContent}
+                  hasUserMessages={messages.some((m) => m.role === "user")}
+                  floating={true}
+                />
+              </div>
+            </div>
+
             <div
               ref={scrollContainerRef}
-              className="flex-1 w-full overflow-y-auto overscroll-contain pb-4 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-              style={{ paddingTop: 8 }}
+              className="absolute inset-0 w-full overflow-y-auto overscroll-contain scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              style={{ paddingTop: 8, overflowAnchor: "none" }}
             >
-              <div ref={contentRef} className="flex min-h-full flex-col justify-end px-6">
+              <div ref={contentRef} className="flex flex-col px-6">
+                {/* Top spacer so content clears the floating close button */}
+                <div className="shrink-0" aria-hidden="true" style={{ height: 108 }} />
                 {(drawerContent || pinnedContent) && (
                   <div className="mb-4 space-y-2">
                     {drawerContent ? (
@@ -801,22 +858,28 @@ export default function Chat({
 
                   {chips.length > 0 && renderedMessages.length === 0 ? <OptionList chips={chips} onChipSelect={onChipSelect} /> : null}
                 </div>
+                {/* Spacer so last content clears the floating input bar */}
+                <div className="shrink-0" aria-hidden="true" style={{ height: 120 }} />
               </div>
             </div>
 
-            <TypeBox
-              value={draft}
-              onChange={setDraft}
-              onSubmit={() => {
-                const text = draft.trim();
-                if (!text) return;
-                setDraft("");
-                onSubmit?.(text);
-              }}
-              placeholder={inputPlaceholder ?? "Start typing..."}
-              showElevation={hasContentBelow}
-            />
-          </>
+            <div className="absolute bottom-0 left-0 right-0" style={{ pointerEvents: 'none' }}>
+              <div style={{ pointerEvents: 'auto' }}>
+                <TypeBox
+                  value={draft}
+                  onChange={setDraft}
+                  onSubmit={() => {
+                    const text = draft.trim();
+                    if (!text) return;
+                    setDraft("");
+                    onSubmit?.(text);
+                  }}
+                  placeholder={inputPlaceholder ?? "Start typing..."}
+                  showElevation={hasContentBelow}
+                />
+              </div>
+            </div>
+          </div>
         )}
       </div>{/* end body */}
     </div>

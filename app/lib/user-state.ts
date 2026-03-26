@@ -36,6 +36,8 @@ export function createDefaultUserState(userId: string, bufferAmount: number): Us
     goalStage: "choice",
     budgetStage: "digest",
     personaAnswers: {},
+    obligations: null,
+    bigExpenses: null,
     goal: null,
     budgetOverrides: {},
     budgetStyle: null,

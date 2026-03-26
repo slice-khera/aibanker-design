@@ -18,41 +18,63 @@ type PersonaQuizStackProps = {
   onStoryBack: () => void;
   questions: PersonaQuestion[];
   activeIndex: number;
-  showCover: boolean;
   showReveal: boolean;
   revealData?: RevealData;
   isTransitioning: boolean;
-  onStart: () => void;
   onSelect: (questionIndex: number, chip: ChipOption) => void;
-  onBack: () => void;
   onRevealDone: () => void;
 };
 
+// ── Per-slide accent colors (tag bg/text and stat number) ───────
+const SLIDE_ACCENTS: { tag: string; color: string; tagBg: string }[] = [
+  { tag: "YOUR MONEY",      color: "#d30ad7", tagBg: "#fae2fa" }, // Valentino
+  { tag: "TOP CATEGORY",    color: "#ff9a17", tagBg: "#fff3e3" }, // Orange
+  { tag: "SMALL SPENDS",    color: "#ce1d26", tagBg: "#f9e4e5" }, // Red
+  { tag: "WEEKENDS",        color: "#2b6acf", tagBg: "#e6edf9" }, // Blue
+  { tag: "FOOD & DELIVERY", color: "#ff9a17", tagBg: "#fff3e3" }, // Orange
+  { tag: "READY?",          color: "#d30ad7", tagBg: "#fae2fa" }, // Valentino
+];
+
+// ── Diminishing stack: up to 5 visible layers ───────────────────
 const STACK_STYLES = [
-  { rotate: "2deg",    translateY: "6px" },
-  { rotate: "-1.5deg", translateY: "12px" },
+  { rotate: "2deg",    translateY: "6px",  opacity: 0.80, scale: 0.98 },
+  { rotate: "-1.5deg", translateY: "12px", opacity: 0.65, scale: 0.96 },
+  { rotate: "2.5deg",  translateY: "18px", opacity: 0.50, scale: 0.94 },
+  { rotate: "-2deg",   translateY: "24px", opacity: 0.35, scale: 0.92 },
+  { rotate: "3deg",    translateY: "30px", opacity: 0.20, scale: 0.90 },
 ];
 
-const STORY_GRADIENTS = [
-  "linear-gradient(135deg, #2b6acf 0%, #87068a 50%, #d30ad7 100%)",
-  "linear-gradient(135deg, #171a1f 0%, #650567 50%, #252a31 100%)",
-  "linear-gradient(135deg, #007e2f 0%, #006a28 50%, #00a63e 100%)",
-  "linear-gradient(135deg, #ce1d26 0%, #da535a 50%, #d30ad7 100%)",
-  "linear-gradient(135deg, #9d161d 0%, #ce1d26 50%, #a008a3 100%)",
-  "linear-gradient(135deg, #87068a 0%, #a008a3 50%, #d30ad7 100%)",
-];
+// ── DLS Tag component ───────────────────────────────────────────
+function Tag({ label, color, bg }: { label: string; color: string; bg: string }) {
+  return (
+    <span
+      style={{
+        ...typography.metadata,
+        textTransform: "uppercase",
+        color,
+        backgroundColor: bg,
+        borderRadius: 100,
+        padding: "4px 8px",
+        display: "inline-block",
+      }}
+    >
+      {label}
+    </span>
+  );
+}
 
-function NavForward({ onClick, dark }: { onClick: () => void; dark?: boolean }) {
+// ── Nav buttons — DLS icon-only, default context only ───────────
+function NavForward({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full focus-visible:outline-none active:scale-95"
-      style={{ backgroundColor: "#D30AD7" }}
+      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full focus-visible:outline-none active:scale-95 transition-colors"
+      style={{ backgroundColor: "#d30ad7", padding: 12 }}
     >
-      <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none" stroke="white" strokeWidth="2">
-        <path d="M4.5 10h9" strokeLinecap="round" />
-        <path d="m10.5 5 5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
+      <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="#ffffff" strokeWidth="2">
+        <path d="M5 12h12" strokeLinecap="round" />
+        <path d="m13 6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </button>
   );
@@ -63,17 +85,18 @@ function NavBack({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white focus-visible:outline-none active:scale-95"
-      style={{ border: "1.5px solid #D30AD7" }}
+      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full focus-visible:outline-none active:scale-95 transition-colors"
+      style={{ backgroundColor: "transparent", border: "1px solid rgba(0,0,0,0.2)", padding: 12 }}
     >
-      <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none" stroke="#D30AD7" strokeWidth="2">
-        <path d="M15.5 10h-9" strokeLinecap="round" />
-        <path d="m9.5 5-5 5 5 5" strokeLinecap="round" strokeLinejoin="round" />
+      <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="#d30ad7" strokeWidth="2">
+        <path d="M19 12H7" strokeLinecap="round" />
+        <path d="m11 6-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </button>
   );
 }
 
+// ── Main component ──────────────────────────────────────────────
 export default function PersonaQuizStack({
   slides,
   storyIndex,
@@ -81,64 +104,63 @@ export default function PersonaQuizStack({
   onStoryBack,
   questions,
   activeIndex,
-  showCover,
   showReveal,
   revealData,
   isTransitioning,
-  onStart,
   onSelect,
-  onBack,
   onRevealDone,
 }: PersonaQuizStackProps) {
   const activeQuestion = questions[activeIndex];
   const isStoryCard = storyIndex >= 0;
 
-  // Full deck: stories + cover + questions + reveal
-  const totalCards = slides.length + questions.length + 2;
+  // Full deck: stories + questions + reveal (no cover card)
+  const totalCards = slides.length + questions.length + 1;
   const currentPosition = isStoryCard
     ? storyIndex
-    : showCover
-      ? slides.length
-      : showReveal
-        ? slides.length + questions.length + 1
-        : slides.length + 1 + activeIndex;
-  const stackCount = Math.min(2, totalCards - currentPosition - 1);
-
-  // Active card background
-  const activeCardBg = isStoryCard
-    ? STORY_GRADIENTS[storyIndex % STORY_GRADIENTS.length]
     : showReveal
-      ? "radial-gradient(circle at top, #c03de0 0%, #8b20b5 50%, #5c1278 100%)"
-      : "white";
+      ? slides.length + questions.length
+      : slides.length + activeIndex;
+
+  // Diminishing stack
+  const remaining = totalCards - currentPosition - 1;
+  const stackCount = Math.min(STACK_STYLES.length, remaining);
+
+  // Active card background — white for everything except reveal
+  const activeCardBg = showReveal ? "#fae2fa" : "#ffffff";
+
+  // Accent for current story slide
+  const accent = isStoryCard ? SLIDE_ACCENTS[storyIndex % SLIDE_ACCENTS.length] : null;
 
   return (
     <div
-      className="relative flex h-full flex-col rounded-[16px] bg-[radial-gradient(circle_at_top,#fff_0%,#f7f8fb_45%,#edf0f5_100%)]"
+      className="relative flex h-full flex-col rounded-[16px]"
       style={{
         fontFamily: "var(--font-rubik), var(--font-sans), system-ui, sans-serif",
         paddingTop: Math.max(STATUS_BAR_HEIGHT, 24),
         color: "rgba(0,0,0,0.9)",
+        backgroundColor: "#ffffff",
       }}
     >
       <div className="flex-1 p-6">
         <div className="relative mx-auto h-full max-w-[332px]">
-          {/* Stack background cards */}
-          {Array.from({ length: stackCount }, (_, i) => i).reverse().map((slot, stackOffset) => {
-            const depth = stackCount - stackOffset;
-            const style = STACK_STYLES[slot] ?? STACK_STYLES[0];
+          {/* ── Diminishing stack background cards ── */}
+          {Array.from({ length: stackCount }, (_, i) => i).reverse().map((slot) => {
+            const depth = stackCount - slot;
+            const layer = STACK_STYLES[slot] ?? STACK_STYLES[0];
             return (
               <div
-                key={slot}
+                key={`stack-${slot}`}
                 className="absolute inset-x-0 rounded-[24px] bg-white shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm"
                 style={{
                   top: 12,
                   bottom: 80,
                   left: 16,
                   right: 16,
-                  transform: `translateY(${style.translateY}) rotate(${style.rotate})`,
-                  opacity: 0.85 - depth * 0.1,
+                  transform: `translateY(${layer.translateY}) rotate(${layer.rotate}) scale(${layer.scale})`,
+                  opacity: layer.opacity,
                   transformOrigin: "center center",
                   zIndex: 10 - depth,
+                  transition: "opacity 300ms ease, transform 300ms ease",
                 }}
                 aria-hidden="true"
               >
@@ -159,41 +181,41 @@ export default function PersonaQuizStack({
             );
           })}
 
-          {/* Active card */}
+          {/* ── Active card ── */}
           <div
-            className={`absolute inset-x-0 top-3 bottom-20 rounded-[24px] p-6 shadow-[0_32px_90px_rgba(15,23,42,0.14)] backdrop-blur transition-opacity duration-200 ${isTransitioning ? "opacity-0" : "opacity-100"}`}
-            style={{ zIndex: 20, background: activeCardBg }}
+            className={`absolute inset-x-0 top-3 bottom-20 rounded-[24px] p-6 shadow-[0_32px_90px_rgba(15,23,42,0.14)] transition-opacity duration-200 ${isTransitioning ? "opacity-0" : "opacity-100"}`}
+            style={{ zIndex: 20, backgroundColor: activeCardBg }}
           >
-            {isStoryCard ? (
+            {isStoryCard && accent ? (
               // ── Story card ──────────────────────────────────────────
               <div className="flex h-full flex-col">
-                {/* Content */}
-                <div className="flex flex-col flex-1 justify-between">
-                  <div>
-                    <h2
-                      className="text-white mb-3"
-                      style={{ ...typography.headerH2, textShadow: "0 2px 20px rgba(0,0,0,0.4)" }}
-                    >
-                      {slides[storyIndex].headline}
-                    </h2>
-                    <p
-                      className="text-white/80"
-                      style={{ ...typography.bodySmall, maxWidth: "90%" }}
-                    >
-                      {slides[storyIndex].punchline}
-                    </p>
+                <div className="flex flex-1 flex-col">
+                  {/* Tag */}
+                  <div className="mb-4">
+                    <Tag label={accent.tag} color={accent.color} bg={accent.tagBg} />
                   </div>
 
+                  {/* Headline */}
+                  <h2 style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)" }}>
+                    {slides[storyIndex].headline}
+                  </h2>
+
+                  {/* Body */}
+                  <p className="mt-3" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.7)", maxWidth: "90%" }}>
+                    {slides[storyIndex].punchline}
+                  </p>
+
+                  {/* Stat */}
                   {slides[storyIndex].stat && (
                     <div className="mt-auto pt-4">
                       <p
-                        className="text-white"
-                        style={{ ...typography.headerH1, textShadow: "0 4px 24px rgba(0,0,0,0.4)" }}
+                        className="animate-[fadeInUp_0.4s_ease-out]"
+                        style={{ ...typography.displaySmall, color: accent.color }}
                       >
                         {slides[storyIndex].stat!.value}
                       </p>
                       {slides[storyIndex].stat!.caption && (
-                        <p className="text-white/70 mt-1" style={typography.caption}>
+                        <p className="mt-1" style={{ ...typography.caption, color: "rgba(0,0,0,0.5)" }}>
                           {slides[storyIndex].stat!.caption}
                         </p>
                       )}
@@ -206,62 +228,76 @@ export default function PersonaQuizStack({
                   {storyIndex > 0 ? (
                     <NavBack onClick={onStoryBack} />
                   ) : (
-                    <div className="h-10 w-10" />
+                    <div className="h-12 w-12" />
                   )}
                   <NavForward onClick={onStoryAdvance} />
                 </div>
               </div>
+
             ) : showReveal && revealData ? (
               // ── Reveal card ─────────────────────────────────────────
               <div className="flex h-full flex-col">
-                <div>
-                  <p className="uppercase text-white/60" style={typography.caption}>Reality check</p>
-                  <h2 className="mt-3 text-white" style={typography.headerH1}>
-                    Here's what your money actually does.
-                  </h2>
+                {/* Tag */}
+                <div className="mb-4">
+                  <Tag label="REALITY CHECK" color="#ffffff" bg="#d30ad7" />
                 </div>
 
+                {/* Headline */}
+                <h2 style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)" }}>
+                  Here&apos;s what your money actually does.
+                </h2>
+
+                {/* Comparison blocks */}
                 <div className="mt-6 space-y-4">
-                  <p className="text-white/70" style={typography.bodySmall}>
-                    Here's how close you were 👀
-                  </p>
-                  <p className="text-white/70" style={typography.bodySmall}>
-                    Savings: you guessed <span className="text-white" style={typography.buttonSmall}>{revealData.savingsGuess}</span> → actual <span className="text-white" style={typography.buttonSmall}>{revealData.savingsActual}</span>.
-                  </p>
-                  <p className="text-white/70" style={typography.bodySmall}>
-                    Persona: you called yourself a <span className="text-white" style={typography.buttonSmall}>"{revealData.personaGuess}"</span> → reality is <span className="text-white" style={typography.buttonSmall}>"{revealData.personaActual}"</span> 😅
-                  </p>
-                  <p className="text-white/70" style={typography.bodySmall}>
-                    Good news: you're not bad with money — your money just has habits.
-                  </p>
+                  {/* Savings comparison */}
+                  <div className="rounded-2xl bg-white/60 p-4">
+                    <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.5)" }}>Savings</p>
+                    <div className="mt-2 flex items-baseline gap-3">
+                      <span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>{revealData.savingsGuess}</span>
+                      <span style={{ ...typography.caption, color: "rgba(0,0,0,0.3)" }}>&rarr;</span>
+                      <span style={{ ...typography.headerH3, color: "#d30ad7" }}>{revealData.savingsActual}</span>
+                    </div>
+                  </div>
+
+                  {/* Persona comparison */}
+                  <div className="rounded-2xl bg-white/60 p-4">
+                    <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.5)" }}>Persona</p>
+                    <div className="mt-2 flex items-baseline gap-3">
+                      <span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>&ldquo;{revealData.personaGuess}&rdquo;</span>
+                      <span style={{ ...typography.caption, color: "rgba(0,0,0,0.3)" }}>&rarr;</span>
+                      <span style={{ ...typography.headerH3, color: "#d30ad7" }}>&ldquo;{revealData.personaActual}&rdquo;</span>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="mt-auto flex items-center justify-end pt-6">
+                {/* Bottom copy */}
+                <p className="mt-4" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.7)" }}>
+                  Your money just has habits. Let&apos;s work with them.
+                </p>
+
+                <div className="mt-auto flex items-center justify-end pt-4">
                   <NavForward onClick={onRevealDone} />
                 </div>
               </div>
-            ) : showCover ? (
-              // ── Cover card ──────────────────────────────────────────
-              <div className="flex h-full flex-col">
-                <div className="space-y-4">
-                  <h2 className="max-w-[270px] text-[rgba(0,0,0,0.9)]" style={typography.headerH1}>
-                    Tell me how you think your money behaves.
-                  </h2>
-                </div>
 
-                <div className="mt-auto flex items-center justify-end pt-6">
-                  <NavForward onClick={onStart} />
-                </div>
-              </div>
             ) : activeQuestion ? (
               // ── Question card ────────────────────────────────────────
               <div className="flex h-full flex-col">
-                <div className="space-y-4">
-                  <h2 className="max-w-[260px] text-[rgba(0,0,0,0.9)]" style={typography.headerH1}>
-                    {activeQuestion.text}
-                  </h2>
+                {/* Question counter tag */}
+                <div className="mb-4">
+                  <Tag
+                    label={`QUESTION ${activeIndex + 1} OF ${questions.length}`}
+                    color="rgba(0,0,0,0.5)"
+                    bg="#eaebed"
+                  />
                 </div>
 
+                {/* Question text */}
+                <h2 style={{ ...typography.headerH2, color: "rgba(0,0,0,0.9)", maxWidth: "90%" }}>
+                  {activeQuestion.text}
+                </h2>
+
+                {/* Chips */}
                 <div className="mt-auto space-y-3 overflow-y-auto pr-1 pt-6">
                   {activeQuestion.chips.map((chip) => (
                     <button
@@ -269,10 +305,10 @@ export default function PersonaQuizStack({
                       type="button"
                       onClick={() => onSelect(activeIndex, chip)}
                       disabled={isTransitioning}
-                      className="flex w-full items-center justify-between border bg-white text-left disabled:cursor-not-allowed disabled:opacity-60"
-                      style={{ borderRadius: 100, borderColor: "rgba(0,0,0,0.2)", padding: "8px 16px" }}
+                      className="flex w-full items-center justify-between border bg-white text-left disabled:cursor-not-allowed disabled:opacity-60 active:bg-[#fae2fa] active:border-[#d30ad7] transition-colors duration-150"
+                      style={{ borderRadius: 100, borderColor: "#eaebed", padding: "8px 16px" }}
                     >
-                      <span className="text-[rgba(0,0,0,0.9)]" style={typography.buttonSmall}>{chip.label}</span>
+                      <span style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.9)" }}>{chip.label}</span>
                     </button>
                   ))}
                 </div>

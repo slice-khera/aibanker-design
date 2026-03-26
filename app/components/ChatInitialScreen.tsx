@@ -61,9 +61,27 @@ function LeakIcon() {
 
 // ── Component ──────────────────────────────────────────────────────────────
 
+const GREETINGS = [
+  "Ready when you are, Rajan.",
+  "What's on your mind, Rajan?",
+  "Rajan, let's look at the numbers.",
+  "Rajan, where should we start?",
+  "What are we solving today, Rajan?",
+  "Rajan, how can I help?",
+  "Good to see you, Rajan.",
+  "Rajan, what would you like to check?",
+  "What's the plan today, Rajan?",
+  "Rajan, I'm all ears.",
+];
+
+function pickGreeting(): string {
+  return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+}
+
 export function InitialPromptContent({ suggestions, onSuggestionClick, onSubmit }: Props) {
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const [greeting] = useState(pickGreeting);
 
   const handleSubmit = () => {
     const text = inputValue.trim();
@@ -82,7 +100,7 @@ export function InitialPromptContent({ suggestions, onSuggestionClick, onSubmit 
             color: "rgba(0,0,0,0.9)",
           }}
         >
-          Ready when you are.
+          {greeting}
         </h1>
       </div>
 
@@ -200,7 +218,6 @@ export default function ChatInitialScreen({ suggestions, onSuggestionClick, onSu
       style={{ fontFamily: "var(--font-rubik), sans-serif" }}
     >
       <AppBar
-        title="AI Banker"
         leading={<NavButton kind="close" ariaLabel="Close" />}
       />
 

@@ -13,6 +13,8 @@ function createDefaultUserState(userId: string, bufferAmount: number): UserState
     goalStage: "choice",
     budgetStage: "digest",
     personaAnswers: {},
+    obligations: null,
+    bigExpenses: null,
     goal: null,
     budgetOverrides: {},
     budgetStyle: null,

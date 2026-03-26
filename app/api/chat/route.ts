@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deriveProfile } from "../../lib/financial-data";
 import { buildSystemPrompt, streamChat } from "../../lib/ai";
-import { searchMemories, storeMemory } from "../../lib/mem0";
+import { searchMemories } from "../../lib/mem0";
 import type { ChatRequest } from "../../lib/types";
 
 export async function POST(request: NextRequest) {
@@ -30,43 +30,8 @@ export async function POST(request: NextRequest) {
     // Build system prompt with data + memories + context
     const systemPrompt = buildSystemPrompt(profile, memories, context);
 
-    // Stream Claude response
+    // Stream Claude response directly to client (no tee — avoids buffering)
     const stream = await streamChat(messages, systemPrompt);
-
-    // Store conversation in Mem0 (non-blocking, after response starts)
-    if (userId && latestUserMessage) {
-      // Collect the full response for memory storage
-      const [streamForClient, streamForMemory] = stream.tee();
-
-      // Store in background
-      (async () => {
-        try {
-          const reader = streamForMemory.getReader();
-          const decoder = new TextDecoder();
-          let fullResponse = "";
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            fullResponse += decoder.decode(value);
-          }
-          if (fullResponse) {
-            await storeMemory(userId, [
-              { role: "user", content: latestUserMessage.content },
-              { role: "assistant", content: fullResponse },
-            ]);
-          }
-        } catch {
-          console.warn("Failed to store conversation in Mem0");
-        }
-      })();
-
-      return new Response(streamForClient, {
-        headers: {
-          "Content-Type": "text/plain; charset=utf-8",
-          "Transfer-Encoding": "chunked",
-        },
-      });
-    }
 
     return new Response(stream, {
       headers: {

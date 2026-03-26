@@ -168,7 +168,7 @@ export type FlowStep = "wrapped" | "persona" | "reality" | "goal" | "budget" | "
 
 export type PersonaStage = "q1" | "q2" | "q2-follow" | "q3" | "q4";
 export type GoalStage = "choice" | "destination" | "timeline" | "amount" | "savings-ask" | "plan" | "plan-adjust" | "pinned";
-export type BudgetStage = "digest" | "onTrack" | "lever" | "budgetChoice" | "budgetStyle" | "action" | "actionConfirm";
+export type BudgetStage = "obligations" | "digest" | "onTrack" | "lever" | "budgetChoice" | "budgetStyle" | "bigExpenses" | "action" | "actionConfirm";
 export type HomeSubflow =
   | "idle"
   | "afford-amount"
@@ -202,6 +202,28 @@ export type Preference = {
   createdAt: string;
 };
 
+// ============ OBLIGATION / BIG EXPENSE TYPES ============
+
+export type ObligationItem = {
+  id: string;
+  payee: string;
+  amount: number;
+  type: string;
+  frequency: string;
+  seenMonths: string;
+  lastPaid: string;
+  confidence: number;
+};
+
+export type BigExpenseItem = {
+  id: string;
+  payee: string;
+  date: string;
+  type: string;
+  amount: number;
+  narration?: string;
+};
+
 // ============ USER STATE (persistent) ============
 
 export type UserState = {
@@ -212,6 +234,17 @@ export type UserState = {
   goalStage: GoalStage;
   budgetStage: BudgetStage;
   personaAnswers: Record<string, string>;
+
+  obligations: {
+    confirmed: { payee: string; amount: number; type: string }[];
+    totalFixed: number;
+    remainingAfterFixed: number;
+  } | null;
+
+  bigExpenses: {
+    acknowledged: boolean;
+    upcoming: { description: string; amount: number }[];
+  } | null;
 
   goal: {
     name: string;

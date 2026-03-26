@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useRef, type ReactNode } from "react";
 import Chat, { type ChatChip, type ChatMessage } from "./components/Chat";
-import ChatCard, { type ChatCardData, type CardVariant, CATEGORY_ICONS, CATEGORY_COLORS } from "./components/ChatCards";
+import ChatCard, { type ChatCardData, CATEGORY_ICONS, CATEGORY_COLORS } from "./components/ChatCards";
 import PersonaQuizStack, { type RevealData } from "./components/PersonaQuizStack";
 import { getSuggestions } from "./components/ChatInitialScreen";
 import { AppBar, BOTTOM_INSET, NavButton } from "./components/AppChrome";
@@ -112,7 +112,7 @@ for (const cat of lifestyleCategories.slice(0, 6)) {
 // ─── Debug panel: card fixtures ────────────────────────────────
 const DBG_SPEND_OVERVIEW: ChatCardData = {
   type: "spend-overview",
-  month: "February",
+  month: "Feb",
   amount: 78400,
   comparisonText: "12% higher than your average",
   chartData: [
@@ -127,19 +127,19 @@ const DBG_SPEND_OVERVIEW: ChatCardData = {
   highlightIndex: 5,
 };
 
-const DBG_CATEGORIES: ChatCardData = {
+const DBG_CATEGORY_BAR: ChatCardData = {
   type: "category-breakdown",
-  month: "February",
+  month: "Feb",
   amount: 78400,
-  subtext: "Across 7 categories",
+  subtext: "across 12 categories",
+  showAll: true,
   categories: [
     { name: "Food & Delivery", amount: 22400, pct: 29, color: "#ff9a17", icon: "🍔" },
     { name: "Shopping", amount: 18600, pct: 24, color: "#d30ad7", icon: "🛍️" },
     { name: "Transport", amount: 11200, pct: 14, color: "#2b6acf", icon: "🚗" },
-    { name: "Subscriptions", amount: 8400, pct: 11, color: "#5e8edb", icon: "📱" },
-    { name: "Utilities", amount: 7800, pct: 10, color: "#ffb24f", icon: "💡" },
-    { name: "Entertainment", amount: 6000, pct: 8, color: "#87068a", icon: "🎬" },
-    { name: "Other", amount: 4000, pct: 5, color: "#8e949d", icon: "📦" },
+    { name: "Subscriptions", amount: 8400, pct: 11, color: "#00a63e", icon: "📱" },
+    { name: "Utilities", amount: 7800, pct: 10, color: "#ce1d26", icon: "💡" },
+    { name: "Other", amount: 10000, pct: 13, color: "#8e949d", icon: "📦" },
   ],
 };
 
@@ -217,6 +217,111 @@ const DBG_SAVINGS_PLAN: ChatCardData = {
   timelineLabel: "11 months · Dec 2025",
 };
 
+const DBG_MERCHANT_BAR: ChatCardData = {
+  type: "merchant-concentration",
+  month: "Feb",
+  totalSpend: 78400,
+  totalMerchants: 23,
+  merchants: [
+    { name: "Swiggy", amount: 14200, pct: 18, color: "#ff9a17" },
+    { name: "Amazon", amount: 12800, pct: 16, color: "#d30ad7" },
+    { name: "Uber", amount: 8400, pct: 11, color: "#2b6acf" },
+    { name: "BigBasket", amount: 6200, pct: 8, color: "#00a63e" },
+    { name: "Zomato", amount: 5800, pct: 7, color: "#ce1d26" },
+  ],
+};
+
+const DBG_CATEGORY_MOM: ChatCardData = {
+  type: "category-mom",
+  thisMonth: "Feb",
+  lastMonth: "Jan",
+  categories: [
+    { name: "Food", thisValue: 22400, lastValue: 18000, color: "#ff9a17" },
+    { name: "Shopping", thisValue: 18600, lastValue: 21000, color: "#d30ad7" },
+    { name: "Transport", thisValue: 11200, lastValue: 9800, color: "#2b6acf" },
+    { name: "Utilities", thisValue: 7800, lastValue: 7200, color: "#00a63e" },
+    { name: "Fun", thisValue: 6000, lastValue: 8400, color: "#ce1d26" },
+  ],
+};
+
+const DBG_SPEND_TREND: ChatCardData = {
+  type: "spend-trend",
+  month: "Feb",
+  chartData: [
+    { label: "Sep", value: 58000 },
+    { label: "Oct", value: 63200 },
+    { label: "Nov", value: 71000 },
+    { label: "Dec", value: 89500 },
+    { label: "Jan", value: 66800 },
+    { label: "Feb", value: 78400 },
+  ],
+  average: 67200,
+  highlightIndex: 5,
+};
+
+const DBG_HEATMAP: ChatCardData = {
+  type: "spending-heatmap",
+  month: "Feb",
+  year: 2025,
+  startDay: 5, // Feb 1 2025 = Saturday → index 5 (Mon=0)
+  dailySpend: [
+    3200, 0, 1800, 4500, 2200, 6800, 1200,
+    900, 3400, 5100, 2800, 0, 7200, 1500,
+    2100, 4200, 3800, 1100, 8500, 2400, 600,
+    3900, 5600, 2000, 1400, 4800, 3100, 7800,
+  ],
+  maxSpend: 8500,
+};
+
+const DBG_DONUT_V2: ChatCardData = {
+  type: "payment-mode-donut-v2",
+  month: "Feb",
+  totalSpend: 78400,
+  modes: [
+    { name: "UPI", amount: 41200, pct: 53, color: "#d30ad7" },
+    { name: "Credit Card", amount: 22100, pct: 28, color: "#2b6acf" },
+    { name: "Debit Card", amount: 9400, pct: 12, color: "#ff9a17" },
+    { name: "NEFT/IMPS", amount: 3800, pct: 5, color: "#00a63e" },
+    { name: "Cash", amount: 1900, pct: 2, color: "#8e949d" },
+  ],
+};
+
+const DBG_TXN_TABLE: ChatCardData = {
+  type: "transaction-table",
+  title: "Recent transactions",
+  transactions: [
+    { date: "28 Feb", merchant: "Swiggy", amount: 486, category: "Food" },
+    { date: "27 Feb", merchant: "Amazon", amount: 2499, category: "Shopping" },
+    { date: "27 Feb", merchant: "Uber", amount: 342, category: "Transport" },
+    { date: "26 Feb", merchant: "BigBasket", amount: 1850, category: "Groceries" },
+    { date: "25 Feb", merchant: "Zomato", amount: 720, category: "Food" },
+  ],
+};
+
+const DBG_OBLIGATIONS_V2: ChatCardData = {
+  type: "obligations-list-v2",
+  items: [
+    { id: "v2-1", payee: "Satya Prak", amount: 21700, type: "Rent/EMI", seenMonths: "3/4 months" },
+    { id: "v2-2", payee: "Satishk019", amount: 4000, type: "P2P", seenMonths: "3/4 months" },
+    { id: "v2-3", payee: "Vinod Kumar", amount: 3000, type: "P2P", seenMonths: "3/4 months" },
+    { id: "v2-4", payee: "Mukesh Kumar", amount: 2500, type: "P2P", seenMonths: "4/4 months" },
+    { id: "v2-5", payee: "Delhi Metro", amount: 1500, type: "Utility", seenMonths: "3/4 months" },
+  ],
+  monthlyIncome: 27000,
+};
+
+const DBG_BIG_EXPENSES: ChatCardData = {
+  type: "big-expenses",
+  transactions: [
+    { id: "big-1", payee: "Jasvinder", date: "26 Feb 2026", type: "P2P", amount: 99000 },
+    { id: "big-2", payee: "Avigayen55", date: "25 Dec 2025", type: "P2P", amount: 35000 },
+    { id: "big-3", payee: "Transfer", date: "06 Nov 2025", type: "P2P", amount: 30000 },
+    { id: "big-4", payee: "Jayram Pra", date: "12 Nov 2025", type: "P2P", amount: 30000 },
+  ],
+  periodLabel: "in last 5 months",
+  total: 194000,
+};
+
 // ─── Debug panel: UI helpers ────────────────────────────────────
 function DbgBtn({
   children,
@@ -234,10 +339,10 @@ function DbgBtn({
       onClick={onClick}
       className={`rounded-full border px-3 py-1 text-xs transition-all active:scale-95 whitespace-nowrap ${
         destructive
-          ? "border-red-200 bg-white text-red-500 hover:bg-red-50"
+          ? "border-red-200 bg-white text-red-500"
           : active
           ? "border-[#3dbb6c] bg-[#e0f4e8] text-[#008830]"
-          : "border-[rgba(0,0,0,0.2)] bg-white text-[#8e949d] hover:border-[#78808b] hover:text-[#4e5866]"
+          : "border-[rgba(0,0,0,0.2)] bg-white text-[#8e949d]"
       }`}
     >
       {children}
@@ -303,7 +408,7 @@ export default function Home() {
       text: "February was a bit heavier than usual — ₹78,400 total, about 12% above your average.",
       card: {
         type: "spend-overview",
-        month: "February",
+        month: "Feb",
         amount: 78400,
         comparisonText: "12% higher than your average",
         chartData: [
@@ -324,17 +429,16 @@ export default function Home() {
       text: "Food and shopping led the month. Here's the full breakdown.",
       card: {
         type: "category-breakdown",
-        month: "February",
+        month: "Feb",
         amount: 78400,
-        subtext: "Across 7 categories",
+        subtext: "across 12 categories",
         categories: [
           { name: "Food & Delivery", amount: 22400, pct: 29, color: "#ff9a17", icon: "🍔" },
           { name: "Shopping", amount: 18600, pct: 24, color: "#d30ad7", icon: "🛍️" },
           { name: "Transport", amount: 11200, pct: 14, color: "#2b6acf", icon: "🚗" },
-          { name: "Subscriptions", amount: 8400, pct: 11, color: "#5e8edb", icon: "📱" },
-          { name: "Utilities", amount: 7800, pct: 10, color: "#ffb24f", icon: "💡" },
-          { name: "Entertainment", amount: 6000, pct: 8, color: "#87068a", icon: "🎬" },
-          { name: "Other", amount: 4000, pct: 5, color: "#8e949d", icon: "📦" },
+          { name: "Subscriptions", amount: 8400, pct: 11, color: "#00a63e", icon: "📱" },
+          { name: "Utilities", amount: 7800, pct: 10, color: "#ce1d26", icon: "💡" },
+          { name: "Other", amount: 10000, pct: 13, color: "#8e949d", icon: "📦" },
         ],
       },
     },
@@ -391,8 +495,6 @@ export default function Home() {
   const [receiptsOpen, setReceiptsOpen] = useState(false);
   const [insightIndex, setInsightIndex] = useState(0);
   const [isAgentProcessingGlow, setIsAgentProcessingGlow] = useState(false);
-  const [debugGlow, setDebugGlow] = useState<"off" | "sheet" | "base">("off");
-  const [debugGlowPalette, setDebugGlowPalette] = useState<"rainbow" | "dls">("rainbow");
   const [debugPanelOpen, setDebugPanelOpen] = useState(true);
   const [chatVisible, setChatVisible] = useState(false);
   const [chatScreenPhase, setChatScreenPhase] = useState<"closed" | "entering" | "open" | "exiting">("closed");
@@ -400,10 +502,22 @@ export default function Home() {
   const [goalDetail, setGoalDetail] = useState<GoalDetailSnapshot | null>(null);
   const [showInitialScreen, setShowInitialScreen] = useState(true);
   const [rdDetailVisible, setRdDetailVisible] = useState(false);
-  const [debugCardVariant, setDebugCardVariant] = useState<CardVariant>("card");
   const [fdSheetPhase, setFdSheetPhase] = useState<"closed" | "entering" | "open">("closed");
   const [fdSheetData, setFdSheetData] = useState<Extract<ChatCardData, { type: "investment-product" }> | null>(null);
   const [fdSelectedAmount, setFdSelectedAmount] = useState(0);
+
+  // ── Obligation detail sheet state ──
+  const [obligSheetPhase, setObligSheetPhase] = useState<"closed" | "entering" | "open">("closed");
+  const [obligSheetItem, setObligSheetItem] = useState<{ id: string; payee: string; amount: number; type: string; seenMonths: string; lastPaid: string } | null>(null);
+  const [obligEditAmount, setObligEditAmount] = useState(0);
+  // Track which suggested items are selected + edited amounts for obligations card
+  const [obligSelectedIds, setObligSelectedIds] = useState<Set<string>>(new Set());
+  const [obligEditedAmounts, setObligEditedAmounts] = useState<Record<string, number>>({});
+  const [obligSubmitted, setObligSubmitted] = useState(false);
+
+  // ── Big expense detail sheet state ──
+  const [bigExpSheetPhase, setBigExpSheetPhase] = useState<"closed" | "entering" | "open">("closed");
+  const [bigExpSheetItem, setBigExpSheetItem] = useState<{ id: string; payee: string; date: string; type: string; amount: number } | null>(null);
 
   // ── Chat sheet drag state ──────────────────────────────────────────────
   const SNAP_THRESHOLD = 60;
@@ -697,6 +811,14 @@ export default function Home() {
           ...prev,
           { role: "assistant" as const, content: fullResponse },
         ]);
+        // Store conversation in Mem0 (fire-and-forget)
+        if (userId) {
+          fetch("/api/memory/conversation", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, userMessage: text, assistantMessage: fullResponse }),
+          }).catch(() => {});
+        }
       } else {
         // Remove empty placeholder, show error
         setMessages((prev) => prev.filter((m) => m.id !== streamMsgId));
@@ -1284,8 +1406,8 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     if (personaStoryIndex < dynamicWrappedSlides.length - 1) {
       setPersonaStoryIndex(personaStoryIndex + 1);
     } else {
+      // Stories done — go straight to quiz Q1 (no cover card)
       setPersonaStoryIndex(-1);
-      setPersonaCoverVisible(true);
     }
   }, [personaStoryIndex]);
 
@@ -1317,7 +1439,6 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
   // ============ PERSONA FLOW ============
   const handlePersonaAnswer = (questionIndex: number, chip: ChipOption) => {
     if (personaTransitioning || personaSubmitting) return;
-    setPersonaCoverVisible(false);
 
     const question = personaQuestions[questionIndex];
     if (!question) return;
@@ -1429,9 +1550,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     setReceiptsOpen(false);
     showChatOverlay(false);
 
-    queueMessage("assistant", "You don't have bad habits, your money just has habits.");
-    queueMessage("assistant", "Let's set up a savings goal.");
-    queueMessage("assistant", "What are you saving toward?");
+    queueMessage("assistant", "You don't have bad habits, your money just has habits. Let's set up a savings goal — what are you saving toward?");
 
     goalOnboardingTimerRef.current = window.setTimeout(() => {
       setActiveChips(toChips(goalChips));
@@ -1690,18 +1809,13 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     const totalInvested = profile.investmentSummary.totalInvested;
 
     if (totalInvested > 0) {
-      // Ask before applying existing investments — 3 separate messages
       mutate({ goalStage: "savings-ask" });
-      queueMessage("assistant", `${goalName}. ${amount}. ${timeline}. Got it.`);
+      queueMessage("assistant", `${goalName}. ${amount}. ${timeline}. Got it. I can see you have ${formatINR(totalInvested)} in investments — would you like to count that toward this goal?`);
       setTimeout(() => {
-        queueMessage("assistant", `I can see you have ${formatINR(totalInvested)} in investments.`);
-        setTimeout(() => {
-          queueMessage("assistant", "Would you like to count that toward this goal?");
-          setActiveChips([
-            { id: "savings-yes", label: "Yes, include that too" },
-            { id: "savings-no", label: "No, start from scratch" },
-          ]);
-        }, 600);
+        setActiveChips([
+          { id: "savings-yes", label: "Yes, include that too" },
+          { id: "savings-no", label: "No, start from scratch" },
+        ]);
       }, 800);
     } else {
       // No investments — go straight to plan
@@ -3619,6 +3733,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     welcomeShownRef.current = false;
     // Load directly into chat initial screen
     mutate({ currentStep: "home" });
+    showChatOverlay(true);
   };
 
   // ============ DEBUG CARD PREVIEW ============
@@ -3629,10 +3744,10 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
       showChatOverlay(false);
       setReviewMessages([
         { id: "dbg-user", role: "user", text: prompt },
-        { id: "dbg-card", role: "assistant", text: "", card: { ...card, variant: debugCardVariant } },
+        { id: "dbg-card", role: "assistant", text: "", card },
       ]);
     },
-    [clearMsgQueue, showChatOverlay, debugCardVariant],
+    [clearMsgQueue, showChatOverlay],
   );
 
   const openFdSheet = useCallback((card: Extract<ChatCardData, { type: "investment-product" }>) => {
@@ -3658,6 +3773,44 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     setFdSheetPhase("entering");
     setTimeout(() => setFdSheetPhase("closed"), 360);
   }, [fdSelectedAmount]);
+
+  // ── Obligation detail sheet handlers ──
+  const openObligSheet = useCallback((item: { id: string; payee: string; amount: number; type: string; seenMonths: string; lastPaid: string }) => {
+    setObligSheetItem(item);
+    setObligEditAmount(obligEditedAmounts[item.id] ?? item.amount);
+    setObligSheetPhase("entering");
+    requestAnimationFrame(() => { requestAnimationFrame(() => { setObligSheetPhase("open"); }); });
+  }, [obligEditedAmounts]);
+
+  const closeObligSheet = useCallback(() => {
+    setObligSheetPhase("entering");
+    setTimeout(() => setObligSheetPhase("closed"), 360);
+  }, []);
+
+  const confirmObligInclude = useCallback(() => {
+    if (!obligSheetItem) return;
+    setObligSelectedIds((prev) => { const next = new Set(prev); next.add(obligSheetItem.id); return next; });
+    setObligEditedAmounts((prev) => ({ ...prev, [obligSheetItem.id]: obligEditAmount }));
+    closeObligSheet();
+  }, [obligSheetItem, obligEditAmount, closeObligSheet]);
+
+  const confirmObligRemove = useCallback(() => {
+    if (!obligSheetItem) return;
+    setObligSelectedIds((prev) => { const next = new Set(prev); next.delete(obligSheetItem.id); return next; });
+    closeObligSheet();
+  }, [obligSheetItem, closeObligSheet]);
+
+  // ── Big expense detail sheet handlers ──
+  const openBigExpSheet = useCallback((item: { id: string; payee: string; date: string; type: string; amount: number }) => {
+    setBigExpSheetItem(item);
+    setBigExpSheetPhase("entering");
+    requestAnimationFrame(() => { requestAnimationFrame(() => { setBigExpSheetPhase("open"); }); });
+  }, []);
+
+  const closeBigExpSheet = useCallback(() => {
+    setBigExpSheetPhase("entering");
+    setTimeout(() => setBigExpSheetPhase("closed"), 360);
+  }, []);
 
   useEffect(() => {
     if (!isHydrated || launchResetDoneRef.current) return;
@@ -3734,27 +3887,57 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
   }, [activeGoalProduct, goalDetail]);
   const displayedMessages = useMemo(
     () => (reviewMessages ?? messages).map((message) => {
-      if (message.card?.type === "goal-progress") {
+      // Apply global card variant
+      const variant = "surface" as const;
+      const card = message.card ? { ...message.card, variant } as ChatCardData : undefined;
+
+      if (card?.type === "goal-progress") {
         return {
           ...message,
           card: {
-            ...message.card,
-            onArrowTap: () => openGoalDetail(message.card as Extract<ChatCardData, { type: "goal-progress" }>),
+            ...card,
+            onArrowTap: () => openGoalDetail(card as Extract<ChatCardData, { type: "goal-progress" }>),
           },
         };
       }
-      if (message.card?.type === "investment-product" && !message.card.activated) {
+      if (card?.type === "investment-product" && !card.activated) {
         return {
           ...message,
           card: {
-            ...message.card,
-            onContinue: () => openFdSheet(message.card as Extract<ChatCardData, { type: "investment-product" }>),
+            ...card,
+            onContinue: () => openFdSheet(card as Extract<ChatCardData, { type: "investment-product" }>),
           },
         };
       }
-      return message;
+      if (card?.type === "obligations-list-v2") {
+        return {
+          ...message,
+          card: {
+            ...card,
+            submitted: obligSubmitted,
+            onSubmit: (selected: { id: string; amount: number; type: string }[]) => {
+              console.log("V2 obligations confirmed:", selected);
+              setObligSubmitted(true);
+            },
+          },
+        };
+      }
+      if (card?.type === "big-expenses") {
+        const bigCard = card as Extract<ChatCardData, { type: "big-expenses" }>;
+        return {
+          ...message,
+          card: {
+            ...bigCard,
+            onRowTap: (id: string) => {
+              const item = bigCard.transactions.find((t) => t.id === id);
+              if (item) openBigExpSheet(item);
+            },
+          },
+        };
+      }
+      return card ? { ...message, card } : message;
     }),
-    [reviewMessages, messages, openGoalDetail, openFdSheet]
+    [reviewMessages, messages, openGoalDetail, openFdSheet, openObligSheet, openBigExpSheet, obligSelectedIds, obligEditedAmounts, obligSubmitted]
   );
   const displayedChips = reviewMessages ? [] : activeChips;
   const showChatInput = !reviewMessages && (step === "home" || (step === "goal" && (goalStage === "choice" || goalStage === "destination")));
@@ -3831,13 +4014,10 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                     onStoryBack={handleStoryBack}
                     questions={personaQuestions}
                     activeIndex={personaActiveIndex}
-                    showCover={personaCoverVisible}
                     showReveal={personaRevealVisible}
                     revealData={personaRevealData}
                     isTransitioning={personaTransitioning}
-                    onStart={startPersonaQuiz}
                     onSelect={handlePersonaAnswer}
-                    onBack={handlePersonaBack}
                     onRevealDone={() => submitPersonaQuiz()}
                   />
                 </div>
@@ -3859,7 +4039,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
               >
                 {/* Processing glow */}
                 <div
-                  className={`pointer-events-none absolute inset-0 z-30 ${debugGlow === "base" ? "phone-screen-processing-band" : "phone-screen-processing-band phone-screen-processing-band--sheet"} ${isAgentProcessingGlow || debugGlow !== "off" ? "is-active" : ""} ${debugGlowPalette === "dls" ? "glow-dls" : ""}`}
+                  className={`pointer-events-none absolute inset-0 z-30 phone-screen-processing-band ${isAgentProcessingGlow ? "is-active" : ""}`}
                   style={{ borderRadius: 24 }}
                   aria-hidden="true"
                 />
@@ -3893,7 +4073,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                       handleGoalInput(value);
                     }
                   }}
-                  // onProcessingStateChange={setIsAgentProcessingGlow} // glow disabled for now
+                  onProcessingStateChange={setIsAgentProcessingGlow}
 
                   showTyping={isStreaming}
                   thinkingLabel={thinkingLabel}
@@ -4022,6 +4202,224 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                       }}
                     >
                       Set up · {formatINR(fdSelectedAmount)}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Obligation detail bottom sheet ── */}
+              {obligSheetPhase !== "closed" && obligSheetItem && (
+                <div
+                  className="absolute inset-0 z-30"
+                  style={{
+                    backgroundColor: obligSheetPhase === "open" ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0)",
+                    transition: "background-color 300ms ease",
+                  }}
+                  onClick={closeObligSheet}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      backgroundColor: "#fff",
+                      borderRadius: "24px 24px 0 0",
+                      padding: "16px 24px 40px",
+                      transform: obligSheetPhase === "open" ? "translateY(0)" : "translateY(100%)",
+                      transition: "transform 360ms cubic-bezier(0.22, 1, 0.36, 1)",
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Handle */}
+                    <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(0,0,0,0.2)", margin: "0 auto 24px" }} />
+
+                    {/* Header */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+                      <p style={{ ...typography.headerH3, color: "rgba(0,0,0,0.9)", margin: 0 }}>
+                        {obligSheetItem.payee}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={closeObligSheet}
+                        style={{ border: "none", background: "transparent", padding: "4px", cursor: "pointer", color: "rgba(0,0,0,0.3)", ...typography.buttonSmall }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* Type tag */}
+                    <div style={{ marginBottom: 24 }}>
+                      <span
+                        style={{
+                          display: "inline-block",
+                          padding: "4px 8px",
+                          borderRadius: 100,
+                          backgroundColor: obligSheetItem.type === "Rent/EMI" ? "#F6F9FC" : obligSheetItem.type === "Subscription" ? "#E6EDF9" : obligSheetItem.type === "Utility" ? "#E6EDF9" : "#FAE2FA",
+                          color: obligSheetItem.type === "Rent/EMI" ? "#252A31" : obligSheetItem.type === "Subscription" ? "#2B6ACF" : obligSheetItem.type === "Utility" ? "#2B6ACF" : "#D30AD7",
+                          ...typography.metadata,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {obligSheetItem.type}
+                      </span>
+                    </div>
+
+                    {/* Details grid */}
+                    <div style={{ display: "flex", gap: 24, marginBottom: 24 }}>
+                      <div>
+                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4, margin: 0 }}>AVERAGE</p>
+                        <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)", margin: 0 }}>{formatINR(obligSheetItem.amount)}</p>
+                      </div>
+                      <div>
+                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4, margin: 0 }}>FREQUENCY</p>
+                        <p style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)", margin: 0 }}>{obligSheetItem.seenMonths}</p>
+                      </div>
+                      <div>
+                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4, margin: 0 }}>LAST PAID</p>
+                        <p style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)", margin: 0 }}>{obligSheetItem.lastPaid}</p>
+                      </div>
+                    </div>
+
+                    {/* Editable amount */}
+                    <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 8, margin: "0 0 8px" }}>
+                      USE AMOUNT
+                    </p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32, borderBottom: "2px solid #D30AD7", height: 48 }}>
+                      <span style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)" }}>₹</span>
+                      <input
+                        type="number"
+                        value={obligEditAmount || ""}
+                        onChange={(e) => setObligEditAmount(Number(e.target.value) || 0)}
+                        style={{
+                          ...typography.headerH4,
+                          color: "rgba(0,0,0,0.9)",
+                          border: "none",
+                          outline: "none",
+                          background: "transparent",
+                          width: "100%",
+                          height: 48,
+                          padding: 0,
+                        }}
+                      />
+                    </div>
+
+                    {/* Action buttons — DLS Primary + Grey, Regular 48px */}
+                    <div style={{ display: "flex", gap: 12 }}>
+                      <button
+                        type="button"
+                        onClick={confirmObligInclude}
+                        style={{
+                          ...typography.buttonNormal,
+                          flex: 1,
+                          height: 48,
+                          padding: "0 24px",
+                          borderRadius: 100,
+                          backgroundColor: "#D30AD7",
+                          color: "#fff",
+                          border: "none",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Include {formatINR(obligEditAmount)}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={confirmObligRemove}
+                        style={{
+                          ...typography.buttonNormal,
+                          flex: 1,
+                          height: 48,
+                          padding: "0 24px",
+                          borderRadius: 100,
+                          backgroundColor: "#F0F4F7",
+                          color: "rgba(0,0,0,0.9)",
+                          border: "none",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Big expense detail bottom sheet ── */}
+              {bigExpSheetPhase !== "closed" && bigExpSheetItem && (
+                <div
+                  className="absolute inset-0 z-30"
+                  style={{
+                    backgroundColor: bigExpSheetPhase === "open" ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0)",
+                    transition: "background-color 300ms ease",
+                  }}
+                  onClick={closeBigExpSheet}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      backgroundColor: "#fff",
+                      borderRadius: "24px 24px 0 0",
+                      padding: "16px 24px 40px",
+                      transform: bigExpSheetPhase === "open" ? "translateY(0)" : "translateY(100%)",
+                      transition: "transform 360ms cubic-bezier(0.22, 1, 0.36, 1)",
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Handle */}
+                    <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(0,0,0,0.2)", margin: "0 auto 24px" }} />
+
+                    {/* Header */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+                      <p style={{ ...typography.headerH3, color: "rgba(0,0,0,0.9)", margin: 0 }}>
+                        {bigExpSheetItem.payee}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={closeBigExpSheet}
+                        style={{ border: "none", background: "transparent", padding: "4px", cursor: "pointer", color: "rgba(0,0,0,0.3)", ...typography.buttonSmall }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* Amount */}
+                    <p style={{ ...typography.headerH2, color: "rgba(0,0,0,0.9)", margin: "0 0 24px" }}>
+                      {formatINR(bigExpSheetItem.amount)}
+                    </p>
+
+                    {/* Details */}
+                    <div style={{ display: "flex", gap: 24, marginBottom: 32 }}>
+                      <div>
+                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4, margin: 0 }}>DATE</p>
+                        <p style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)", margin: 0 }}>{bigExpSheetItem.date}</p>
+                      </div>
+                      <div>
+                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4, margin: 0 }}>TYPE</p>
+                        <p style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)", margin: 0 }}>{bigExpSheetItem.type}</p>
+                      </div>
+                    </div>
+
+                    {/* Close button — DLS Grey, Regular 48px */}
+                    <button
+                      type="button"
+                      onClick={closeBigExpSheet}
+                      style={{
+                        ...typography.buttonNormal,
+                        width: "100%",
+                        height: 48,
+                        padding: "0 24px",
+                        borderRadius: 100,
+                        backgroundColor: "#F0F4F7",
+                        color: "rgba(0,0,0,0.9)",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Close
                     </button>
                   </div>
                 </div>
@@ -4206,79 +4604,57 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
 
           {debugPanelOpen && (
             <div className="mt-1 rounded-xl border border-[rgba(0,0,0,0.2)] bg-white/80 p-4 backdrop-blur-sm space-y-3">
+
+              <DbgRow label="Screens">
+                <DbgBtn onClick={closeChatOverlay}>Home</DbgBtn>
+                <DbgBtn onClick={openWrappedStories}>Stories v2</DbgBtn>
+              </DbgRow>
               <DbgRow label="Session">
                 <DbgBtn onClick={resetFlow}>Restart</DbgBtn>
                 <DbgBtn onClick={resetUser} destructive>New User</DbgBtn>
               </DbgRow>
-              <DbgRow label="Glow">
-                <DbgBtn
-                  onClick={() => setDebugGlow((p) => (p === "sheet" ? "off" : "sheet"))}
-                  active={debugGlow === "sheet"}
-                >
-                  Sheet
-                </DbgBtn>
-                <DbgBtn
-                  onClick={() => setDebugGlow((p) => (p === "base" ? "off" : "base"))}
-                  active={debugGlow === "base"}
-                >
-                  Base
-                </DbgBtn>
+
+              <div className="h-px bg-[#f0f4f7]" />
+
+              <DbgRow label="Spend">
+                <DbgBtn onClick={() => injectCardPreview(DBG_SPEND_OVERVIEW, "How much did I spend last month?")}>Overview</DbgBtn>
+
+                <DbgBtn onClick={() => injectCardPreview(DBG_CATEGORY_BAR, "Where did it all go?")}>Categories</DbgBtn>
               </DbgRow>
-              <DbgRow label="Palette">
-                <DbgBtn
-                  onClick={() => setDebugGlowPalette("rainbow")}
-                  active={debugGlowPalette === "rainbow"}
-                >
-                  Rainbow
-                </DbgBtn>
-                <DbgBtn
-                  onClick={() => setDebugGlowPalette("dls")}
-                  active={debugGlowPalette === "dls"}
-                >
-                  DLS
-                </DbgBtn>
+              <DbgRow label="Goal">
+                <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_AHEAD, "How's my Japan goal?")}>Ahead</DbgBtn>
+                <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_BEHIND, "How's my Japan goal?")}>Behind</DbgBtn>
+                <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_ONTRACK, "How's my Japan goal?")}>On track</DbgBtn>
+              </DbgRow>
+              <DbgRow label="FD">
+                <DbgBtn onClick={() => injectCardPreview(DBG_FD_SETUP, "Can I park some savings?")}>Setup</DbgBtn>
+                <DbgBtn onClick={() => injectCardPreview(DBG_FD_ACTIVATED, "Can I park some savings?")}>Activated</DbgBtn>
+              </DbgRow>
+              <DbgRow label="Savings">
+                <DbgBtn onClick={() => injectCardPreview(DBG_SAVINGS_PLAN, "Build me a savings plan.")}>Plan</DbgBtn>
               </DbgRow>
 
               <div className="h-px bg-[#f0f4f7]" />
 
-              <DbgRow label="Screens">
-                <DbgBtn onClick={closeChatOverlay}>Pay</DbgBtn>
-                <DbgBtn onClick={openWrappedStories}>Stories</DbgBtn>
-                <DbgBtn onClick={openChatOverlay}>Chat</DbgBtn>
+              <DbgRow label="Merchants">
+                <DbgBtn onClick={() => injectCardPreview(DBG_MERCHANT_BAR, "Which merchants do I spend most at?")}>V1</DbgBtn>
               </DbgRow>
-
-              <div className="h-px bg-[#f0f4f7]" />
-
-              <DbgRow label="Display">
-                <DbgBtn onClick={() => setDebugCardVariant("card")} active={debugCardVariant === "card"}>Card</DbgBtn>
-                <DbgBtn onClick={() => setDebugCardVariant("surface")} active={debugCardVariant === "surface"}>Surface</DbgBtn>
+              <DbgRow label="MoM">
+                <DbgBtn onClick={() => injectCardPreview(DBG_CATEGORY_MOM, "How does this month compare to last?")}>V1</DbgBtn>
+                <DbgBtn onClick={() => injectCardPreview(DBG_SPEND_TREND, "Show me my spending trend.")}>Trend</DbgBtn>
               </DbgRow>
-
-              <DbgRow label="Cards" wrap>
-                <DbgBtn onClick={() => injectCardPreview(DBG_SPEND_OVERVIEW, "How much did I spend last month?")}>
-                  Spend Overview
-                </DbgBtn>
-                <DbgBtn onClick={() => injectCardPreview(DBG_CATEGORIES, "Where did it all go?")}>
-                  Categories
-                </DbgBtn>
-                <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_AHEAD, "How's my Japan goal?")}>
-                  Goal: ahead
-                </DbgBtn>
-                <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_BEHIND, "How's my Japan goal?")}>
-                  Goal: behind
-                </DbgBtn>
-                <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_ONTRACK, "How's my Japan goal?")}>
-                  Goal: on track
-                </DbgBtn>
-                <DbgBtn onClick={() => injectCardPreview(DBG_FD_SETUP, "Can I park some savings?")}>
-                  FD: setup
-                </DbgBtn>
-                <DbgBtn onClick={() => injectCardPreview(DBG_FD_ACTIVATED, "Can I park some savings?")}>
-                  FD: activated
-                </DbgBtn>
-                <DbgBtn onClick={() => injectCardPreview(DBG_SAVINGS_PLAN, "Build me a savings plan.")}>
-                  Savings plan
-                </DbgBtn>
+              <DbgRow label="Heatmap">
+                <DbgBtn onClick={() => injectCardPreview(DBG_HEATMAP, "Show me my spending pattern.")}>V1</DbgBtn>
+              </DbgRow>
+              <DbgRow label="Donut">
+                <DbgBtn onClick={() => injectCardPreview(DBG_DONUT_V2, "How do I pay for things?")}>Donut</DbgBtn>
+              </DbgRow>
+              <DbgRow label="Txn List">
+                <DbgBtn onClick={() => injectCardPreview(DBG_TXN_TABLE, "Show me recent transactions.")}>V1</DbgBtn>
+              </DbgRow>
+              <DbgRow label="Onboard">
+                <DbgBtn onClick={() => injectCardPreview(DBG_OBLIGATIONS_V2, "Let's set up your budget.")}>Oblig</DbgBtn>
+                <DbgBtn onClick={() => injectCardPreview(DBG_BIG_EXPENSES, "Any big payments coming up?")}>Big Exp</DbgBtn>
               </DbgRow>
             </div>
           )}

@@ -8,7 +8,7 @@ export const BOTTOM_INSET = 20; // gesture nav: 8px + 4px bar + 8px
 
 // ── Status bar (decorative) ─────────────────────────────────────────────────
 
-function StatusBar({ backgroundColor = "#fff" }: { backgroundColor?: string }) {
+export function StatusBar({ backgroundColor = "#fff" }: { backgroundColor?: string }) {
   return (
     <div
       aria-hidden="true"

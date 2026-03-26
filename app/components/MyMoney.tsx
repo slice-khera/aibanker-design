@@ -24,7 +24,7 @@ export default function MyMoney({ onOpenQuiz }: { onOpenQuiz?: () => void }) {
             <h1 style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginTop: 4 }}>
               ₹2,40,000
             </h1>
-            <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginTop: 2 }}>Total balance · March 2026</p>
+            <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginTop: 2 }}>Total balance · Mar 2026</p>
           </div>
 
           <button
