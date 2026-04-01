@@ -536,6 +536,7 @@ export default function Home() {
   const [reviewMessages, setReviewMessages] = useState<ChatMessage[] | null>(null);
   const [goalDetail, setGoalDetail] = useState<GoalDetailSnapshot | null>(null);
   const [showInitialScreen, setShowInitialScreen] = useState(true);
+  const [initialScreenVariant, setInitialScreenVariant] = useState<"old" | "new">("old");
   const [rdDetailVisible, setRdDetailVisible] = useState(false);
   const [fdSheetPhase, setFdSheetPhase] = useState<"closed" | "entering" | "open">("closed");
   const [fdSheetData, setFdSheetData] = useState<Extract<ChatCardData, { type: "investment-product" }> | null>(null);
@@ -4112,6 +4113,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                   chips={displayedChips}
                   onChipSelect={handleChipSelect}
                   showInitialPrompt={showInitialScreen}
+                  initialScreenVariant={initialScreenVariant}
                   initialSuggestions={getSuggestions(!!userState?.goal)}
                   onInitialSuggestionClick={(id, title) => {
                     if (id === "review-goal") {
@@ -4669,6 +4671,10 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                 <DbgBtn onClick={closeChatOverlay}>Home</DbgBtn>
                 <DbgBtn onClick={openWrappedStories}>Stories v2</DbgBtn>
                 <DbgBtn onClick={openInsights}>Insights</DbgBtn>
+              </DbgRow>
+              <DbgRow label="Initial screen">
+                <DbgBtn onClick={() => { setInitialScreenVariant("old"); showChatOverlay(true); }}>Old</DbgBtn>
+                <DbgBtn onClick={() => { setInitialScreenVariant("new"); showChatOverlay(true); }}>New</DbgBtn>
               </DbgRow>
               <DbgRow label="Session">
                 <DbgBtn onClick={resetFlow}>Restart</DbgBtn>

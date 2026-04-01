@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AppBar, GestureNav, NavButton } from "./AppChrome";
 import { typography } from "../lib/typography";
 
@@ -16,6 +16,7 @@ type Props = {
   suggestions: InitialSuggestion[];
   onSuggestionClick: (id: string, title: string) => void;
   onSubmit: (text: string) => void;
+  variant?: "old" | "new";
 };
 
 // ── Icons ──────────────────────────────────────────────────────────────────
@@ -59,6 +60,301 @@ function LeakIcon() {
   );
 }
 
+// ── Card icons (monochrome, 16px) ─────────────────────────────────────────
+
+const CARD_ICONS: Record<string, React.ReactNode> = {
+  understand: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="2" y="9" width="2.5" height="5" rx="0.5" fill="rgba(0,0,0,0.9)" />
+      <rect x="6.75" y="6" width="2.5" height="8" rx="0.5" fill="rgba(0,0,0,0.9)" />
+      <rect x="11.5" y="3" width="2.5" height="11" rx="0.5" fill="rgba(0,0,0,0.9)" />
+    </svg>
+  ),
+  "goal-new": (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="6" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="3" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="1" fill="rgba(0,0,0,0.9)" />
+    </svg>
+  ),
+  "review-goal": (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="6" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="3" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="1" fill="rgba(0,0,0,0.9)" />
+    </svg>
+  ),
+  leaks: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M8 2C8 2 3.5 7.5 3.5 10.5a4.5 4.5 0 0 0 9 0C12.5 7.5 8 2 8 2z" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" strokeLinejoin="round" />
+    </svg>
+  ),
+  budget: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="6" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" />
+      <path d="M8 2v6h6" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  ),
+  txns: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="3" y="2" width="10" height="12" rx="1.2" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" />
+      <line x1="5.5" y1="5.5" x2="10.5" y2="5.5" stroke="rgba(0,0,0,0.9)" strokeWidth="1" strokeLinecap="round" />
+      <line x1="5.5" y1="8" x2="10.5" y2="8" stroke="rgba(0,0,0,0.9)" strokeWidth="1" strokeLinecap="round" />
+      <line x1="5.5" y1="10.5" x2="8.5" y2="10.5" stroke="rgba(0,0,0,0.9)" strokeWidth="1" strokeLinecap="round" />
+    </svg>
+  ),
+  networth: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <polyline points="2,12 5.5,7 8.5,9 14,4" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points="11,4 14,4 14,7" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+};
+
+// ── New design variant ────────────────────────────────────────────────────
+
+type AlertScenario = {
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  iconBg: string;
+};
+
+// Rent — house icon, red tint
+function RentIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M3 10l7-7 7 7" stroke="#ce1d26" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 9v6a1 1 0 001 1h8a1 1 0 001-1V9" stroke="#ce1d26" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// Salary — clock icon, orange tint
+function SalaryIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <circle cx="10" cy="10" r="7" stroke="#ff9a17" strokeWidth="1.5" />
+      <path d="M10 6v4l3 2" stroke="#ff9a17" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// Access — lock icon, blue tint
+function AccessIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <rect x="5" y="9" width="10" height="7" rx="1.5" stroke="#2b6acf" strokeWidth="1.5" />
+      <path d="M7 9V7a3 3 0 016 0v2" stroke="#2b6acf" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// Spending — flame icon, orange tint
+function SpendingIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M10 2c0 0-5 5-5 9a5 5 0 0010 0c0-4-5-9-5-9z" stroke="#ff9a17" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M10 12c0 0-2 1.5-2 3a2 2 0 004 0c0-1.5-2-3-2-3z" stroke="#ff9a17" strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// Savings goal — target icon, blue tint
+function GoalAlertIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <circle cx="10" cy="10" r="7" stroke="#2b6acf" strokeWidth="1.5" />
+      <circle cx="10" cy="10" r="4" stroke="#2b6acf" strokeWidth="1.5" />
+      <circle cx="10" cy="10" r="1.5" fill="#2b6acf" />
+    </svg>
+  );
+}
+
+const ALERT_SCENARIOS: AlertScenario[] = [
+  {
+    title: "Your rent is at risk, Rajan.",
+    subtitle: "Insufficient funds for your usual payment in six days",
+    icon: <RentIcon />,
+    iconBg: "#f9e4e5",
+  },
+  {
+    title: "Rajan, your salary was expected yesterday.",
+    subtitle: "Goals and budgets have been put on hold until it credits",
+    icon: <SalaryIcon />,
+    iconBg: "#fff3e3",
+  },
+  {
+    title: "Unable to access your accounts, Rajan.",
+    subtitle: "Renew account aggregator permission to keep your finances up to date",
+    icon: <AccessIcon />,
+    iconBg: "#e6edf9",
+  },
+  {
+    title: "Rajan, you're spending faster than usual.",
+    subtitle: "3 days in and already at 60% of this month's budget",
+    icon: <SpendingIcon />,
+    iconBg: "#fff3e3",
+  },
+  {
+    title: "Rajan, your savings goal is falling behind.",
+    subtitle: "At this rate, you'll take 3 months longer to achieve it",
+    icon: <GoalAlertIcon />,
+    iconBg: "#e6edf9",
+  },
+];
+
+function pickAlert(): AlertScenario {
+  return ALERT_SCENARIOS[Math.floor(Math.random() * ALERT_SCENARIOS.length)];
+}
+
+function InlineChevron() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      fill="none"
+      style={{ display: "inline-block", verticalAlign: "middle", marginLeft: 3, flexShrink: 0 }}
+    >
+      <path d="M5 3l4 4-4 4" stroke="#d30ad7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function NewInitialLayout({ suggestions, onSuggestionClick, onSubmit }: Props) {
+  const [inputValue, setInputValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [alert] = useState(pickAlert);
+  const cardScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = cardScrollRef.current;
+    if (!el) return;
+    el.scrollLeft = 200;
+    const id = setTimeout(() => {
+      el.scrollTo({ left: 0, behavior: "smooth" });
+    }, 400);
+    return () => clearTimeout(id);
+  }, []);
+
+  const handleSubmit = () => {
+    const text = inputValue.trim();
+    if (!text) return;
+    setInputValue("");
+    onSubmit(text);
+  };
+
+  return (
+    <div className="flex flex-col flex-1">
+      {/* ── Alert heading — tappable, IS the greeting ── */}
+      <button
+        className="shrink-0 w-full text-left active:opacity-70 transition-opacity px-6 pt-2"
+        style={{ display: "flex", flexDirection: "column", gap: 12 }}
+      >
+        <div
+          className="flex items-center justify-center rounded-full"
+          style={{ width: 40, height: 40, backgroundColor: alert.iconBg }}
+        >
+          {alert.icon}
+        </div>
+        <h1 style={{ ...typography.headerH2, color: "rgba(0,0,0,0.9)" }}>
+          {alert.title}
+        </h1>
+        <p style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.45)" }}>
+          {alert.subtitle}<InlineChevron />
+        </p>
+      </button>
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* ── Action cards — horizontal scroll ── */}
+      <div
+        ref={cardScrollRef}
+        className="shrink-0"
+        style={{
+          display: "flex",
+          overflowX: "auto",
+          gap: 10,
+          paddingLeft: 24,
+          paddingRight: 24,
+          paddingBottom: 8,
+          scrollbarWidth: "none",
+          WebkitOverflowScrolling: "touch",
+        } as React.CSSProperties}
+      >
+        {[
+          ...suggestions.map((s) => ({ id: s.id, title: s.title })),
+          { id: "budget", title: "Review my budget" },
+          { id: "txns", title: "Recent transactions" },
+        ].map((card) => (
+          <button
+            key={card.id}
+            onClick={() => onSuggestionClick(card.id, card.title)}
+            className="shrink-0 flex items-center gap-2 text-left active:scale-[0.97] transition-transform"
+            style={{
+              backgroundColor: "#f6f9fc",
+              border: "none",
+              borderRadius: 20,
+              height: 48,
+              paddingLeft: 14,
+              paddingRight: 16,
+            }}
+          >
+            <div className="shrink-0" style={{ opacity: 0.7 }}>
+              {CARD_ICONS[card.id]}
+            </div>
+            <p style={{ ...typography.bodySmall, fontWeight: 400, color: "rgba(0,0,0,0.7)", whiteSpace: "nowrap" }}>
+              {card.title}
+            </p>
+          </button>
+        ))}
+      </div>
+
+      {/* ── Input bar ── */}
+      <div className="shrink-0" style={{ paddingTop: 12, paddingBottom: 8, paddingLeft: 24, paddingRight: 24 }}>
+        <div
+          className="flex items-center overflow-hidden w-full"
+          style={{
+            height: 48,
+            backgroundColor: "rgba(160,165,175,0.10)",
+            border: "none",
+            borderRadius: 100,
+          } as React.CSSProperties}
+        >
+          <div
+            className="flex items-center w-full h-full"
+            style={{ borderRadius: 100, paddingLeft: 16, paddingRight: 8 }}
+          >
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+              placeholder="Start typing..."
+              className="flex-1 min-w-0 bg-transparent outline-none"
+              style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}
+            />
+            {inputValue.trim() && (
+              <button
+                onClick={handleSubmit}
+                className="shrink-0 flex items-center justify-center rounded-full bg-[#d30ad7] ml-1"
+                style={{ width: 36, height: 36 }}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M7 11V3M3 7l4-4 4 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Component ──────────────────────────────────────────────────────────────
 
 const GREETINGS = [
@@ -78,7 +374,10 @@ function pickGreeting(): string {
   return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
 }
 
-export function InitialPromptContent({ suggestions, onSuggestionClick, onSubmit }: Props) {
+export function InitialPromptContent({ suggestions, onSuggestionClick, onSubmit, variant = "old" }: Props) {
+  if (variant === "new") {
+    return <NewInitialLayout suggestions={suggestions} onSuggestionClick={onSuggestionClick} onSubmit={onSubmit} />;
+  }
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const [greeting] = useState(pickGreeting);

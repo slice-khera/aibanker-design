@@ -147,6 +147,7 @@ type ChatProps = {
   showInitialPrompt?: boolean;
   initialSuggestions?: InitialSuggestion[];
   onInitialSuggestionClick?: (id: string, title: string) => void;
+  initialScreenVariant?: "old" | "new";
   thinkingLabel?: string | null;
 };
 
@@ -465,6 +466,7 @@ export default function Chat({
   showInitialPrompt = false,
   initialSuggestions = [],
   onInitialSuggestionClick,
+  initialScreenVariant = "old",
   thinkingLabel,
 }: ChatProps) {
   const [draft, setDraft] = useState("");
@@ -783,6 +785,7 @@ export default function Chat({
                 suggestions={initialSuggestions}
                 onSuggestionClick={(id, title) => onInitialSuggestionClick?.(id, title)}
                 onSubmit={(text) => onSubmit?.(text)}
+                variant={initialScreenVariant}
               />
             </div>
             <GestureNav />
