@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { InitialPromptContent, type InitialSuggestion } from "./ChatInitialScreen";
+import { InitialPromptContent, type InitialSuggestion, pickAlert, InlineChevron, type AlertScenario } from "./ChatInitialScreen";
 import ChatCard, { type ChatCardData } from "./ChatCards";
 import { AppBar, FooterInset, GestureNav, NavButton } from "./AppChrome";
 import { typography } from "../lib/typography";
@@ -147,7 +147,7 @@ type ChatProps = {
   showInitialPrompt?: boolean;
   initialSuggestions?: InitialSuggestion[];
   onInitialSuggestionClick?: (id: string, title: string) => void;
-  initialScreenVariant?: "old" | "new";
+  initialScreenVariant?: "old" | "new" | "new2";
   thinkingLabel?: string | null;
 };
 
@@ -469,9 +469,10 @@ export default function Chat({
   initialScreenVariant = "old",
   thinkingLabel,
 }: ChatProps) {
+  const isNewVariant = initialScreenVariant === "new" || initialScreenVariant === "new2";
   const [draft, setDraft] = useState("");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [revealedCount, setRevealedCount] = useState(() => (showInitialPrompt ? 0 : messages.length));
+  const [revealedCount, setRevealedCount] = useState(() => (showInitialPrompt && !isNewVariant ? 0 : messages.length));
   const [showProcessingGlow, setShowProcessingGlow] = useState(false);
   const [hasScrolledContent, setHasScrolledContent] = useState(false);
   const [hasContentBelow, setHasContentBelow] = useState(false);
@@ -480,20 +481,36 @@ export default function Chat({
   // Track which messages have already been typewritten so we never re-typewrite
   const typewrittenIdsRef = useRef<Set<string>>(new Set());
 
+  // Alert state for new variants — persists as conversation header
+  // "new2" always shows the savings goal alert; "new" picks randomly
+  const [alert] = useState<AlertScenario | null>(() => {
+    if (initialScreenVariant === "new2") {
+      return {
+        title: "Rajan, your trip to Japan is veering dangerously off course.",
+        subtitle: "Want to course correct while you still can?",
+        icon: null,
+        iconBg: "#e6edf9",
+      };
+    }
+    return isNewVariant ? pickAlert() : null;
+  });
+
   // Tracks whether the initial prompt is visually shown (with fade-out delay)
-  const [initialPromptVisible, setInitialPromptVisible] = useState(showInitialPrompt);
+  // For the "new" variant, we never show the initial prompt overlay
+  const [initialPromptVisible, setInitialPromptVisible] = useState(showInitialPrompt && !isNewVariant);
   const [initialPromptFadingOut, setInitialPromptFadingOut] = useState(false);
 
   // Snapshot message count when initial screen is visible, so we can
   // resume existing history but still choreograph newly added messages.
   const messageCountAtLauncherRef = useRef(messages.length);
   useEffect(() => {
-    if (showInitialPrompt) {
+    if (showInitialPrompt && !isNewVariant) {
       messageCountAtLauncherRef.current = messages.length;
     }
-  }, [showInitialPrompt, messages.length]);
+  }, [showInitialPrompt, isNewVariant, messages.length]);
 
   useEffect(() => {
+    if (isNewVariant) return; // new variant never uses initial prompt overlay
     if (showInitialPrompt) {
       setInitialPromptVisible(true);
       setInitialPromptFadingOut(false);
@@ -508,22 +525,25 @@ export default function Chat({
       }, 200);
       return () => clearTimeout(timer);
     }
-  }, [showInitialPrompt, initialPromptVisible, messages.length]);
+  }, [showInitialPrompt, isNewVariant, initialPromptVisible, messages.length]);
   const glowStartTimerRef = useRef<number | null>(null);
   const glowStopTimerRef = useRef<number | null>(null);
 
+  // Auto-scroll to bottom (old variant only)
   useEffect(() => {
+    if (isNewVariant) return;
     const timer = setTimeout(() => {
       const scroller = scrollContainerRef.current;
       if (!scroller) return;
       scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
     }, 50);
     return () => clearTimeout(timer);
-  }, [messages.length, revealedCount, chips.length, showTyping]);
+  }, [isNewVariant, messages.length, revealedCount, chips.length, showTyping]);
 
-  // Auto-scroll as content grows (streaming / typewriter)
+  // Auto-scroll as content grows — streaming / typewriter (old variant only)
   const contentRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    if (isNewVariant) return;
     const content = contentRef.current;
     const scroller = scrollContainerRef.current;
     if (!content || !scroller) return;
@@ -538,7 +558,52 @@ export default function Chat({
     });
     observer.observe(content);
     return () => observer.disconnect();
-  }, [initialPromptVisible]);
+  }, [isNewVariant, initialPromptVisible]);
+
+  // New variant: snap-scroll when a user bubble mounts.
+  // Uses a callback ref on each user message div — fires the instant React inserts it.
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const snappedIdsRef = useRef<Set<string>>(new Set());
+  const userBubbleRef = useCallback((el: HTMLElement | null) => {
+    if (!el) return;
+    const id = el.getAttribute("data-msg-id");
+    if (!id || snappedIdsRef.current.has(id)) return;
+    snappedIdsRef.current.add(id);
+
+    const scroller = scrollContainerRef.current;
+    const content = contentRef.current;
+    if (!scroller || !content) return;
+
+    setTimeout(() => {
+      const scrollerRect = scroller.getBoundingClientRect();
+      const bubbleRect = el.getBoundingClientRect();
+      const bubbleTopInScroller = bubbleRect.top - scrollerRect.top + scroller.scrollTop;
+      const target = Math.max(0, bubbleTopInScroller - (scroller.clientHeight * 0.12));
+
+      // Ensure content is tall enough to scroll to target position
+      const minHeight = target + scroller.clientHeight;
+      if (content.scrollHeight < minHeight) {
+        content.style.minHeight = `${minHeight}px`;
+      }
+
+      // Smooth scroll animation
+      const start = scroller.scrollTop;
+      const distance = target - start;
+      if (Math.abs(distance) < 1) return;
+      const duration = 400;
+      const startTime = performance.now();
+      const ease = (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      const step = (now: number) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        scroller.scrollTop = start + distance * ease(progress);
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        }
+      };
+      requestAnimationFrame(step);
+    }, 300);
+  }, []);
 
   useEffect(() => {
     if (messages.length === 0) {
@@ -718,7 +783,7 @@ export default function Chat({
   }, [onProcessingStateChange, shouldRenderProcessingGlow]);
 
   useEffect(() => {
-    if (showInitialPrompt || isSheetMinimized) {
+    if ((showInitialPrompt && !isNewVariant) || isSheetMinimized) {
       setHasScrolledContent(false);
       setHasContentBelow(false);
       return;
@@ -729,13 +794,21 @@ export default function Chat({
 
     const updateScrolledState = () => {
       setHasScrolledContent(scroller.scrollTop > 0);
-      setHasContentBelow(scroller.scrollTop + scroller.clientHeight < scroller.scrollHeight - 1);
+      if (isNewVariant && messagesContainerRef.current) {
+        // For new variant, check if the messages container's bottom is below the viewport
+        // (ignores artificial minHeight spacer)
+        const containerBottom = messagesContainerRef.current.getBoundingClientRect().bottom;
+        const scrollerBottom = scroller.getBoundingClientRect().bottom;
+        setHasContentBelow(containerBottom > scrollerBottom + 1);
+      } else {
+        setHasContentBelow(scroller.scrollTop + scroller.clientHeight < scroller.scrollHeight - 1);
+      }
     };
 
     updateScrolledState();
     scroller.addEventListener("scroll", updateScrolledState, { passive: true });
     return () => scroller.removeEventListener("scroll", updateScrolledState);
-  }, [showInitialPrompt, isSheetMinimized, messages.length, chips.length, revealedCount]);
+  }, [showInitialPrompt, isNewVariant, isSheetMinimized, messages.length, chips.length, revealedCount]);
 
   const clampedTransitionProgress = Math.max(0, Math.min(1, sheetTransitionProgress));
   const bodyOpacity = Math.max(0, 1 - clampedTransitionProgress * 1.35);
@@ -772,7 +845,7 @@ export default function Chat({
           transition: 'opacity 160ms linear, transform 220ms ease-out',
         }}
       >
-        {initialPromptVisible ? (
+        {initialPromptVisible && !isNewVariant ? (
           <>
             <div
               className="flex-1 flex flex-col overflow-hidden"
@@ -813,6 +886,23 @@ export default function Chat({
               <div ref={contentRef} className="flex flex-col px-6">
                 {/* Top spacer so content clears the floating close button */}
                 <div className="shrink-0" aria-hidden="true" style={{ height: 108 }} />
+
+                {/* Alert header for new variant — persists at top of conversation */}
+                {alert && (
+                  <button
+                    className="shrink-0 mb-6 text-left active:opacity-70 transition-opacity"
+                    style={{ display: "flex", flexDirection: "column", gap: 12, border: "none", background: "none", padding: 0 }}
+                    onClick={() => onSubmit?.("Help me achieve my goal on time")}
+                  >
+                    <h1 style={{ ...typography.headerH2, color: "rgba(0,0,0,0.9)" }}>
+                      {alert.title}
+                    </h1>
+                    <p style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.45)" }}>
+                      {alert.subtitle}<InlineChevron />
+                    </p>
+                  </button>
+                )}
+
                 {(drawerContent || pinnedContent) && (
                   <div className="mb-4 space-y-2">
                     {drawerContent ? (
@@ -824,7 +914,7 @@ export default function Chat({
                   </div>
                 )}
 
-                <div className="w-full space-y-4">
+                <div ref={messagesContainerRef} className="w-full space-y-4">
                   {renderedMessages.map((message, index) => {
                     const animationClass = "animate-chat-message-in";
                     const renderOptionsCardHere = optionsCardIndex === index && message.role === "assistant";
@@ -836,7 +926,15 @@ export default function Chat({
                       typewrittenIdsRef.current.add(message.id);
                     }
                     return (
-                      <div key={message.id} className={animationClass}>
+                      <div
+                        key={message.id}
+                        className={animationClass}
+                        data-role={message.role}
+                        data-msg-id={message.id}
+                        ref={(el) => {
+                          if (el && message.role === "user" && isNewVariant) userBubbleRef(el);
+                        }}
+                      >
                         {renderOptionsCardHere && shouldShowOptionsExpanded ? (
                           <AssistantOptionsCard
                             message={message}
@@ -865,6 +963,29 @@ export default function Chat({
                 <div className="shrink-0" aria-hidden="true" style={{ height: 120 }} />
               </div>
             </div>
+
+            {/* Scroll-to-bottom pill (new variant only) */}
+            {isNewVariant && hasContentBelow && renderedMessages.length > 0 && (
+              <button
+                onClick={() => {
+                  const scroller = scrollContainerRef.current;
+                  if (scroller) scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
+                }}
+                className="absolute z-20 flex items-center justify-center rounded-full bg-white shadow-md active:scale-95 transition-transform"
+                style={{
+                  bottom: 110,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: 36,
+                  height: 36,
+                  border: "1px solid rgba(0,0,0,0.08)",
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 3v10M4 9l4 4 4-4" stroke="rgba(0,0,0,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
 
             <div className="absolute bottom-0 left-0 right-0" style={{ pointerEvents: 'none' }}>
               <div style={{ pointerEvents: 'auto' }}>

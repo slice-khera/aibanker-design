@@ -20,7 +20,8 @@ export type ChatCardData =
   | { type: "transaction-table"; variant?: CardVariant; title: string; transactions: { date: string; merchant: string; amount: number; category: string }[] }
   | { type: "obligations-list-v2"; variant?: CardVariant; items: { id: string; payee: string; amount: number; type: string; seenMonths: string }[]; monthlyIncome: number; onSubmit?: (selected: { id: string; amount: number; type: string }[]) => void; submitted?: boolean; onArrowTap?: () => void }
   | { type: "big-expenses"; variant?: CardVariant; transactions: { id: string; payee: string; date: string; type: string; amount: number }[]; periodLabel: string; total: number; onRowTap?: (id: string) => void }
-  | { type: "spend-trend"; variant?: CardVariant; month: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number };
+  | { type: "spend-trend"; variant?: CardVariant; month: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number }
+  | { type: "add-to-pot"; variant?: CardVariant; goalName: string; amount: number; fromAccount: string; activated?: boolean; onAdd?: () => void };
 
 // ─── Helpers ───────────────────────────────────────────────
 
@@ -686,6 +687,62 @@ function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "
     <div style={shell}>
       <CardHeader label={productType} onArrowTap={onArrowTap} arrowInvisible={!activated} />
       {content}
+    </div>
+  );
+}
+
+// ─── Add to Pot Card (simplified one-tap action) ──────────
+
+function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-pot" }> }) {
+  const { variant = "card", goalName, amount, fromAccount, activated, onAdd } = data;
+  const [done, setDone] = useState(activated ?? false);
+
+  const shell = variant === "surface"
+    ? { backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD }
+    : { backgroundColor: CARD_BG, borderRadius: CARD_RADIUS, padding: CARD_PAD };
+
+  return (
+    <div style={shell}>
+      <CardHeader label={goalName} />
+
+      {/* Amount */}
+      <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 16 }}>
+        {formatINRFull(amount)}
+      </p>
+
+      {/* Divider */}
+      <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginBottom: 16 }} />
+
+      {done ? (
+        <ConfirmedRow label="Added to pot" />
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4 }}>
+              ADDING FROM
+            </p>
+            <p style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.7)" }}>
+              {fromAccount}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setDone(true); onAdd?.(); }}
+            style={{
+              ...typography.buttonSmall,
+              border: "none",
+              background: "#D30AD7",
+              color: "#fff",
+              cursor: "pointer",
+              padding: "8px 20px",
+              borderRadius: 100,
+              flexShrink: 0,
+            }}
+          >
+            Add
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -2044,6 +2101,8 @@ export default function ChatCard({ card }: { card: ChatCardData }) {
       return <ObligationsListCardV2 data={card} />;
     case "big-expenses":
       return <BigExpensesCard data={card} />;
+    case "add-to-pot":
+      return <AddToPotCard data={card} />;
     default:
       return null;
   }

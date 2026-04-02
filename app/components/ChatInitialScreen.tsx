@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { AppBar, GestureNav, NavButton } from "./AppChrome";
 import { typography } from "../lib/typography";
+import { BG_SURFACE } from "../lib/colors";
 
 export type InitialSuggestion = {
   id: string;
@@ -16,7 +17,7 @@ type Props = {
   suggestions: InitialSuggestion[];
   onSuggestionClick: (id: string, title: string) => void;
   onSubmit: (text: string) => void;
-  variant?: "old" | "new";
+  variant?: "old" | "new" | "new2";
 };
 
 // ── Icons ──────────────────────────────────────────────────────────────────
@@ -113,7 +114,7 @@ const CARD_ICONS: Record<string, React.ReactNode> = {
 
 // ── New design variant ────────────────────────────────────────────────────
 
-type AlertScenario = {
+export type AlertScenario = {
   title: string;
   subtitle: string;
   icon: React.ReactNode;
@@ -204,11 +205,11 @@ const ALERT_SCENARIOS: AlertScenario[] = [
   },
 ];
 
-function pickAlert(): AlertScenario {
+export function pickAlert(): AlertScenario {
   return ALERT_SCENARIOS[Math.floor(Math.random() * ALERT_SCENARIOS.length)];
 }
 
-function InlineChevron() {
+export function InlineChevron() {
   return (
     <svg
       width="14"
@@ -222,21 +223,10 @@ function InlineChevron() {
   );
 }
 
-function NewInitialLayout({ suggestions, onSuggestionClick, onSubmit }: Props) {
+function NewInitialLayout({ onSubmit }: Props) {
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const [alert] = useState(pickAlert);
-  const cardScrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = cardScrollRef.current;
-    if (!el) return;
-    el.scrollLeft = 200;
-    const id = setTimeout(() => {
-      el.scrollTo({ left: 0, behavior: "smooth" });
-    }, 400);
-    return () => clearTimeout(id);
-  }, []);
 
   const handleSubmit = () => {
     const text = inputValue.trim();
@@ -252,12 +242,6 @@ function NewInitialLayout({ suggestions, onSuggestionClick, onSubmit }: Props) {
         className="shrink-0 w-full text-left active:opacity-70 transition-opacity px-6 pt-2"
         style={{ display: "flex", flexDirection: "column", gap: 12 }}
       >
-        <div
-          className="flex items-center justify-center rounded-full"
-          style={{ width: 40, height: 40, backgroundColor: alert.iconBg }}
-        >
-          {alert.icon}
-        </div>
         <h1 style={{ ...typography.headerH2, color: "rgba(0,0,0,0.9)" }}>
           {alert.title}
         </h1>
@@ -269,56 +253,13 @@ function NewInitialLayout({ suggestions, onSuggestionClick, onSubmit }: Props) {
       {/* Spacer */}
       <div className="flex-1" />
 
-      {/* ── Action cards — horizontal scroll ── */}
-      <div
-        ref={cardScrollRef}
-        className="shrink-0"
-        style={{
-          display: "flex",
-          overflowX: "auto",
-          gap: 10,
-          paddingLeft: 24,
-          paddingRight: 24,
-          paddingBottom: 8,
-          scrollbarWidth: "none",
-          WebkitOverflowScrolling: "touch",
-        } as React.CSSProperties}
-      >
-        {[
-          ...suggestions.map((s) => ({ id: s.id, title: s.title })),
-          { id: "budget", title: "Review my budget" },
-          { id: "txns", title: "Recent transactions" },
-        ].map((card) => (
-          <button
-            key={card.id}
-            onClick={() => onSuggestionClick(card.id, card.title)}
-            className="shrink-0 flex items-center gap-2 text-left active:scale-[0.97] transition-transform"
-            style={{
-              backgroundColor: "#f6f9fc",
-              border: "none",
-              borderRadius: 20,
-              height: 48,
-              paddingLeft: 14,
-              paddingRight: 16,
-            }}
-          >
-            <div className="shrink-0" style={{ opacity: 0.7 }}>
-              {CARD_ICONS[card.id]}
-            </div>
-            <p style={{ ...typography.bodySmall, fontWeight: 400, color: "rgba(0,0,0,0.7)", whiteSpace: "nowrap" }}>
-              {card.title}
-            </p>
-          </button>
-        ))}
-      </div>
-
       {/* ── Input bar ── */}
       <div className="shrink-0" style={{ paddingTop: 12, paddingBottom: 8, paddingLeft: 24, paddingRight: 24 }}>
         <div
           className="flex items-center overflow-hidden w-full"
           style={{
             height: 48,
-            backgroundColor: "rgba(160,165,175,0.10)",
+            backgroundColor: BG_SURFACE,
             border: "none",
             borderRadius: 100,
           } as React.CSSProperties}
@@ -375,7 +316,7 @@ function pickGreeting(): string {
 }
 
 export function InitialPromptContent({ suggestions, onSuggestionClick, onSubmit, variant = "old" }: Props) {
-  if (variant === "new") {
+  if (variant === "new" || variant === "new2") {
     return <NewInitialLayout suggestions={suggestions} onSuggestionClick={onSuggestionClick} onSubmit={onSubmit} />;
   }
   const [inputValue, setInputValue] = useState("");
@@ -463,7 +404,7 @@ export function InitialPromptContent({ suggestions, onSuggestionClick, onSubmit,
           className="flex items-center overflow-hidden w-full"
           style={{
             height: 48,
-            backgroundColor: "#f6f9fc",
+            backgroundColor: BG_SURFACE,
             border: "1px solid #f0f4f7",
             borderRadius: 100,
           }}
@@ -471,7 +412,7 @@ export function InitialPromptContent({ suggestions, onSuggestionClick, onSubmit,
           <div
             className="flex items-center w-full h-full"
             style={{
-              backgroundColor: "#f6f9fc",
+              backgroundColor: BG_SURFACE,
               borderRadius: 100,
               paddingLeft: 16,
               paddingRight: 8,

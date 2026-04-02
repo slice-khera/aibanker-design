@@ -536,7 +536,7 @@ export default function Home() {
   const [reviewMessages, setReviewMessages] = useState<ChatMessage[] | null>(null);
   const [goalDetail, setGoalDetail] = useState<GoalDetailSnapshot | null>(null);
   const [showInitialScreen, setShowInitialScreen] = useState(true);
-  const [initialScreenVariant, setInitialScreenVariant] = useState<"old" | "new">("old");
+  const [initialScreenVariant, setInitialScreenVariant] = useState<"old" | "new" | "new2">("old");
   const [rdDetailVisible, setRdDetailVisible] = useState(false);
   const [fdSheetPhase, setFdSheetPhase] = useState<"closed" | "entering" | "open">("closed");
   const [fdSheetData, setFdSheetData] = useState<Extract<ChatCardData, { type: "investment-product" }> | null>(null);
@@ -4129,6 +4129,29 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                   onSubmit={(value) => {
                     setReviewMessages(null);
                     setShowInitialScreen(false);
+
+                    // Hardcoded flow for "new2" variant — completely isolated
+                    if (initialScreenVariant === "new2") {
+                      addMessage("user", value);
+                      setTimeout(() => {
+                        addMessage("assistant", "You've spent ₹15,000 more than you should have, by this time as per what we budgeted for. Add ₹5,000 to your goal pot to curb any further reckless spending. I can help you rebudget to help you get back on track as much as you can.");
+                      }, 800);
+                      setTimeout(() => {
+                        addMessage("assistant", "", undefined, {
+                          type: "add-to-pot",
+                          goalName: "Trip to Japan",
+                          amount: 5000,
+                          fromAccount: "slice savings",
+                          onAdd: () => {
+                            setTimeout(() => {
+                              addMessage("assistant", "Done — ₹5,000 added to your Japan trip pot.\n\nNow let's make sure you don't fall behind again. Here's a rebudget plan for the rest of this month:\n\n• Dining out: ₹4,000 → ₹2,500 (skip 2–3 meals out)\n• Shopping: ₹3,500 → ₹1,500 (hold off non-essentials)\n• Subscriptions: cancel unused trials — saves ₹800\n• Transport: switch to metro 3× a week — saves ₹1,200\n\nThat frees up roughly ₹6,700 this month — enough to cover the shortfall and stay on pace for Japan. Want me to lock these limits in?");
+                            }, 800);
+                          },
+                        });
+                      }, 1400);
+                      return;
+                    }
+
                     if (step === "home") {
                       handleChatSubmit(value);
                     } else {
@@ -4675,6 +4698,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
               <DbgRow label="Initial screen">
                 <DbgBtn onClick={() => { setInitialScreenVariant("old"); showChatOverlay(true); }}>Old</DbgBtn>
                 <DbgBtn onClick={() => { setInitialScreenVariant("new"); showChatOverlay(true); }}>New</DbgBtn>
+                <DbgBtn onClick={() => { setInitialScreenVariant("new2"); showChatOverlay(true); }}>New 2</DbgBtn>
               </DbgRow>
               <DbgRow label="Session">
                 <DbgBtn onClick={resetFlow}>Restart</DbgBtn>
