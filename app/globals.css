@@ -3,13 +3,14 @@
 :root {
   --background: #0a0a0a;
   --foreground: #ededed;
-  --chat-surface: #ffffff;
-  --chat-surface-soft: #f6f9fc;
-  --chat-surface-soft-2: #f0f4f7;
-  --chat-user-bubble: #fae2fa;
-  --chat-border-subtle: #f0f4f7;
-  --chat-text-primary: rgba(0, 0, 0, 0.9);
-  --chat-text-tertiary: rgba(0, 0, 0, 0.5);
+  /* DLS 2 token mapping (keep in sync with app/lib/colors.ts) */
+  --chat-surface: #ffffff;              /* BG_PRIMARY */
+  --chat-surface-soft: #f6f9fc;         /* SLATE_10 / BG_SURFACE */
+  --chat-surface-soft-2: #f0f4f7;       /* SLATE_30 / BG_SURFACE_2 */
+  --chat-user-bubble: #fae2fa;          /* VALENTINO_50 */
+  --chat-border-subtle: #f0f4f7;        /* SLATE_30 / BG_SURFACE_2 */
+  --chat-text-primary: rgba(0, 0, 0, 0.9);   /* TEXT_PRIMARY */
+  --chat-text-tertiary: rgba(0, 0, 0, 0.5);  /* TEXT_TERTIARY */
 }
 
 @theme inline {
@@ -34,46 +35,9 @@ body {
 
 /* ============ ANIMATIONS ============ */
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+@keyframes goal-alert-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
 }
 
 @keyframes chatMessageIn {
@@ -87,157 +51,10 @@ body {
   }
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes successPop {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes checkmark {
-  0% {
-    stroke-dashoffset: 100;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes ripple {
-  0% {
-    transform: scale(0);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(4);
-    opacity: 0;
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-@keyframes glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(0, 166, 62, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(0, 166, 62, 0.4);
-  }
-}
-
-@keyframes edgeGlowSpin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes edgeGlowPulse {
-  0%, 100% {
-    opacity: 0.18;
-    filter: saturate(1) blur(0px);
-  }
-  50% {
-    opacity: 0.52;
-    filter: saturate(1.15) blur(0px);
-  }
-}
-
-@keyframes processingBandSpin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-
 /* ============ ANIMATION CLASSES ============ */
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.4s ease-out forwards;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 0.3s ease-out forwards;
-}
-
-.animate-slide-in-left {
-  animation: slideInLeft 0.3s ease-out forwards;
-}
 
 .animate-chat-message-in {
   animation: chatMessageIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.3s ease-out forwards;
-}
-
-.animate-success-pop {
-  animation: successPop 0.5s ease-out forwards;
-}
-
-.animate-pulse {
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.animate-glow {
-  animation: glow 2s ease-in-out infinite;
 }
 
 .animate-thinking-pulse {
@@ -248,13 +65,6 @@ body {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 1; }
 }
-
-/* Staggered delays for chips */
-.animate-delay-1 { animation-delay: 0.05s; }
-.animate-delay-2 { animation-delay: 0.1s; }
-.animate-delay-3 { animation-delay: 0.15s; }
-.animate-delay-4 { animation-delay: 0.2s; }
-.animate-delay-5 { animation-delay: 0.25s; }
 
 /* ============ SCROLLBAR ============ */
 
@@ -273,58 +83,6 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
-}
-
-/* ============ SPECIAL EFFECTS ============ */
-
-.glass {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.gradient-border {
-  position: relative;
-}
-
-.gradient-border::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  padding: 1px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-.shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-/* ============ TYPOGRAPHY ============ */
-
-.text-gradient {
-  background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gradient-success {
-  background: linear-gradient(135deg, #00a63e 0%, #3dbb6c 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 /* ============ PHONE PROCESSING GLOW ============ */
@@ -355,5 +113,131 @@ body {
   .phone-screen-processing-band.is-active {
     animation: none;
     box-shadow: inset 0 0 8px 4px rgba(206,120,255,0.85);
+  }
+}
+
+/* ============ GOAL PLAN BUILDER ============ */
+
+.plan-builder-entrance {
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity 280ms ease-out, transform 280ms ease-out;
+}
+
+.plan-builder-entered {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.plan-builder-backdrop {
+  animation: planBuilderBackdropIn 180ms ease-out forwards;
+}
+
+@keyframes planBuilderBackdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.plan-builder-pulse {
+  animation: planBuilderPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes planBuilderPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.85); }
+}
+
+.plan-builder-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f0f4f7 0%,
+    #fae2fa40 50%,
+    #f0f4f7 100%
+  );
+  background-size: 200% 100%;
+  animation: planBuilderShimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes planBuilderShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.plan-builder-celebrate {
+  animation: planBuilderCelebrate 800ms ease-out;
+}
+
+@keyframes planBuilderCelebrate {
+  0%   { box-shadow: 0 0 0 0 rgba(0,166,62,0.4); }
+  30%  { box-shadow: 0 0 16px 4px rgba(0,166,62,0.35); }
+  60%  { box-shadow: 0 0 24px 8px rgba(0,166,62,0.15); }
+  100% { box-shadow: 0 0 0 0 rgba(0,166,62,0); }
+}
+
+.plan-builder-check-pop {
+  animation: planBuilderCheckPop 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes planBuilderCheckPop {
+  0%  { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100%{ transform: scale(1); opacity: 1; }
+}
+
+.plan-builder-particle {
+  animation: planBuilderParticleBurst 700ms ease-out forwards;
+}
+
+@keyframes planBuilderParticleBurst {
+  0% {
+    transform: translate(-50%, -50%) rotate(var(--particle-angle, 0deg)) translateX(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(var(--particle-angle, 0deg)) translateX(32px) scale(0);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plan-builder-entrance,
+  .plan-builder-entered {
+    transition: none;
+  }
+  .plan-builder-pulse,
+  .plan-builder-shimmer,
+  .plan-builder-celebrate,
+  .plan-builder-check-pop,
+  .plan-builder-particle {
+    animation: none;
+  }
+  .plan-builder-entered {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Questionnaire overlay ─────────────────────────────────── */
+
+.questionnaire-overlay-entrance {
+  animation: questionnaireSlideUp 250ms ease-out both;
+}
+
+@keyframes questionnaireSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .questionnaire-overlay-entrance {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }

@@ -6,7 +6,12 @@ import ChatCard, { type ChatCardData, CATEGORY_ICONS, CATEGORY_COLORS } from "./
 import PersonaQuizStack, { type RevealData } from "./components/PersonaQuizStack";
 import { getSuggestions } from "./components/ChatInitialScreen";
 import { AppBar, BOTTOM_INSET, NavButton } from "./components/AppChrome";
+import GoalTracker, { type GoalIndicatorData } from "./components/GoalTracker";
+import GoalListScreen from "./components/GoalListScreen";
+import PotDetail from "./components/PotDetail";
+import GoalPlanBuilder, { type PlanStep } from "./components/GoalPlanBuilder";
 import PayScreen from "./components/PayScreen";
+import QuestionnaireOverlay, { type Question, type QuestionOption } from "./components/QuestionnaireOverlay";
 import {
   affordAmountChips,
   amountChips,
@@ -32,7 +37,6 @@ import {
 } from "./data/flows";
 import {
   getFDSuggestion,
-  getRealityCheckText,
 } from "./data/mockProfiles";
 import type { PacePreset } from "./data/mockProfiles";
 import {
@@ -57,7 +61,6 @@ import { getEffectiveBudget } from "./lib/budget-utils";
 import { useUserState } from "./hooks/useUserState";
 import { typography } from "./lib/typography";
 
-type PaceStage = "summary" | "select";
 type PersonaStageKey = "q1" | "q2" | "q2-follow" | "q3" | "q4";
 type GoalProgressCardData = Extract<ChatCardData, { type: "goal-progress" }>;
 type GoalDetailSnapshot = {
@@ -174,6 +177,34 @@ const DBG_CATEGORY_BAR: ChatCardData = {
     { name: "Subscriptions", amount: 8400, pct: 11, color: "#00a63e", icon: "📱" },
     { name: "Utilities", amount: 7800, pct: 10, color: "#ce1d26", icon: "💡" },
     { name: "Other", amount: 10000, pct: 13, color: "#8e949d", icon: "📦" },
+  ],
+};
+
+// ─── Goal Tracker demo scenarios ──────────────────────────────
+type GoalTrackerScenario = "none" | "single" | "single-icon" | "single-alert" | "single-icon-alert" | "two" | "three";
+
+const GOAL_TRACKER_SCENARIOS: Record<GoalTrackerScenario, GoalIndicatorData[]> = {
+  none: [],
+  single: [
+    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "✈️", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "✈️", heroScene: "japan" },
+  ],
+  "single-icon": [
+    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "✈️", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "✈️", heroScene: "japan" },
+  ],
+  "single-alert": [
+    { id: "1", name: "Trip to Japan", pct: 42, status: "behind", icon: "✈️", daysLabel: "15 days behind", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "✈️", heroScene: "japan" },
+  ],
+  "single-icon-alert": [
+    { id: "1", name: "Trip to Japan", pct: 42, status: "behind", icon: "✈️", daysLabel: "15 days behind", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "✈️", heroScene: "japan" },
+  ],
+  two: [
+    { id: "1", name: "Trip to Japan", pct: 62, status: "ahead", icon: "✈️", daysLabel: "11 days ahead", saved: 124000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "✈️", heroScene: "japan" },
+    { id: "2", name: "Emergency Fund", pct: 35, status: "on-track", icon: "🛡️", daysLabel: "On track", saved: 175000, target: 500000, ringColor: "#ff9a17", endDate: "Mar 2027", monthlyAmount: 15000, gradient: "linear-gradient(135deg, #fff3e3 0%, #ff9a17 100%)", heroEmoji: "🛡️" },
+  ],
+  three: [
+    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "✈️", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "✈️", heroScene: "japan" },
+    { id: "2", name: "Emergency Fund", pct: 78, status: "ahead", icon: "🛡️", daysLabel: "12 days ahead", saved: 390000, target: 500000, ringColor: "#ff9a17", endDate: "Mar 2027", monthlyAmount: 15000, gradient: "linear-gradient(135deg, #fff3e3 0%, #ff9a17 100%)", heroEmoji: "🛡️" },
+    { id: "3", name: "New Laptop", pct: 65, status: "on-track", icon: "💻", daysLabel: "On track", saved: 48750, target: 75000, ringColor: "#00a63e", endDate: "Sep 2026", monthlyAmount: 5000, gradient: "linear-gradient(135deg, #e0f4e8 0%, #00a63e 100%)", heroEmoji: "💻" },
   ],
 };
 
@@ -356,6 +387,44 @@ const DBG_BIG_EXPENSES: ChatCardData = {
   total: 194000,
 };
 
+// ─── Debug: Goal questionnaire fixture ─────────────────────────
+const DBG_GOAL_QUESTIONS: Question[] = [
+  {
+    id: "choice",
+    text: "What are you saving toward?",
+    options: [
+      { id: "trip", label: "Trip" },
+      { id: "big-purchase", label: "Big purchase" },
+      { id: "emergency", label: "Emergency fund" },
+      { id: "increase-savings", label: "Increase monthly savings" },
+    ],
+  },
+  {
+    id: "destination",
+    text: "Where are you headed?",
+    options: [],
+  },
+  {
+    id: "timeline",
+    text: "By when?",
+    options: [
+      { id: "3m", label: "3 months" },
+      { id: "6m", label: "6 months" },
+      { id: "1y", label: "1 year" },
+    ],
+  },
+  {
+    id: "amount",
+    text: "How much do you need?",
+    options: [
+      { id: "50k", label: "\u20B950k" },
+      { id: "1l", label: "\u20B91L" },
+      { id: "5l", label: "\u20B95L" },
+      { id: "10l", label: "\u20B910L" },
+    ],
+  },
+];
+
 // ─── Debug panel: UI helpers ────────────────────────────────────
 function DbgBtn({
   children,
@@ -375,7 +444,7 @@ function DbgBtn({
         destructive
           ? "border-red-200 bg-white text-red-500"
           : active
-          ? "border-[#3dbb6c] bg-[#e0f4e8] text-[#008830]"
+          ? "border-[#3dbb6c] bg-[#e0f4e8] text-[#00a63e]"
           : "border-[rgba(0,0,0,0.2)] bg-white text-[#8e949d]"
       }`}
     >
@@ -433,6 +502,54 @@ export default function Home() {
 
   const selectedPaceId = userState?.goal?.paceId ?? localPaceId;
   const savingsForGoal = userState?.goal?.savingsAllocated ?? localSavingsForGoal;
+
+  // Goal plan builder: tracks whether the invest-confirm celebration just happened
+  const [goalPlanCompleted, setGoalPlanCompleted] = useState(false);
+
+  const goalPlanSteps = useMemo((): PlanStep[] => {
+    if (step !== "goal" && !goalPlanCompleted) return [];
+
+    const isTrip = localGoalDraft.name === "Trip" || (localGoalDraft.name?.startsWith("Trip to") ?? false);
+    const hasInvestments = profile.investmentSummary.totalInvested > 0;
+
+    const stages: { stageId: string; label: string; value?: string }[] = [
+      { stageId: "choice", label: "Saving for", value: goalDraft.name },
+    ];
+    if (isTrip) {
+      const dest = goalDraft.name?.startsWith("Trip to ") ? goalDraft.name.slice(8) : undefined;
+      stages.push({ stageId: "destination", label: "Destination", value: dest });
+    }
+    stages.push({ stageId: "timeline", label: "Timeline", value: goalDraft.timeline });
+    stages.push({ stageId: "amount", label: "Target amount", value: goalDraft.amount });
+    if (hasInvestments) {
+      const savingsVal = goalStage === "plan" || goalStage === "plan-adjust" || goalPlanCompleted
+        ? (localSavingsForGoal > 0 ? `₹${(localSavingsForGoal / 1000).toFixed(0)}k counted` : "Starting fresh")
+        : undefined;
+      stages.push({ stageId: "savings-ask", label: "Existing savings", value: savingsVal });
+    }
+    const planValue = goalPlanCompleted && userState?.products?.length
+      ? (() => {
+          const latest = userState.products[userState.products.length - 1];
+          const productLabel = latest.type === "rd" ? "RD" : "Auto-save";
+          return `₹${(latest.amount / 1000).toFixed(0)}k/mo ${productLabel}`;
+        })()
+      : undefined;
+    stages.push({ stageId: "plan", label: "Monthly plan", value: planValue });
+
+    const stageIds = stages.map((s) => s.stageId);
+    const effectiveStage = goalStage === "plan-adjust" ? "plan" : goalStage;
+    const rawIdx = stageIds.indexOf(effectiveStage);
+    const currentIdx = goalPlanCompleted ? stageIds.length : (rawIdx === -1 ? stageIds.length : rawIdx);
+
+    return stages.map((s, i): PlanStep => ({
+      id: s.stageId,
+      label: s.label,
+      value: s.value,
+      status: i < currentIdx ? "completed" : i === currentIdx ? "active" : "pending",
+    }));
+  }, [step, goalStage, localGoalDraft, goalDraft, goalPlanCompleted, localSavingsForGoal, profile.investmentSummary.totalInvested, userState?.products]);
+
+  const goalPlanVisible = step === "goal" || goalPlanCompleted;
 
   // Core UI state (transient, not persisted)
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -511,13 +628,10 @@ export default function Home() {
   ]);
   const [activeChips, setActiveChips] = useState<ChatChip[]>([]);
   const [homeSubflow, setHomeSubflow] = useState<HomeSubflow>("idle");
-  const [paceStage, setPaceStage] = useState<PaceStage>("summary");
   const [subflowData, setSubflowData] = useState<Record<string, string>>({});
   const [personaDraftAnswers, setPersonaDraftAnswers] = useState<Record<string, string>>({});
   const [personaActiveIndex, setPersonaActiveIndex] = useState(0);
-  const [personaCoverVisible, setPersonaCoverVisible] = useState(false);
   const [personaTransitioning, setPersonaTransitioning] = useState(false);
-  const [personaSubmitting, setPersonaSubmitting] = useState(false);
   const [personaRevealVisible, setPersonaRevealVisible] = useState(false);
   const [personaRevealData, setPersonaRevealData] = useState<RevealData | undefined>();
   const [personaStoryIndex, setPersonaStoryIndex] = useState(-1);
@@ -528,7 +642,6 @@ export default function Home() {
 
   // UI state
   const [receiptsOpen, setReceiptsOpen] = useState(false);
-  const [insightIndex, setInsightIndex] = useState(0);
   const [isAgentProcessingGlow, setIsAgentProcessingGlow] = useState(false);
   const [debugPanelOpen, setDebugPanelOpen] = useState(true);
   const [chatVisible, setChatVisible] = useState(false);
@@ -536,11 +649,24 @@ export default function Home() {
   const [reviewMessages, setReviewMessages] = useState<ChatMessage[] | null>(null);
   const [goalDetail, setGoalDetail] = useState<GoalDetailSnapshot | null>(null);
   const [showInitialScreen, setShowInitialScreen] = useState(true);
-  const [initialScreenVariant, setInitialScreenVariant] = useState<"old" | "new" | "new2">("old");
+  const [initialScreenVariant, setInitialScreenVariant] = useState<"old" | "new" | "new2" | "new3" | "new4" | "new5" | "review-ontrack" | "review-rent" | "review-refresh">("old");
   const [rdDetailVisible, setRdDetailVisible] = useState(false);
+  const [goalTrackerScenario, setGoalTrackerScenario] = useState<GoalTrackerScenario>("single");
+  const [goalListOpen, setGoalListOpen] = useState(false);
+  const [goalListPhase, setGoalListPhase] = useState<"closed" | "open" | "exiting">("closed");
+  const [goalCardVariant, setGoalCardVariant] = useState<"v1" | "v2" | "v3" | "v4">("v4");
+  const [potDetail, setPotDetail] = useState<{ name: string; saved: number; target: number; pct: number; status: "ahead" | "behind" | "on-track"; daysLabel: string; icon?: string; heroScene?: string } | null>(null);
+  const [potDetailPhase, setPotDetailPhase] = useState<"closed" | "open" | "exiting">("closed");
+  const [goalDetailPhase, setGoalDetailPhase] = useState<"closed" | "open" | "exiting">("closed");
+  const [rdDetailPhase, setRdDetailPhase] = useState<"closed" | "open" | "exiting">("closed");
   const [fdSheetPhase, setFdSheetPhase] = useState<"closed" | "entering" | "open">("closed");
   const [fdSheetData, setFdSheetData] = useState<Extract<ChatCardData, { type: "investment-product" }> | null>(null);
   const [fdSelectedAmount, setFdSelectedAmount] = useState(0);
+
+  // ── Goal questionnaire overlay state ──
+  const [goalQuizActive, setGoalQuizActive] = useState(false);
+  const [goalQuizIndex, setGoalQuizIndex] = useState(0);
+  const [goalQuizAnswers, setGoalQuizAnswers] = useState<Record<string, string>>({});
 
   // ── Obligation detail sheet state ──
   const [obligSheetPhase, setObligSheetPhase] = useState<"closed" | "entering" | "open">("closed");
@@ -576,11 +702,6 @@ export default function Home() {
   const SHEET_MIN_OFFSET = frameHeight - PILL_HEIGHT - PILL_MARGIN; // floating pill at bottom
 
   const [sheetOffset, setSheetOffset] = useState(SHEET_MAX_OFFSET);
-  const [isSheetDragging, setIsSheetDragging] = useState(false);
-  const sheetDragRef = useRef<{ startY: number; startOffset: number }>({
-    startY: 0,
-    startOffset: 0,
-  });
 
   // Reset to default position whenever frame height is (re)measured
   const prevFrameHeightRef = useRef(0);
@@ -643,39 +764,6 @@ export default function Home() {
     };
   }, [clearChatTransitionTimers]);
 
-  const onSheetPointerDown = useCallback((e: React.PointerEvent) => {
-    sheetDragRef.current = { startY: e.clientY, startOffset: sheetOffset };
-    setIsSheetDragging(true);
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-  }, [sheetOffset]);
-
-  const onSheetPointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isSheetDragging) return;
-    const delta = e.clientY - sheetDragRef.current.startY;
-    const next = Math.max(SHEET_MAX_OFFSET, Math.min(SHEET_MIN_OFFSET, sheetDragRef.current.startOffset + delta));
-    setSheetOffset(next);
-  }, [isSheetDragging, SHEET_MAX_OFFSET, SHEET_MIN_OFFSET]);
-
-  const onSheetPointerUp = useCallback(() => {
-    if (!isSheetDragging) return;
-    setIsSheetDragging(false);
-    const delta = sheetOffset - sheetDragRef.current.startOffset;
-    if (delta < -SNAP_THRESHOLD) {
-      setSheetOffset(SHEET_MAX_OFFSET);
-    } else if (delta > SNAP_THRESHOLD) {
-      setSheetOffset(SHEET_MIN_OFFSET);
-      closeChatOverlay();
-    } else {
-      const mid = (SHEET_MAX_OFFSET + SHEET_MIN_OFFSET) / 2;
-      if (sheetOffset < mid) {
-        setSheetOffset(SHEET_MAX_OFFSET);
-      } else {
-        setSheetOffset(SHEET_MIN_OFFSET);
-        closeChatOverlay();
-      }
-    }
-  }, [isSheetDragging, sheetOffset, SHEET_MAX_OFFSET, SHEET_MIN_OFFSET, SNAP_THRESHOLD, closeChatOverlay]);
-
   // AI Chat state
   const [aiMessages, setAiMessages] = useState<AIChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -685,16 +773,7 @@ export default function Home() {
   const [swipeIndex, setSwipeIndex] = useState(0);
   const [swipeQueue, setSwipeQueue] = useState<typeof profile.receipts>([]);
 
-  // Welcome-back: hydrate transient state from persisted state
-  const welcomeShownRef = useRef(false);
   const launchResetDoneRef = useRef(false);
-  useEffect(() => {
-    if (!isHydrated || welcomeShownRef.current) return;
-    welcomeShownRef.current = true;
-    // Intentionally do not auto-enter the chat on launch.
-    // We force users through the wrapped/story screen first.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHydrated]);
 
   // Message management - use a ref counter to guarantee unique IDs
   const msgIdRef = { current: 0 };
@@ -772,9 +851,7 @@ export default function Home() {
     const answeredCount = Object.keys(draft).length;
     const isComplete = answeredCount >= personaQuestions.length;
     setPersonaActiveIndex(isComplete ? personaQuestions.length - 1 : nextIndex);
-    setPersonaCoverVisible(answeredCount === 0 && nextIndex === 0 && !isComplete);
     setPersonaTransitioning(false);
-    setPersonaSubmitting(false);
   }, []);
 
   // ============ AI CHAT HANDLER ============
@@ -1189,48 +1266,6 @@ Analyze these spending patterns conversationally. Look for:
 Be insightful, not just descriptive.`;
   };
 
-  const buildRealityCheckContext = (guesses: { savingsGuess?: string; personaGuess?: string }) => {
-    const actualSavings = profile.persona.actual_savings_pct;
-    const topCat = lifestyleCategories[0];
-    const totalInvested = profile.investmentSummary.totalInvested;
-
-    return `REALITY CHECK — comparing user's self-perception vs actual data:
-
-USER'S GUESSES:
-- Thinks they save: ${guesses.savingsGuess || "didn't say"}
-- Identifies as: ${guesses.personaGuess || "didn't say"}
-
-ACTUAL DATA:
-- Real savings rate: ${actualSavings}
-- Top spending category: ${topCat?.name || "unknown"} (${topCat?.shareOfLifestyle || "?"} of lifestyle, ${formatINR(topCat?.monthlyAverage || 0)}/month)
-- Total invested: ${formatINR(totalInvested)} across ${Object.keys(profile.investmentSummary.breakdown).length} platforms
-- Account balance: ${formatINR(profile.accountBalance)}
-- ${profile.dataRange.totalTransactions} transactions over ${profile.dataRange.months} months
-- Money personality: ${profile.wrapped.money_personality_label}
-
-Write a punchy, surprising reveal. Start with where they were right or wrong. Make it feel like an "aha" moment, not a lecture. Keep it under 100 words. End with something that makes them curious to learn more.`;
-  };
-
-  const buildPaceContext = (paceId: string) => {
-    const preset = dynamicPacePresets.find((p) => p.id === paceId) ?? dynamicPacePresets[0];
-    const goalName = goalDraft.name || profile.goal.goal_name;
-    const goalAmount = goalDraft.amount || profile.goal.goal_amount;
-
-    return `PACE RECOMMENDATION:
-Goal: ${goalName} — ${goalAmount} in ${goalDraft.timeline || "TBD"}
-Selected pace: ${preset.label} (${preset.id})
-Window: ${preset.pace_window}
-Required monthly cut: ${preset.required_monthly_cut}
-Feasibility: ${preset.feasibility_note}
-Lever examples: ${preset.lever_examples.join(", ")}
-Product: ${preset.recommended_product.type} — ${preset.recommended_product.copy}
-
-Current savings rate: ${profile.persona.actual_savings_pct}
-Top spending categories: ${lifestyleCategories.slice(0, 3).map((c) => `${c.name} (${formatINR(c.monthlyAverage)}/mo)`).join(", ")}
-
-Explain this pace conversationally. Make the monthly cut feel tangible ("that's like skipping X per month"). Mention what's realistic based on their actual spending. Keep it under 100 words.`;
-  };
-
   const parseTimelineToMonths = (timeline: string): number => {
     if (timeline.includes("year") || timeline === "1y") return 12;
     const match = timeline.match(/(\d+)/);
@@ -1247,36 +1282,6 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
 
   const lookupPace = (paceId: "aggressive" | "balanced" | "relaxed") => {
     return dynamicPacePresets.find((p) => p.id === paceId) ?? dynamicPacePresets[0];
-  };
-
-  const getPaceSummary = (paceId: "aggressive" | "balanced" | "relaxed") => {
-    const preset = lookupPace(paceId);
-    return (
-      `${preset.label} pace — ${preset.pace_window}\n\n` +
-      `You'd need to cut ~${preset.required_monthly_cut}/month.\n` +
-      `${preset.feasibility_note}\n\n` +
-      `Ways to do it:\n` +
-      preset.lever_examples.map((item) => `• ${item}`).join("\n")
-    );
-  };
-
-  const getGoalProductText = (paceId: "aggressive" | "balanced" | "relaxed") => {
-    const preset = lookupPace(paceId);
-    return preset.recommended_product.copy;
-  };
-
-  const getGoalProductChips = (paceId: "aggressive" | "balanced" | "relaxed"): ChatChip[] => {
-    const preset = lookupPace(paceId);
-    const product = preset.recommended_product;
-    const primaryLabel = product.type === "RD"
-      ? `Start RD ${preset.required_monthly_cut}`
-      : `Turn on ${formatINR(Math.round(parseINR(preset.required_monthly_cut) / 30))}/day`;
-    return [
-      { id: "product-primary", label: primaryLabel, variant: "success" },
-      { id: "product-secondary", label: product.type === "RD" ? "Show other amounts" : "Make it smaller" },
-      { id: "product-change-pace", label: "Change pace" },
-      { id: "product-skip", label: "I'll monitor it myself" },
-    ];
   };
 
   const getBucketOptionChips = (): ChatChip[] => {
@@ -1298,12 +1303,6 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
       `• ${option.reduce_elsewhere}\n\n` +
       `Which should we do?`
     );
-  };
-
-  const getGoalPaceImpactText = (amount: string, timing: string) => {
-    const paceId = selectedPaceId;
-    const paceDays = paceId === "aggressive" ? 5 : paceId === "balanced" ? 3 : 2;
-    return `${amount} ${timing.toLowerCase()}? Risky.\nThis would put you behind on your ${goalDraft.name || profile.goal.goal_name} by ~${paceDays} days.`;
   };
 
   // Helper: Calculate goal impact for expenses
@@ -1468,9 +1467,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     setActiveChips([]);
     setPersonaDraftAnswers({});
     setPersonaActiveIndex(0);
-    setPersonaCoverVisible(false);
     setPersonaTransitioning(false);
-    setPersonaSubmitting(false);
     setPersonaRevealVisible(false);
     setPersonaStoryIndex(0);
     setInsightsMode(false);
@@ -1487,9 +1484,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     setActiveChips([]);
     setPersonaDraftAnswers({});
     setPersonaActiveIndex(0);
-    setPersonaCoverVisible(false);
     setPersonaTransitioning(false);
-    setPersonaSubmitting(false);
     setPersonaRevealVisible(false);
     setPersonaStoryIndex(0);
     setInsightsMode(true);
@@ -1499,7 +1494,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
 
   // ============ PERSONA FLOW ============
   const handlePersonaAnswer = (questionIndex: number, chip: ChipOption) => {
-    if (personaTransitioning || personaSubmitting) return;
+    if (personaTransitioning) return;
 
     const question = personaQuestions[questionIndex];
     if (!question) return;
@@ -1537,34 +1532,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     }, 220);
   };
 
-  const handlePersonaBack = () => {
-    if (personaTransitioning || personaSubmitting) return;
-
-    if (personaActiveIndex === 0) return;
-
-    const previousIndex = personaActiveIndex - 1;
-    const previousQuestion = personaQuestions[previousIndex];
-    if (!previousQuestion) return;
-
-    setPersonaDraftAnswers((prev) => {
-      const next = { ...prev };
-      delete next[previousQuestion.id];
-      return next;
-    });
-    setPersonaActiveIndex(previousIndex);
-    mutate({
-      personaStage: personaQuestionStageMap[previousQuestion.id],
-      personaAnswers: (() => {
-        const nextAnswers = { ...(userState?.personaAnswers || {}) };
-        delete nextAnswers[personaQuestionStageMap[previousQuestion.id]];
-        return nextAnswers;
-      })(),
-    });
-  };
-
   const submitPersonaQuiz = (draftAnswers = personaDraftAnswers) => {
-    if (personaSubmitting) return;
-
     const nextAnswers = { ...(userState?.personaAnswers || {}) };
     for (const question of personaQuestions) {
       const stageKey = personaQuestionStageMap[question.id];
@@ -1575,25 +1543,6 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     }
 
     handoffToGoalFromQuiz(nextAnswers);
-  };
-
-  const startPersonaQuiz = () => {
-    setPersonaCoverVisible(false);
-  };
-
-  const startReality = (answerSnapshot?: Record<string, string>) => {
-    mutate({ currentStep: "reality" });
-
-    const answers = answerSnapshot ?? userState?.personaAnswers ?? {};
-
-    // Store persona decisions in Mem0
-    storeMemoryDecision(
-      "persona_quiz",
-      `User thinks they save ${answers["q1"] || "unknown"}. Top category guess: ${answers["q2"] || "unknown"}. Identifies as: ${answers["q3"] || "unknown"}. Confidence: ${answers["q4"] || "unknown"}.`
-    );
-
-    // Reality check is shown on the quiz reveal card — go straight to goal flow
-    startGoal();
   };
 
   const handoffToGoalFromQuiz = useCallback((answerSnapshot?: Record<string, string>) => {
@@ -1618,13 +1567,6 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
       goalOnboardingTimerRef.current = null;
     }, 1800);
   }, [userState?.personaAnswers, mutate, clearMsgQueue, showChatOverlay, queueMessage]);
-
-  // ============ REALITY FLOW ============
-  const handleRealityChip = (chip: ChatChip) => {
-    addMessage("user", chip.label);
-    mutate({ personaAnswers: { ...userState?.personaAnswers, realityChoice: chip.id } });
-    startGoal();
-  };
 
   // ============ GOAL REVIEW ============
   const getGoalContributionSummary = useCallback(() => {
@@ -1751,6 +1693,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
       amountRemaining,
       startedLabel,
     });
+    requestAnimationFrame(() => requestAnimationFrame(() => setGoalDetailPhase("open")));
   }, [userState?.goal, getGoalContributionSummary]);
 
   const showGoalReview = () => {
@@ -2001,13 +1944,14 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     // Flip the existing investment-product card to activated state
     setMessages((prev) => prev.map((msg) => {
       if (msg.card?.type === "investment-product" && !msg.card.activated) {
-        return { ...msg, card: { ...msg.card, activated: true, amount: investAmount, onInvest: undefined, onArrowTap: () => setRdDetailVisible(true) } };
+        return { ...msg, card: { ...msg.card, activated: true, amount: investAmount, onInvest: undefined, onArrowTap: () => { setRdDetailVisible(true); requestAnimationFrame(() => requestAnimationFrame(() => setRdDetailPhase("open"))); } } };
       }
       return msg;
     }));
 
     queueMessage("assistant", "Congratulations on taking the first step toward achieving your savings goal!");
     setActiveChips([]);
+    setGoalPlanCompleted(true);
   };
 
   // Step 4: Adjust (only reachable if we add adjust chips back later)
@@ -2260,7 +2204,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
       setActiveChips(toChips(steadyStateChips));
       return;
     }
-    const nextInsight = profile.insights[insightIndex % profile.insights.length];
+    const nextInsight = profile.insights[0];
     queueMessage("assistant", nextInsight.message, "insight");
     setActiveChips(
       nextInsight.chips.length > 0
@@ -2314,7 +2258,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
         handleSwipeActions(chip);
         break;
       case "progress-status":
-        handleProgressStatus(chip);
+        returnToSteadyState();
         break;
       case "progress-ahead":
         handleProgressAhead(chip);
@@ -3072,11 +3016,6 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     }
   };
 
-  const handleProgressStatus = (chip: ChatChip) => {
-    // This is just a fallback in case there are any chips at status stage
-    returnToSteadyState();
-  };
-
   const handleProgressAhead = async (chip: ChatChip) => {
     const preset = lookupPace(selectedPaceId);
 
@@ -3755,9 +3694,6 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     switch (step) {
       case "persona":
         break;
-      case "reality":
-        handleRealityChip(chip);
-        break;
       case "goal":
         handleGoalChip(chip);
         break;
@@ -3777,13 +3713,11 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     resetState(); // Resets all persistent state (step, stages, overrides, etc.)
     // Reset transient local state
     setHomeSubflow("idle");
-    setPaceStage("summary");
     setLocalGoalDraft({});
     setLocalPaceId("balanced");
     setLocalSavingsForGoal(0);
     setSubflowData({});
     setReceiptsOpen(false);
-    setInsightIndex(0);
     setDynamicPacePresets(profile.pace_presets);
     setMessages([]);
     setReviewMessages(null);
@@ -3791,11 +3725,59 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     setIsStreaming(false);
     setSwipeIndex(0);
     setSwipeQueue([]);
-    welcomeShownRef.current = false;
     // Load directly into chat initial screen
     mutate({ currentStep: "home" });
     showChatOverlay(true);
   };
+
+  // ============ DEBUG: GOAL QUESTIONNAIRE ============
+  const launchGoalQuiz = useCallback(() => {
+    clearMsgQueue();
+    if (abortRef.current) abortRef.current.abort();
+    setGoalQuizActive(false);
+    setGoalQuizIndex(0);
+    setGoalQuizAnswers({});
+    showChatOverlay(false);
+    setReviewMessages([
+      { id: "gq-user", role: "user", text: "I want to start saving for a goal" },
+      { id: "gq-agent", role: "assistant", text: "Let\u2019s set one up. I\u2019ll ask a few quick questions." },
+    ]);
+    setTimeout(() => setGoalQuizActive(true), 600);
+  }, [clearMsgQueue, showChatOverlay]);
+
+  const handleGoalQuizAnswer = useCallback(
+    (questionId: string, answer: string) => {
+      const wasAlreadyAnswered = !!goalQuizAnswers[questionId];
+      setGoalQuizAnswers((prev) => ({ ...prev, [questionId]: answer }));
+
+      if (wasAlreadyAnswered) return;
+
+      const nextIdx = goalQuizIndex + 1;
+      if (nextIdx < DBG_GOAL_QUESTIONS.length) {
+        setGoalQuizIndex(nextIdx);
+      } else {
+        setGoalQuizActive(false);
+        setReviewMessages((prev) =>
+          prev
+            ? [
+                ...prev,
+                {
+                  id: `gq-shared-${Date.now()}`,
+                  role: "user" as const,
+                  text: "Shared my preferences",
+                },
+                {
+                  id: `gq-done-${Date.now()}`,
+                  role: "assistant" as const,
+                  text: "Got it — let me put together a plan for you.",
+                },
+              ]
+            : prev,
+        );
+      }
+    },
+    [goalQuizIndex, goalQuizAnswers],
+  );
 
   // ============ DEBUG CARD PREVIEW ============
   const injectCardPreview = useCallback(
@@ -3881,13 +3863,11 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
     setMessages([]);
     setActiveChips([]);
     setHomeSubflow("idle");
-    setPaceStage("summary");
     setLocalGoalDraft({});
     setLocalPaceId("balanced");
     setLocalSavingsForGoal(0);
     setSubflowData({});
     setReceiptsOpen(false);
-    setInsightIndex(0);
     setDynamicPacePresets(profile.pace_presets);
     setAiMessages([]);
     setIsStreaming(false);
@@ -3919,7 +3899,6 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
   ) : null;
 
   // ============ PINNED GOAL ============
-  const pinnedGoal = null;
   const activeGoalProduct = userState?.products?.find((product) => product.active);
   const goalAutomationCard = useMemo<Extract<ChatCardData, { type: "investment-product" }> | null>(() => {
     if (!activeGoalProduct || !goalDetail) return null;
@@ -3943,7 +3922,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
       amountOptions: [],
       accountLabel: "Savings xx1234",
       activated: true,
-      onArrowTap: activeGoalProduct.type === "rd" ? () => setRdDetailVisible(true) : undefined,
+      onArrowTap: activeGoalProduct.type === "rd" ? () => { setRdDetailVisible(true); requestAnimationFrame(() => requestAnimationFrame(() => setRdDetailPhase("open"))); } : undefined,
     };
   }, [activeGoalProduct, goalDetail]);
   const displayedMessages = useMemo(
@@ -4035,17 +4014,17 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
       return subflowLabels[homeSubflow]!;
     }
 
-    // Goal stages
-    if (step === "goal") {
+    // Goal stages (only while actively processing, not at rest)
+    if (step === "goal" && isStreaming) {
       return "Working out a savings plan...";
     }
 
-    return "Thinking...";
+    return null;
   }, [isStreaming, homeSubflow, step]);
 
   // ============ RENDER ============
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#eef0f2] px-6 py-6" style={{ color: "rgba(0,0,0,0.9)" }}>
+    <div className="flex min-h-screen items-center justify-center bg-[#f0f4f7] px-6 py-6" style={{ color: "rgba(0,0,0,0.9)" }}>
       {/* Background decorations */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-white/70 blur-3xl" />
@@ -4125,7 +4104,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                     }
                   }}
                   showInput={showChatInput}
-                  inputPlaceholder="Start typing..."
+                  inputPlaceholder={undefined as unknown as string}
                   onSubmit={(value) => {
                     setReviewMessages(null);
                     setShowInitialScreen(false);
@@ -4163,7 +4142,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                   showTyping={isStreaming}
                   thinkingLabel={thinkingLabel}
                   drawerContent={receiptsDrawer}
-                  pinnedContent={pinnedGoal}
+                  pinnedContent={null}
                   headerActions={[
                     {
                       id: "receipts",
@@ -4175,6 +4154,57 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                   onSheetClose={closeChatOverlay}
                   onSheetExpand={() => {}}
                   appBarDragHandleProps={{}}
+                  goalTrailingSlot={
+                    GOAL_TRACKER_SCENARIOS[goalTrackerScenario].length > 0 ? (
+                      <GoalTracker
+                        goals={GOAL_TRACKER_SCENARIOS[goalTrackerScenario]}
+                        singleVariant={goalTrackerScenario.includes("-icon") ? "icon" : "pct"}
+                        onGoalTap={(goal) => {
+                          openGoalDetail({
+                            type: "goal-progress",
+                            name: goal.name,
+                            pct: goal.pct,
+                            saved: goal.saved,
+                            target: goal.target,
+                            daysLabel: goal.daysLabel,
+                            status: goal.status,
+                          });
+                        }}
+                        onGoalListOpen={() => {
+                          setGoalListOpen(true);
+                          requestAnimationFrame(() => requestAnimationFrame(() => setGoalListPhase("open")));
+                        }}
+                      />
+                    ) : undefined
+                  }
+                  goalPlanBuilder={
+                    goalPlanVisible ? (
+                      <GoalPlanBuilder
+                        steps={goalPlanSteps}
+                        visible={goalPlanVisible}
+                        completed={goalPlanCompleted}
+                      />
+                    ) : undefined
+                  }
+                  questionnaireOverlay={
+                    goalQuizActive ? (
+                      <QuestionnaireOverlay
+                        questions={DBG_GOAL_QUESTIONS}
+                        currentIndex={goalQuizIndex}
+                        answers={goalQuizAnswers}
+                        onSelectOption={(qId, opt) => handleGoalQuizAnswer(qId, opt.id)}
+                        onSubmitFreeText={(qId, text) => handleGoalQuizAnswer(qId, text)}
+                        onNavigate={(dir) => {
+                          setGoalQuizIndex((i) =>
+                            dir === "prev"
+                              ? Math.max(0, i - 1)
+                              : Math.min(DBG_GOAL_QUESTIONS.length - 1, i + 1),
+                          );
+                        }}
+                        onClose={() => setGoalQuizActive(false)}
+                      />
+                    ) : undefined
+                  }
                 />
               </div>
               )}
@@ -4239,7 +4269,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                             ...typography.bodySmall,
                             padding: "8px 16px",
                             borderRadius: 64,
-                            border: fdSelectedAmount === opt.value ? "1px solid #D30AD7" : "1px solid rgba(0,0,0,0.2)",
+                            border: fdSelectedAmount === opt.value ? "1px solid #d30ad7" : "1px solid rgba(0,0,0,0.2)",
                             color: "rgba(0,0,0,0.9)",
                             backgroundColor: fdSelectedAmount === opt.value ? "#fae2fa" : "#fff",
                             cursor: "pointer",
@@ -4280,7 +4310,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                         width: "100%",
                         padding: "12px 24px",
                         borderRadius: 100,
-                        backgroundColor: "#D30AD7",
+                        backgroundColor: "#d30ad7",
                         color: "#fff",
                         border: "none",
                         cursor: "pointer",
@@ -4341,7 +4371,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                           padding: "4px 8px",
                           borderRadius: 100,
                           backgroundColor: obligSheetItem.type === "Rent/EMI" ? "#F6F9FC" : obligSheetItem.type === "Subscription" ? "#E6EDF9" : obligSheetItem.type === "Utility" ? "#E6EDF9" : "#FAE2FA",
-                          color: obligSheetItem.type === "Rent/EMI" ? "#252A31" : obligSheetItem.type === "Subscription" ? "#2B6ACF" : obligSheetItem.type === "Utility" ? "#2B6ACF" : "#D30AD7",
+                          color: obligSheetItem.type === "Rent/EMI" ? "#252A31" : obligSheetItem.type === "Subscription" ? "#2B6ACF" : obligSheetItem.type === "Utility" ? "#2B6ACF" : "#d30ad7",
                           ...typography.metadata,
                           textTransform: "uppercase",
                         }}
@@ -4370,7 +4400,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                     <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 8, margin: "0 0 8px" }}>
                       USE AMOUNT
                     </p>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32, borderBottom: "2px solid #D30AD7", height: 48 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32, borderBottom: "2px solid #d30ad7", height: 48 }}>
                       <span style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)" }}>₹</span>
                       <input
                         type="number"
@@ -4400,7 +4430,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                           height: 48,
                           padding: "0 24px",
                           borderRadius: 100,
-                          backgroundColor: "#D30AD7",
+                          backgroundColor: "#d30ad7",
                           color: "#fff",
                           border: "none",
                           cursor: "pointer",
@@ -4510,15 +4540,99 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                 </div>
               )}
 
-              {/* ── Goal Detail screen (overlay on top of chat) ── */}
+              {/* ── Goals List screen (push right-to-left navigation) ── */}
+              {goalListOpen && (
+                <div
+                  className="absolute inset-0 z-40"
+                  style={{
+                    transform: goalListPhase === "open" ? "translateX(0%)" : goalListPhase === "exiting" ? "translateX(100%)" : "translateX(100%)",
+                    transition: "transform 350ms cubic-bezier(0.22, 1, 0.36, 1)",
+                    willChange: "transform",
+                    pointerEvents: goalListPhase === "exiting" ? "none" : "auto",
+                  }}
+                  onTransitionEnd={() => {
+                    if (goalListPhase === "exiting") {
+                      setGoalListOpen(false);
+                      setGoalListPhase("closed");
+                    }
+                  }}
+                >
+                  <GoalListScreen
+                    goals={GOAL_TRACKER_SCENARIOS[goalTrackerScenario]}
+                    cardVariant={goalCardVariant}
+                    onGoalTap={(goal) => {
+                      setPotDetail({
+                        name: goal.name,
+                        saved: goal.saved,
+                        target: goal.target,
+                        pct: goal.pct,
+                        status: goal.status,
+                        daysLabel: goal.daysLabel,
+                        icon: goal.heroEmoji || goal.icon,
+                        heroScene: goal.heroScene,
+                      });
+                      requestAnimationFrame(() => requestAnimationFrame(() => setPotDetailPhase("open")));
+                    }}
+                    onClose={() => setGoalListPhase("exiting")}
+                  />
+                </div>
+              )}
+
+              {/* ── Pot / Stash Detail screen (push right-to-left) ── */}
+              {potDetail && (
+                <div
+                  className="absolute inset-0 z-50"
+                  style={{
+                    transform: potDetailPhase === "open" ? "translateX(0%)" : "translateX(100%)",
+                    transition: "transform 350ms cubic-bezier(0.22, 1, 0.36, 1)",
+                    willChange: "transform",
+                    pointerEvents: potDetailPhase === "exiting" ? "none" : "auto",
+                    backgroundColor: "#fff",
+                  }}
+                  onTransitionEnd={() => {
+                    if (potDetailPhase === "exiting") {
+                      setPotDetail(null);
+                      setPotDetailPhase("closed");
+                    }
+                  }}
+                >
+                  <PotDetail
+                    name={potDetail.name}
+                    saved={potDetail.saved}
+                    target={potDetail.target}
+                    pct={potDetail.pct}
+                    status={potDetail.status}
+                    daysLabel={potDetail.daysLabel}
+                    icon={potDetail.icon}
+                    heroScene={potDetail.heroScene}
+                    onBack={() => setPotDetailPhase("exiting")}
+                  />
+                </div>
+              )}
+
+              {/* ── Goal Detail screen (push right-to-left) ── */}
               {goalDetail && (
                 <div
                   className="absolute inset-0 z-40"
-                  style={{ backgroundColor: "#fff", display: "flex", flexDirection: "column" }}
+                  style={{
+                    backgroundColor: "#fff",
+                    display: "flex",
+                    flexDirection: "column",
+                    transform: goalDetailPhase === "open" ? "translateX(0%)" : "translateX(100%)",
+                    transition: "transform 350ms cubic-bezier(0.22, 1, 0.36, 1)",
+                    willChange: "transform",
+                    pointerEvents: goalDetailPhase === "exiting" ? "none" : "auto",
+                  }}
+                  onTransitionEnd={() => {
+                    if (goalDetailPhase === "exiting") {
+                      setGoalDetail(null);
+                      setGoalDetailPhase("closed");
+                    }
+                  }}
                 >
                   <AppBar
                     title="Goal"
-                    leading={<NavButton kind="back" onClick={() => setGoalDetail(null)} ariaLabel="Back" />}
+                    leading={<NavButton kind="back" onClick={() => setGoalDetailPhase("exiting")} ariaLabel="Back" />}
                   />
 
                   <div
@@ -4547,7 +4661,7 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                           style={{
                             width: `${Math.min(goalDetail.pct, 100)}%`,
                             height: "100%",
-                            backgroundColor: "#D30AD7",
+                            backgroundColor: "#d30ad7",
                             borderRadius: 100,
                           }}
                         />
@@ -4602,15 +4716,29 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                 </div>
               )}
 
-              {/* ── RD Detail screen (overlay on top of chat) ── */}
+              {/* ── RD Detail screen (push right-to-left) ── */}
               {rdDetailVisible && (
                 <div
                   className="absolute inset-0 z-50"
-                  style={{ backgroundColor: "#fff", display: "flex", flexDirection: "column" }}
+                  style={{
+                    backgroundColor: "#fff",
+                    display: "flex",
+                    flexDirection: "column",
+                    transform: rdDetailPhase === "open" ? "translateX(0%)" : "translateX(100%)",
+                    transition: "transform 350ms cubic-bezier(0.22, 1, 0.36, 1)",
+                    willChange: "transform",
+                    pointerEvents: rdDetailPhase === "exiting" ? "none" : "auto",
+                  }}
+                  onTransitionEnd={() => {
+                    if (rdDetailPhase === "exiting") {
+                      setRdDetailVisible(false);
+                      setRdDetailPhase("closed");
+                    }
+                  }}
                 >
                   <AppBar
                     title="Recurring Deposit"
-                    leading={<NavButton kind="back" onClick={() => setRdDetailVisible(false)} ariaLabel="Back" />}
+                    leading={<NavButton kind="back" onClick={() => setRdDetailPhase("exiting")} ariaLabel="Back" />}
                   />
 
                   {/* Content */}
@@ -4690,6 +4818,15 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
           {debugPanelOpen && (
             <div className="mt-1 rounded-xl border border-[rgba(0,0,0,0.2)] bg-white/80 p-4 backdrop-blur-sm space-y-3">
 
+              <DbgRow label="Review">
+                <DbgBtn onClick={() => { setGoalTrackerScenario("single"); setInitialScreenVariant("new5"); showChatOverlay(true); }}>Behind</DbgBtn>
+                <DbgBtn onClick={() => { setGoalTrackerScenario("three"); setInitialScreenVariant("review-ontrack"); showChatOverlay(true); }}>On track</DbgBtn>
+                <DbgBtn onClick={() => { setGoalTrackerScenario("single"); setInitialScreenVariant("review-rent"); showChatOverlay(true); }}>Rent</DbgBtn>
+                <DbgBtn onClick={() => { setGoalTrackerScenario("single"); setInitialScreenVariant("review-refresh"); showChatOverlay(true); }}>Refresh</DbgBtn>
+              </DbgRow>
+
+              <div className="h-px bg-[#f0f4f7]" />
+
               <DbgRow label="Screens">
                 <DbgBtn onClick={closeChatOverlay}>Home</DbgBtn>
                 <DbgBtn onClick={openWrappedStories}>Stories v2</DbgBtn>
@@ -4699,10 +4836,19 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                 <DbgBtn onClick={() => { setInitialScreenVariant("old"); showChatOverlay(true); }}>Old</DbgBtn>
                 <DbgBtn onClick={() => { setInitialScreenVariant("new"); showChatOverlay(true); }}>New</DbgBtn>
                 <DbgBtn onClick={() => { setInitialScreenVariant("new2"); showChatOverlay(true); }}>New 2</DbgBtn>
+                <DbgBtn onClick={() => { setInitialScreenVariant("new3"); showChatOverlay(true); }}>New 3</DbgBtn>
+                <DbgBtn onClick={() => { setInitialScreenVariant("new4"); showChatOverlay(true); }}>New 4</DbgBtn>
+                <DbgBtn onClick={() => { setInitialScreenVariant("new5"); showChatOverlay(true); }}>New 5</DbgBtn>
               </DbgRow>
               <DbgRow label="Session">
                 <DbgBtn onClick={resetFlow}>Restart</DbgBtn>
                 <DbgBtn onClick={resetUser} destructive>New User</DbgBtn>
+              </DbgRow>
+
+              <div className="h-px bg-[#f0f4f7]" />
+
+              <DbgRow label="Goal Quiz">
+                <DbgBtn onClick={launchGoalQuiz}>Vacation</DbgBtn>
               </DbgRow>
 
               <div className="h-px bg-[#f0f4f7]" />
@@ -4716,6 +4862,18 @@ Explain this pace conversationally. Make the monthly cut feel tangible ("that's 
                 <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_AHEAD, "How's my Japan goal?")}>Ahead</DbgBtn>
                 <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_BEHIND, "How's my Japan goal?")}>Behind</DbgBtn>
                 <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_ONTRACK, "How's my Japan goal?")}>On track</DbgBtn>
+              </DbgRow>
+              <DbgRow label="Goal HUD">
+                <DbgBtn onClick={() => setGoalTrackerScenario("none")}>None</DbgBtn>
+                <DbgBtn onClick={() => setGoalTrackerScenario("single")}>1 %</DbgBtn>
+                <DbgBtn onClick={() => setGoalTrackerScenario("single-icon")}>1 icon</DbgBtn>
+                <DbgBtn onClick={() => setGoalTrackerScenario("three")}>3</DbgBtn>
+              </DbgRow>
+              <DbgRow label="Goal Card">
+                <DbgBtn onClick={() => setGoalCardVariant("v1")}>V1</DbgBtn>
+                <DbgBtn onClick={() => setGoalCardVariant("v2")}>V2</DbgBtn>
+                <DbgBtn onClick={() => setGoalCardVariant("v3")}>V3</DbgBtn>
+                <DbgBtn onClick={() => setGoalCardVariant("v4")}>V4</DbgBtn>
               </DbgRow>
               <DbgRow label="FD">
                 <DbgBtn onClick={() => injectCardPreview(DBG_FD_SETUP, "Can I park some savings?")}>Setup</DbgBtn>

@@ -1,0 +1,279 @@
+"use client";
+
+import { useRef } from "react";
+import {
+  VALENTINO_500, BLUE_500, GREEN_500, GREEN_50, RED_500, RED_50,
+  ORANGE_500, ORANGE_50,
+} from "../lib/colors";
+
+// ─── Types ────────────────────────────────────────────────────
+
+export type GoalStatus = "ahead" | "behind" | "on-track";
+export type GoalIcon = "plane" | "shield" | "laptop" | "piggy" | "savings" | string;
+
+export type GoalIndicatorData = {
+  id: string;
+  name: string;
+  pct: number;
+  status: GoalStatus;
+  daysLabel: string;
+  saved: number;
+  target: number;
+  icon: GoalIcon;
+  ringColor: string;
+  endDate?: string;
+  monthlyAmount?: number;
+  gradient?: string;
+  heroEmoji?: string;
+  heroImage?: string;
+  heroScene?: string;
+};
+
+export type GoalTrackerProps = {
+  goals: GoalIndicatorData[];
+  onGoalTap: (goal: GoalIndicatorData) => void;
+  onGoalListOpen?: () => void;
+  /** Single-goal inner content: "pct" shows percentage text, "icon" shows the goal icon */
+  singleVariant?: "pct" | "icon";
+};
+
+// ─── Constants ────────────────────────────────────────────────
+
+const RING_COLORS = [VALENTINO_500, BLUE_500, GREEN_500];
+const BEHIND_COLOR = RED_500;
+
+const STATUS_COLOR: Record<GoalStatus, string> = {
+  ahead: GREEN_500,
+  behind: RED_500,
+  "on-track": ORANGE_500,
+};
+
+const STATUS_BG: Record<GoalStatus, string> = {
+  ahead: GREEN_50,
+  behind: RED_50,
+  "on-track": ORANGE_50,
+};
+
+// ─── Goal Icons (emoji) ──────────────────────────────────────
+
+const GOAL_EMOJI: Record<string, string> = {
+  plane: "✈️",
+  shield: "🛡️",
+  laptop: "💻",
+  piggy: "🐷",
+  savings: "💰",
+};
+
+function GoalIconEmoji({ icon, size = 14 }: { icon: GoalIcon; size?: number }) {
+  return (
+    <span style={{ fontSize: size, lineHeight: 1, userSelect: "none" }}>
+      {GOAL_EMOJI[icon] ?? icon}
+    </span>
+  );
+}
+
+// ─── Progress Ring (single ring SVG) ─────────────────────────
+
+function ProgressRing({
+  size,
+  pct,
+  strokeWidth,
+  color,
+  trackOpacity = 0.15,
+  showLabel = false,
+  status,
+}: {
+  size: number;
+  pct: number;
+  strokeWidth: number;
+  color: string;
+  trackOpacity?: number;
+  showLabel?: boolean;
+  status?: GoalStatus;
+}) {
+  const center = size / 2;
+  const radius = (size - strokeWidth) / 2 - 1;
+  const circumference = 2 * Math.PI * radius;
+  const clamped = Math.min(Math.max(pct, 0), 100);
+  const offset = circumference - (clamped / 100) * circumference;
+  const strokeColor = status === "behind" ? BEHIND_COLOR : color;
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      {/* Track */}
+      {trackOpacity > 0 && (
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+          opacity={trackOpacity}
+        />
+      )}
+      {/* Fill */}
+      <circle
+        cx={center}
+        cy={center}
+        r={radius}
+        fill="none"
+        stroke={strokeColor}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        transform={`rotate(-90 ${center} ${center})`}
+      />
+      {/* Label */}
+      {showLabel && (
+        <text
+          x={center}
+          y={center}
+          textAnchor="middle"
+          dominantBaseline="central"
+          style={{
+            fontFamily: "var(--font-rubik), sans-serif",
+            fontSize: 9,
+            fontWeight: 400,
+            fill: "rgba(0,0,0,0.9)",
+          }}
+        >
+          {clamped}%
+        </text>
+      )}
+    </svg>
+  );
+}
+
+// ─── Concentric Rings (Apple Watch style, up to 3) ───────────
+
+function ConcentricRings({
+  goals,
+}: {
+  goals: GoalIndicatorData[];
+}) {
+  const size = 34;
+  const center = size / 2;
+  // Ring specs: [radius, strokeWidth] for outer -> inner
+  const ringSpecs: [number, number][] = [
+    [14.5, 3.5],   // outer
+    [9, 3.5],      // middle
+    [3.5, 3.5],    // inner
+  ];
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      {goals.slice(0, 3).map((goal, i) => {
+        const [radius, sw] = ringSpecs[i];
+        const circumference = 2 * Math.PI * radius;
+        const clamped = Math.min(Math.max(goal.pct, 0), 100);
+        const offset = circumference - (clamped / 100) * circumference;
+        const strokeColor = goal.status === "behind" ? BEHIND_COLOR : goal.ringColor;
+
+        return (
+          <g key={goal.id}>
+            {/* Track */}
+            <circle
+              cx={center}
+              cy={center}
+              r={radius}
+              fill="none"
+              stroke={strokeColor}
+              strokeWidth={sw}
+              opacity={0.15}
+            />
+            {/* Fill */}
+            <circle
+              cx={center}
+              cy={center}
+              r={radius}
+              fill="none"
+              stroke={strokeColor}
+              strokeWidth={sw}
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+              transform={`rotate(-90 ${center} ${center})`}
+            />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ─── Goal Dropdown ───────────────────────────────────────────
+
+// ─── Main GoalTracker Component ──────────────────────────────
+
+export default function GoalTracker({ goals, onGoalTap, onGoalListOpen, singleVariant = "pct" }: GoalTrackerProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  if (goals.length === 0) return null;
+
+  const hasBehind = goals.some((g) => g.status === "behind");
+  const isSingle = goals.length === 1;
+
+  const handleTap = () => {
+    onGoalListOpen?.();
+  };
+
+  return (
+    <div ref={containerRef} style={{ position: "relative" }}>
+      <button
+        type="button"
+        onClick={handleTap}
+        aria-label={isSingle ? `Goal: ${goals[0].name}` : `${goals.length} goals`}
+        className="flex items-center justify-center rounded-full"
+        style={{
+          width: 48,
+          height: 48,
+          backgroundColor: "#fff",
+          border: "1px solid rgba(0,0,0,0.05)",
+          boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)",
+          cursor: "pointer",
+          position: "relative",
+        }}
+      >
+        {/* Ring content */}
+        {isSingle ? (
+          <div style={{ position: "relative", width: 32, height: 32 }}>
+            <ProgressRing
+              size={32}
+              pct={goals[0].pct}
+              strokeWidth={3.5}
+              color={goals[0].ringColor}
+              showLabel={singleVariant === "pct"}
+              status={goals[0].status}
+            />
+            {singleVariant === "icon" && (
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <GoalIconEmoji icon={goals[0].icon} size={14} />
+              </div>
+            )}
+          </div>
+        ) : (
+          <ConcentricRings goals={goals} />
+        )}
+
+        {/* Alert dot */}
+        {hasBehind && (
+          <div
+            style={{
+              position: "absolute",
+              top: 4,
+              right: 4,
+              width: 6,
+              height: 6,
+              borderRadius: 100,
+              backgroundColor: BEHIND_COLOR,
+              animation: "goal-alert-pulse 2s ease-in-out infinite",
+            }}
+          />
+        )}
+      </button>
+
+    </div>
+  );
+}

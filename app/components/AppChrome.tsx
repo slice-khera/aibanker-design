@@ -202,22 +202,25 @@ export function AppBar({
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
+              alignItems: "center",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
               color: "rgba(0,0,0,0.9)",
-              ...typography.headerH3,
+              ...typography.headerH4,
             }}
           >
             {title ?? null}
           </div>
         </div>
-        {/* Trailing slot */}
-        {trailing && (
+        {/* Trailing slot — spacer when empty so title stays centered */}
+        {trailing ? (
           <div style={{ display: "flex", alignItems: "center" }}>
             {trailing}
           </div>
-        )}
+        ) : leading ? (
+          <div style={{ flex: "1 0 0", maxWidth: 48, height: 48 }} />
+        ) : null}
       </div>
     </div>
   );

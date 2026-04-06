@@ -145,7 +145,7 @@ export type ChatRequest = {
   };
 };
 
-export type ChatResponse = {
+type ChatResponse = {
   message: string;
   stream?: ReadableStream;
 };
@@ -164,11 +164,11 @@ export type Memory = {
 
 // ============ FLOW STEP TYPES ============
 
-export type FlowStep = "wrapped" | "persona" | "reality" | "goal" | "budget" | "home";
+type FlowStep = "wrapped" | "persona" | "reality" | "goal" | "budget" | "home";
 
 export type PersonaStage = "q1" | "q2" | "q2-follow" | "q3" | "q4";
-export type GoalStage = "choice" | "destination" | "timeline" | "amount" | "savings-ask" | "plan" | "plan-adjust" | "pinned";
-export type BudgetStage = "obligations" | "digest" | "onTrack" | "lever" | "budgetChoice" | "budgetStyle" | "bigExpenses" | "action" | "actionConfirm";
+type GoalStage = "choice" | "destination" | "timeline" | "amount" | "savings-ask" | "plan" | "plan-adjust" | "pinned";
+type BudgetStage = "obligations" | "digest" | "onTrack" | "lever" | "budgetChoice" | "budgetStyle" | "bigExpenses" | "action" | "actionConfirm";
 export type HomeSubflow =
   | "idle"
   | "afford-amount"
@@ -194,7 +194,7 @@ export type HomeSubflow =
 
 // ============ PREFERENCE SYSTEM ============
 
-export type Preference = {
+type Preference = {
   key: string;
   type: "hard" | "soft";
   value: string;
@@ -204,7 +204,7 @@ export type Preference = {
 
 // ============ OBLIGATION / BIG EXPENSE TYPES ============
 
-export type ObligationItem = {
+type ObligationItem = {
   id: string;
   payee: string;
   amount: number;
@@ -215,7 +215,7 @@ export type ObligationItem = {
   confidence: number;
 };
 
-export type BigExpenseItem = {
+type BigExpenseItem = {
   id: string;
   payee: string;
   date: string;

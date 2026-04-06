@@ -3,6 +3,10 @@
 import type { ChipOption, PersonaQuestion, WrappedSlide } from "../data/flows";
 import { STATUS_BAR_HEIGHT } from "./AppChrome";
 import { typography } from "../lib/typography";
+import {
+  VALENTINO_500, VALENTINO_50, ORANGE_500, ORANGE_50,
+  RED_500, RED_50, BLUE_500, BLUE_50,
+} from "../lib/colors";
 
 export type RevealData = {
   savingsGuess: string;
@@ -27,12 +31,12 @@ type PersonaQuizStackProps = {
 
 // ── Per-slide accent colors (tag bg/text and stat number) ───────
 const SLIDE_ACCENTS: { tag: string; color: string; tagBg: string }[] = [
-  { tag: "YOUR MONEY",       color: "#d30ad7", tagBg: "#fae2fa" }, // Valentino
-  { tag: "TOP CATEGORY",    color: "#ff9a17", tagBg: "#fff3e3" }, // Orange
-  { tag: "SMALL SPENDS",    color: "#ce1d26", tagBg: "#f9e4e5" }, // Red
-  { tag: "WEEKENDS",        color: "#2b6acf", tagBg: "#e6edf9" }, // Blue
-  { tag: "FOOD & DELIVERY", color: "#ff9a17", tagBg: "#fff3e3" }, // Orange
-  { tag: "READY?",          color: "#d30ad7", tagBg: "#fae2fa" }, // Valentino
+  { tag: "YOUR MONEY",       color: VALENTINO_500, tagBg: VALENTINO_50 },
+  { tag: "TOP CATEGORY",    color: ORANGE_500, tagBg: ORANGE_50 },
+  { tag: "SMALL SPENDS",    color: RED_500, tagBg: RED_50 },
+  { tag: "WEEKENDS",        color: BLUE_500, tagBg: BLUE_50 },
+  { tag: "FOOD & DELIVERY", color: ORANGE_500, tagBg: ORANGE_50 },
+  { tag: "READY?",          color: VALENTINO_500, tagBg: VALENTINO_50 },
 ];
 
 // ── Diminishing stack: up to 5 visible layers ───────────────────

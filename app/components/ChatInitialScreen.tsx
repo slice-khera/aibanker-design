@@ -3,7 +3,14 @@
 import { useState, useRef, useEffect } from "react";
 import { AppBar, GestureNav, NavButton } from "./AppChrome";
 import { typography } from "../lib/typography";
-import { BG_SURFACE } from "../lib/colors";
+import {
+  BG_SURFACE, BG_SURFACE_2,
+  VALENTINO_500, VALENTINO_50,
+  GREEN_500, GREEN_50,
+  RED_500, RED_50,
+  BLUE_500, BLUE_50,
+  ORANGE_500, ORANGE_50,
+} from "../lib/colors";
 
 export type InitialSuggestion = {
   id: string;
@@ -17,7 +24,7 @@ type Props = {
   suggestions: InitialSuggestion[];
   onSuggestionClick: (id: string, title: string) => void;
   onSubmit: (text: string) => void;
-  variant?: "old" | "new" | "new2";
+  variant?: "old" | "new" | "new2" | "new3" | "new4" | "new5" | "review-ontrack" | "review-rent" | "review-refresh";
 };
 
 // ── Icons ──────────────────────────────────────────────────────────────────
@@ -177,31 +184,31 @@ const ALERT_SCENARIOS: AlertScenario[] = [
     title: "Your rent is at risk, Rajan.",
     subtitle: "Insufficient funds for your usual payment in six days",
     icon: <RentIcon />,
-    iconBg: "#f9e4e5",
+    iconBg: RED_50,
   },
   {
     title: "Rajan, your salary was expected yesterday.",
     subtitle: "Goals and budgets have been put on hold until it credits",
     icon: <SalaryIcon />,
-    iconBg: "#fff3e3",
+    iconBg: ORANGE_50,
   },
   {
     title: "Unable to access your accounts, Rajan.",
     subtitle: "Renew account aggregator permission to keep your finances up to date",
     icon: <AccessIcon />,
-    iconBg: "#e6edf9",
+    iconBg: BLUE_50,
   },
   {
     title: "Rajan, you're spending faster than usual.",
     subtitle: "3 days in and already at 60% of this month's budget",
     icon: <SpendingIcon />,
-    iconBg: "#fff3e3",
+    iconBg: ORANGE_50,
   },
   {
     title: "Rajan, your savings goal is falling behind.",
     subtitle: "At this rate, you'll take 3 months longer to achieve it",
     icon: <GoalAlertIcon />,
-    iconBg: "#e6edf9",
+    iconBg: BLUE_50,
   },
 ];
 
@@ -245,7 +252,7 @@ function NewInitialLayout({ onSubmit }: Props) {
         <h1 style={{ ...typography.headerH2, color: "rgba(0,0,0,0.9)" }}>
           {alert.title}
         </h1>
-        <p style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.45)" }}>
+        <p style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.5)" }}>
           {alert.subtitle}<InlineChevron />
         </p>
       </button>
@@ -364,7 +371,7 @@ export function InitialPromptContent({ suggestions, onSuggestionClick, onSubmit,
                 width: 40,
                 height: 40,
                 backgroundColor: s.avatarBg,
-                border: "1px solid #f0f4f7",
+                border: `1px solid ${BG_SURFACE_2}`,
               }}
             >
               {s.icon}
@@ -405,7 +412,7 @@ export function InitialPromptContent({ suggestions, onSuggestionClick, onSubmit,
           style={{
             height: 48,
             backgroundColor: BG_SURFACE,
-            border: "1px solid #f0f4f7",
+            border: `1px solid ${BG_SURFACE_2}`,
             borderRadius: 100,
           }}
         >
@@ -474,26 +481,26 @@ export default function ChatInitialScreen({ suggestions, onSuggestionClick, onSu
 
 // ── Default suggestions wired to real app flows ───────────────────────────
 
-export const defaultSuggestions: InitialSuggestion[] = [
+const defaultSuggestions: InitialSuggestion[] = [
   {
     id: "understand",
     title: "Analyse my spends",
     subtitle: "See where your money is going",
-    avatarBg: "#e0f4e8",
+    avatarBg: GREEN_50,
     icon: <AnalyseIcon />,
   },
   {
     id: "goal-new",
     title: "Set a savings goal",
     subtitle: "Plan toward something you want",
-    avatarBg: "#e6edf9",
+    avatarBg: BLUE_50,
     icon: <GoalIcon />,
   },
   {
     id: "leaks",
     title: "Find spending leaks",
     subtitle: "Catch categories creeping up",
-    avatarBg: "#fae2fa",
+    avatarBg: VALENTINO_50,
     icon: <LeakIcon />,
   },
 ];

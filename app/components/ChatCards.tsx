@@ -2,6 +2,15 @@
 
 import { useRef, useState, type ReactNode } from "react";
 import { typography } from "../lib/typography";
+import {
+  VALENTINO_50, VALENTINO_500, VALENTINO_700,
+  GREEN_50, GREEN_400, GREEN_500,
+  RED_50, RED_400, RED_500,
+  ORANGE_50, ORANGE_400, ORANGE_500, ORANGE_600,
+  BLUE_50, BLUE_500,
+  SLATE_10, SLATE_30, SLATE_50, SLATE_300, SLATE_500, SLATE_800,
+  BG_SURFACE,
+} from "../lib/colors";
 
 // ─── Shared types ──────────────────────────────────────────
 
@@ -71,20 +80,20 @@ function smoothPath(points: { x: number; y: number }[]): string {
 
 const TAG_STYLES: Record<string, Record<string, { bg: string; text: string }>> = {
   subtle: {
-    positive: { bg: "#E0F4E8", text: "#00A63E" },
-    warning:  { bg: "#FFF3E3", text: "#C27511" },
-    negative: { bg: "#F9E4E5", text: "#CE1D26" },
-    brand:    { bg: "#FAE2FA", text: "#D30AD7" },
-    info:     { bg: "#E6EDF9", text: "#2B6ACF" },
-    neutral:  { bg: "#F6F9FC", text: "#252A31" },
+    positive: { bg: GREEN_50, text: GREEN_500 },
+    warning:  { bg: ORANGE_50, text: ORANGE_600 },
+    negative: { bg: RED_50, text: RED_500 },
+    brand:    { bg: VALENTINO_50, text: VALENTINO_500 },
+    info:     { bg: BLUE_50, text: BLUE_500 },
+    neutral:  { bg: SLATE_10, text: SLATE_800 },
   },
   bold: {
-    positive: { bg: "#00A63E", text: "#fff" },
-    warning:  { bg: "#FF9A17", text: "#fff" },
-    negative: { bg: "#DA535A", text: "#fff" },
-    brand:    { bg: "#D30AD7", text: "#fff" },
-    info:     { bg: "#2B6ACF", text: "#fff" },
-    neutral:  { bg: "#252A31", text: "#fff" },
+    positive: { bg: GREEN_500, text: "#fff" },
+    warning:  { bg: ORANGE_500, text: "#fff" },
+    negative: { bg: RED_400, text: "#fff" },
+    brand:    { bg: VALENTINO_500, text: "#fff" },
+    info:     { bg: BLUE_500, text: "#fff" },
+    neutral:  { bg: SLATE_800, text: "#fff" },
   },
 };
 
@@ -119,7 +128,7 @@ function DlsTag({
 
 // ─── Shared card shell ─────────────────────────────────────
 
-const CARD_BG = "#f6f9fc";
+const CARD_BG = BG_SURFACE;
 const CARD_RADIUS = 16;
 const CARD_PAD = "16px";
 
@@ -310,7 +319,7 @@ function SpendOverviewCard({ data }: { data: Extract<ChatCardData, { type: "spen
         <path d={linePath} fill="none" stroke="#d30ad7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
 
         {/* Average dashed line */}
-        <line x1={padX} y1={avgY} x2={W - padX} y2={avgY} stroke="rgba(0,0,0,0.18)" strokeWidth="1" strokeDasharray="5 4" />
+        <line x1={padX} y1={avgY} x2={W - padX} y2={avgY} stroke="rgba(0,0,0,0.2)" strokeWidth="1" strokeDasharray="5 4" />
 
         {/* Handle dot with glow */}
         {activePoint && (
@@ -479,36 +488,36 @@ export const CATEGORY_ICONS: Record<string, ReactNode> = {
 };
 
 export const CATEGORY_COLORS: Record<string, string> = {
-  "Food Delivery (Swiggy)": "#ff9a17",       // Orange/500
-  "Groceries (Swiggy Instamart)": "#00a63e", // Green/500
-  "Dining Out (Swiggy Dineout)": "#ce1d26",  // Red/500
-  "Shopping (Amazon)": "#d30ad7",            // Valentino/500
-  "Cash Withdrawals (ATM)": "#4e5866",       // Slate/500
-  "Other / Uncategorized": "#8e949d",        // Slate/300
-  "Shopping": "#d30ad7",                     // Valentino/500
-  "Food & Dining": "#ff9a17",                // Orange/500
-  "Travel": "#2b6acf",                       // Blue/500
-  "Entertainment": "#87068a",                // Valentino/700
-  "Health": "#3dbb6c",                       // Green/400
-  "Utilities": "#ffb24f",                    // Orange/400
+  "Food Delivery (Swiggy)": ORANGE_500,
+  "Groceries (Swiggy Instamart)": GREEN_500,
+  "Dining Out (Swiggy Dineout)": RED_500,
+  "Shopping (Amazon)": VALENTINO_500,
+  "Cash Withdrawals (ATM)": SLATE_500,
+  "Other / Uncategorized": SLATE_300,
+  "Shopping": VALENTINO_500,
+  "Food & Dining": ORANGE_500,
+  "Travel": BLUE_500,
+  "Entertainment": VALENTINO_700,
+  "Health": GREEN_400,
+  "Utilities": ORANGE_400,
 };
 
 // Map fill color → /50 track shade from the same DLS palette
 const COLOR_TRACK: Record<string, string> = {
-  "#ff9a17": "#fff3e3", // Orange/500 → Orange/50
-  "#ffb24f": "#fff3e3", // Orange/400 → Orange/50
-  "#00a63e": "#e0f4e8", // Green/500 → Green/50
-  "#3dbb6c": "#e0f4e8", // Green/400 → Green/50
-  "#ce1d26": "#f9e4e5", // Red/500 → Red/50
-  "#d30ad7": "#fae2fa", // Valentino/500 → Valentino/50
-  "#87068a": "#fae2fa", // Valentino/700 → Valentino/50
-  "#2b6acf": "#e6edf9", // Blue/500 → Blue/50
-  "#4e5866": "#eaebed", // Slate/500 → Slate/50
-  "#8e949d": "#eaebed", // Slate/300 → Slate/50
+  [ORANGE_500]: ORANGE_50,
+  [ORANGE_400]: ORANGE_50,
+  [GREEN_500]: GREEN_50,
+  [GREEN_400]: GREEN_50,
+  [RED_500]: RED_50,
+  [VALENTINO_500]: VALENTINO_50,
+  [VALENTINO_700]: VALENTINO_50,
+  [BLUE_500]: BLUE_50,
+  [SLATE_500]: SLATE_50,
+  [SLATE_300]: SLATE_50,
 };
 
 function trackColor(fill: string): string {
-  return COLOR_TRACK[fill] ?? "#eaebed";
+  return COLOR_TRACK[fill] ?? SLATE_50;
 }
 
 function CategoryBreakdownCard({ data }: { data: Extract<ChatCardData, { type: "category-breakdown" }> }) {
@@ -666,7 +675,7 @@ function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "
               ...typography.buttonSmall,
               border: "none",
               background: "transparent",
-              color: "#D30AD7",
+              color: "#d30ad7",
               cursor: "pointer",
               padding: "4px 0",
               flexShrink: 0,
@@ -731,7 +740,7 @@ function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-po
             style={{
               ...typography.buttonSmall,
               border: "none",
-              background: "#D30AD7",
+              background: "#d30ad7",
               color: "#fff",
               cursor: "pointer",
               padding: "8px 20px",
@@ -1126,7 +1135,7 @@ function CategoryMomCard({ data }: { data: Extract<ChatCardData, { type: "catego
             onClick={(e) => { e.stopPropagation(); setSelectedCat(selectedCat === i ? null : i); }}
             style={{
               ...typography.caption,
-              color: selectedCat === i ? "rgba(0,0,0,0.9)" : "rgba(0,0,0,0.4)",
+              color: selectedCat === i ? "rgba(0,0,0,0.9)" : "rgba(0,0,0,0.5)",
               fontWeight: selectedCat === i ? 500 : undefined,
               flex: 1,
               textAlign: "center",
@@ -1244,7 +1253,7 @@ function SpendTrendCard({ data }: { data: Extract<ChatCardData, { type: "spend-t
         })}
 
         {/* Average dashed line */}
-        <line x1={padL} y1={avgY} x2={W - padR} y2={avgY} stroke="rgba(0,0,0,0.18)" strokeWidth="1" strokeDasharray="5 4" />
+        <line x1={padL} y1={avgY} x2={W - padR} y2={avgY} stroke="rgba(0,0,0,0.2)" strokeWidth="1" strokeDasharray="5 4" />
 
         {/* Bars */}
         {chartData.map((d, i) => {
@@ -1275,7 +1284,7 @@ function SpendTrendCard({ data }: { data: Extract<ChatCardData, { type: "spend-t
             onClick={(e) => { e.stopPropagation(); setActiveIndex(i); }}
             style={{
               ...typography.caption,
-              color: i === activeIndex ? "rgba(0,0,0,0.9)" : "rgba(0,0,0,0.4)",
+              color: i === activeIndex ? "rgba(0,0,0,0.9)" : "rgba(0,0,0,0.5)",
               fontWeight: i === activeIndex ? 500 : undefined,
               flex: 1,
               textAlign: "center",
@@ -1695,15 +1704,15 @@ function TransactionTableCard({ data }: { data: Extract<ChatCardData, { type: "t
 // ─── DLS Tag Intent Map (used by V2 obligations chips) ────
 
 const TAG_INTENT: Record<string, { bg: string; text: string }> = {
-  "Rent/EMI": { bg: "#F6F9FC", text: "#252A31" },      // Neutral
-  "Loan EMI": { bg: "#FFF3E3", text: "#C27511" },       // Warning
-  "Subscription": { bg: "#E6EDF9", text: "#2B6ACF" },   // Info
-  "Utility": { bg: "#E6EDF9", text: "#2B6ACF" },        // Info
-  "Investment": { bg: "#E0F4E8", text: "#00A63E" },      // Positive
-  "Credit Card": { bg: "#F9E4E5", text: "#CE1D26" },    // Negative
-  "Food": { bg: "#FFF3E3", text: "#C27511" },            // Warning
-  "Grocery": { bg: "#FFF3E3", text: "#C27511" },         // Warning
-  "P2P": { bg: "#FAE2FA", text: "#D30AD7" },            // Brand
+  "Rent/EMI": { bg: SLATE_10, text: SLATE_800 },
+  "Loan EMI": { bg: ORANGE_50, text: ORANGE_600 },
+  "Subscription": { bg: BLUE_50, text: BLUE_500 },
+  "Utility": { bg: BLUE_50, text: BLUE_500 },
+  "Investment": { bg: GREEN_50, text: GREEN_500 },
+  "Credit Card": { bg: RED_50, text: RED_500 },
+  "Food": { bg: ORANGE_50, text: ORANGE_600 },
+  "Grocery": { bg: ORANGE_50, text: ORANGE_600 },
+  "P2P": { bg: VALENTINO_50, text: VALENTINO_500 },
 };
 
 // ─── Big Expenses Card ────────────────────────────────────
@@ -1735,7 +1744,7 @@ function BigExpensesCard({ data }: { data: Extract<ChatCardData, { type: "big-ex
               width: 40,
               height: 40,
               borderRadius: 100,
-              backgroundColor: "#F0F4F7",
+              backgroundColor: SLATE_30,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -1943,7 +1952,7 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
               >
                 {isChecked ? (
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <rect x="2" y="2" width="20" height="20" rx="4" fill="#D30AD7" />
+                    <rect x="2" y="2" width="20" height="20" rx="4" fill="#d30ad7" />
                     <path d="M7 12.5L10.5 16L17 9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 ) : (
@@ -1970,7 +1979,7 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
                   </p>
                   {!isExpanded && (
                     <span
-                      style={{ ...typography.caption, color: "#D30AD7", flexShrink: 0, whiteSpace: "nowrap", marginLeft: 8, cursor: "pointer" }}
+                      style={{ ...typography.caption, color: "#d30ad7", flexShrink: 0, whiteSpace: "nowrap", marginLeft: 8, cursor: "pointer" }}
                       onClick={(e) => { e.stopPropagation(); handleExpand(item.id); }}
                     >
                       Edit
@@ -1997,7 +2006,7 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
                     step={getSnapStep(item.amount)}
                     value={currentAmount}
                     onChange={(e) => setEditedAmounts((prev) => ({ ...prev, [item.id]: Number(e.target.value) }))}
-                    style={{ width: "100%", accentColor: "#D30AD7", cursor: "pointer" }}
+                    style={{ width: "100%", accentColor: "#d30ad7", cursor: "pointer" }}
                   />
                 </div>
 
@@ -2026,8 +2035,8 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
                           height: 32,
                           padding: "0 16px",
                           borderRadius: 64,
-                          border: isActive ? "1px solid #D30AD7" : "1px solid rgba(0,0,0,0.2)",
-                          backgroundColor: isActive ? "#FAE2FA" : "#fff",
+                          border: isActive ? "1px solid #d30ad7" : "1px solid rgba(0,0,0,0.2)",
+                          backgroundColor: isActive ? VALENTINO_50 : "#fff",
                           color: "rgba(0,0,0,0.9)",
                           cursor: "pointer",
                           whiteSpace: "nowrap",
@@ -2056,7 +2065,7 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
               ...typography.buttonSmall,
               height: 36,
               borderRadius: 100,
-              backgroundColor: "#D30AD7",
+              backgroundColor: "#d30ad7",
               color: "#fff",
               border: "none",
               cursor: "pointer",

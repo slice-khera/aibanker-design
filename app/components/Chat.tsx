@@ -5,20 +5,68 @@ import { InitialPromptContent, type InitialSuggestion, pickAlert, InlineChevron,
 import ChatCard, { type ChatCardData } from "./ChatCards";
 import { AppBar, FooterInset, GestureNav, NavButton } from "./AppChrome";
 import { typography } from "../lib/typography";
+import {
+  VALENTINO_500, VALENTINO_50, GREEN_500, GREEN_50, ORANGE_500, ORANGE_50,
+  BG_SURFACE, BG_SURFACE_2, BLUE_50, RED_50, OUTLINE_SUBTLE,
+} from "../lib/colors";
 
-// ── Highlight currency & percentage values in assistant text ──
-const VALUE_RE = /₹[\d,.]+\s*[Lk]?|[\d,.]+%/g;
+// ── Feedback row icon assets (from DLS 2.0 Figma, 16px frame) ──
+const ICON_THUMBS_UP = "https://www.figma.com/api/mcp/asset/244466af-0a10-43d4-bf58-62d021f436f8";
+const ICON_THUMBS_DOWN = "https://www.figma.com/api/mcp/asset/2cc021ab-17af-43c1-a083-ae028fb874ba";
+const ICON_COPY = "https://www.figma.com/api/mcp/asset/98941f48-c34d-4d9a-9f66-3452a8e2e7f1";
+const ICON_SHARE = "https://www.figma.com/api/mcp/asset/4352b2ee-306d-497d-85fe-c1ec6d755be5";
+const ICON_RETRY = "https://www.figma.com/api/mcp/asset/f8e95cca-59dd-4e44-b737-a17b27cb872b";
+
+function FeedbackRow() {
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const icons = ["thumbs-up", "thumbs-down", "copy", "share", "retry"] as const;
+  const srcs = { "thumbs-up": ICON_THUMBS_UP, "thumbs-down": ICON_THUMBS_DOWN, copy: ICON_COPY, share: ICON_SHARE, retry: ICON_RETRY };
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setShowDisclaimer(true), 600);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="mt-4">
+      <div className="flex items-center gap-4 animate-chat-message-in" style={{ opacity: 0.5 }}>
+        {icons.map((id) => (
+          <div key={id} className="relative shrink-0" style={{ width: 16, height: 16 }}>
+            <img src={srcs[id]} alt={id} className="absolute inset-0 w-full h-full" />
+          </div>
+        ))}
+      </div>
+      <p
+        className="transition-opacity duration-300 ease-out"
+        style={{
+          ...typography.caption,
+          color: "rgba(0,0,0,0.3)",
+          marginTop: 20,
+          textAlign: "right",
+          marginLeft: "25%",
+          opacity: showDisclaimer ? 1 : 0,
+        }}
+      >
+        Ryan is AI and can make mistakes. Always double-check responses.
+      </p>
+    </div>
+  );
+}
+
+// ── Highlight currency, percentage, and **bold** markers in assistant text ──
+const HIGHLIGHT_RE = /\*\*(.+?)\*\*|₹[\d,.]+\s*[Lk]?|[\d,.]+%/g;
 
 function highlightValues(text: string): React.ReactNode {
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
-  while ((match = VALUE_RE.exec(text)) !== null) {
+  while ((match = HIGHLIGHT_RE.exec(text)) !== null) {
     if (match.index > lastIndex) {
       parts.push(text.slice(lastIndex, match.index));
     }
+    const boldText = match[1] ?? match[0];
     parts.push(
-      <span key={match.index} style={typography.buttonSmall}>{match[0]}</span>
+      <span key={match.index} style={typography.buttonSmall}>{boldText}</span>
     );
     lastIndex = match.index + match[0].length;
   }
@@ -147,8 +195,11 @@ type ChatProps = {
   showInitialPrompt?: boolean;
   initialSuggestions?: InitialSuggestion[];
   onInitialSuggestionClick?: (id: string, title: string) => void;
-  initialScreenVariant?: "old" | "new" | "new2";
+  initialScreenVariant?: "old" | "new" | "new2" | "new3" | "new4" | "new5" | "review-ontrack" | "review-rent" | "review-refresh";
   thinkingLabel?: string | null;
+  goalTrailingSlot?: React.ReactNode;
+  goalPlanBuilder?: React.ReactNode;
+  questionnaireOverlay?: React.ReactNode;
 };
 
 function VoiceIcon() {
@@ -171,6 +222,7 @@ function ChatAppBar({
   dragHandleOpacity = 1,
   hasUserMessages = false,
   floating = false,
+  goalTrailingSlot,
 }: {
   dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
   onClose?: () => void;
@@ -180,6 +232,7 @@ function ChatAppBar({
   dragHandleOpacity?: number;
   hasUserMessages?: boolean;
   floating?: boolean;
+  goalTrailingSlot?: React.ReactNode;
 }) {
   if (isSheetMinimized) {
     return (
@@ -189,18 +242,15 @@ function ChatAppBar({
         onClick={onExpand}
         {...dragHandleProps}
       >
-        {/* Drag handle nub — absolute so it doesn't shift vertical centering */}
         <div className="absolute top-0 left-0 right-0 flex justify-center" style={{ paddingTop: 12 }}>
           <div style={{ width: 36, height: 4, backgroundColor: "rgba(0,0,0,0.2)", borderRadius: 100 }} />
         </div>
-        {/* Label + chevron — truly centered in full 72px */}
         <div className="flex items-center w-full">
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 1 }}>
             <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)", margin: 0 }}>
               {hasUserMessages ? "Continue chat" : "Start chat"}
             </p>
           </div>
-          {/* Chevron up */}
           <div
             className="flex items-center justify-center rounded-full"
             style={{ width: 36, height: 36, backgroundColor: "rgba(0,0,0,0.05)" }}
@@ -224,6 +274,7 @@ function ChatAppBar({
     <div className="w-full shrink-0">
       <AppBar
         backgroundColor={floating ? "transparent" : "#fff"}
+        title={floating ? "Ryan" : undefined}
         leading={(
           <div onPointerDown={(e) => e.stopPropagation()}>
             {floating ? (
@@ -232,7 +283,7 @@ function ChatAppBar({
                 onClick={onClose}
                 aria-label="Close chat"
                 className="flex items-center justify-center rounded-full bg-white"
-                style={{ width: 48, height: 48, border: "1px solid rgba(0,0,0,0.08)" }}
+                style={{ width: 48, height: 48, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)" }}
               >
                 {closeIcon}
               </button>
@@ -249,7 +300,41 @@ function ChatAppBar({
             )}
           </div>
         )}
+        trailing={goalTrailingSlot}
       />
+    </div>
+  );
+}
+
+function RefreshIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10.0043 0C7.53419 0 5.16449 0.902256 3.27677 2.59649L2.98558 2.88722L2.18229 2.08521C1.97143 1.87469 1.6702 1.81454 1.38905 1.91479C1.11794 2.01504 0.917117 2.26566 0.897034 2.55639L0.545597 6.45614C0.525514 6.67669 0.605843 6.89724 0.7665 7.05764C0.927158 7.21805 1.14806 7.29825 1.36897 7.2782L5.27494 6.92732C5.56614 6.89724 5.81716 6.70677 5.91757 6.43609C6.01798 6.16541 5.9477 5.85464 5.74687 5.64411L4.77289 4.67168L5.01388 4.43108C6.3895 3.19799 8.16677 2.52632 10.0143 2.52632C13.8701 2.52632 17.1636 5.52381 17.4949 9.36341C17.5552 10.015 18.0974 10.5063 18.74 10.5063C18.7802 10.5063 18.8103 10.5063 18.8505 10.5063C19.5433 10.4461 20.0554 9.83459 19.9952 9.15288C19.5433 4.0401 15.1554 0.0300752 10.0143 0.0300752L10.0043 0Z" fill="rgba(0,0,0,0.9)" />
+      <path d="M18.7702 12.792L14.8642 13.1429C14.573 13.173 14.322 13.3634 14.2216 13.6341C14.1212 13.9048 14.1914 14.2156 14.3923 14.4261L15.2759 15.3083L15.0048 15.579C13.6291 16.812 11.8519 17.4837 10.0043 17.4938C6.11841 17.4938 2.82494 14.4662 2.51367 10.6065C2.45342 9.91481 1.87104 9.40353 1.15812 9.45365C0.465286 9.5138 -0.0468087 10.1153 0.00339671 10.807C0.415081 15.9699 4.80303 20 9.99427 20C12.4644 20 14.8341 19.0877 16.7218 17.4035L17.0431 17.0827L17.9368 17.975C18.1476 18.1855 18.4489 18.2456 18.73 18.1454C19.0011 18.0451 19.2019 17.7945 19.222 17.5038L19.5735 13.604C19.5935 13.3835 19.5132 13.1629 19.3526 13.0025C19.1919 12.8421 18.971 12.7619 18.7501 12.782L18.7702 12.792Z" fill="rgba(0,0,0,0.9)" />
+    </svg>
+  );
+}
+
+function MosaicCardReply({ label }: { label: string }) {
+  const [replyDone, setReplyDone] = useState(false);
+  const onReplyComplete = useCallback(() => setReplyDone(true), []);
+  const mockReply = ONTRACK_MOCK_RESPONSES[label] ?? "";
+  const displayedReply = useTypewriter(mockReply, true, onReplyComplete);
+
+  return (
+    <div className="mt-4 space-y-4 animate-chat-message-in">
+      <div className="flex justify-end">
+        <div
+          className="max-w-[75%] rounded-[16px] rounded-tr-lg"
+          style={{ backgroundColor: VALENTINO_50, padding: "12px 16px" }}
+        >
+          <p style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>{label}</p>
+        </div>
+      </div>
+      <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>
+        {highlightValues(displayedReply)}
+      </p>
+      {replyDone && <FeedbackRow />}
     </div>
   );
 }
@@ -260,12 +345,14 @@ function TypeBox({
   onSubmit,
   placeholder,
   showElevation = false,
+  leftAction,
 }: {
   value: string;
   onChange: (v: string) => void;
   onSubmit: () => void;
   placeholder: string;
   showElevation?: boolean;
+  leftAction?: React.ReactNode;
 }) {
   return (
     <>
@@ -275,15 +362,15 @@ function TypeBox({
         paddingTop={8}
         minBottomPadding={0}
       >
-        {/* Type box — mirrors ChatInitialScreen exactly */}
-        <div>
+        <div className="flex items-center" style={{ gap: 12 }}>
+          {leftAction}
           <div
-            className="flex items-center overflow-hidden w-full"
-            style={{ height: 48, backgroundColor: "#f6f9fc", border: "1px solid #f0f4f7", borderRadius: 100 }}
+            className="flex items-center overflow-hidden flex-1"
+            style={{ height: 48, backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.05)", borderRadius: 100, boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)" }}
           >
             <div
               className="flex items-center w-full h-full"
-              style={{ backgroundColor: "#f6f9fc", borderRadius: 100, paddingLeft: 16, paddingRight: 8, paddingTop: 8, paddingBottom: 8 }}
+              style={{ backgroundColor: "#fff", borderRadius: 100, paddingLeft: 16, paddingRight: 8, paddingTop: 8, paddingBottom: 8 }}
             >
               <input
                 type="text"
@@ -300,11 +387,11 @@ function TypeBox({
               {value.trim() && (
                 <button
                   onClick={onSubmit}
-                  className="shrink-0 flex items-center justify-center rounded-full bg-[#d30ad7] ml-1"
-                  style={{ width: 36, height: 36 }}
+                  className="shrink-0 flex items-center justify-center rounded-full ml-1"
+                  style={{ width: 36, height: 36, backgroundColor: "#fff", border: `1px solid ${OUTLINE_SUBTLE}` }}
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M7 11V3M3 7l4-4 4 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M7 11V3M3 7l4-4 4 4" stroke={VALENTINO_500} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
               )}
@@ -331,7 +418,7 @@ function Bubble({ message, typewrite = false }: { message: ChatMessage; typewrit
           <div
             className="max-w-[75%] rounded-[16px] rounded-tr-lg"
             style={{
-              backgroundColor: "#fae2fa",
+              backgroundColor: VALENTINO_50,
               padding: "12px 16px",
             }}
           >
@@ -444,6 +531,476 @@ function OptionList({
   );
 }
 
+// ── New3 Alert Header — typed title + option list ──────────────
+const NEW3_OPTIONS = [
+  "Want to course correct while you still can?",
+  "Show me where I stand on my goal",
+  "What's eating into my savings?",
+  "Something else",
+];
+
+function New3AlertHeader({
+  title,
+  subtitle,
+  onOptionSelect,
+}: {
+  title: string;
+  subtitle: string;
+  onOptionSelect: (label: string) => void;
+}) {
+  const [typingDone, setTypingDone] = useState(false);
+  const [selected, setSelected] = useState(false);
+  const onComplete = useCallback(() => setTypingDone(true), []);
+  const displayedTitle = useTypewriter(title, true, onComplete);
+
+  // Put the subtitle as the first option, then the rest
+  const options = [subtitle, ...NEW3_OPTIONS.filter((o) => o !== subtitle)];
+
+  return (
+    <div className="shrink-0 mb-6">
+      {/* Typed-out title — plain assistant text style */}
+      <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>
+        {displayedTitle}
+      </p>
+
+      {/* Options — appear after typing completes, hide after selection */}
+      {!selected && (
+        <div
+          className={`w-full overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
+            typingDone ? "max-h-[420px] opacity-100" : "max-h-0 opacity-0"
+          }`}
+          style={{ marginTop: typingDone ? 8 : 0 }}
+        >
+          {options.map((label) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => { setSelected(true); onOptionSelect(label); }}
+              className="flex w-full items-center text-left transition active:bg-[rgba(0,0,0,0.05)]"
+              style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)", padding: "8px 0", minHeight: 48 }}
+            >
+              <span className="truncate">{label}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginLeft: 8 }}>
+                <path d="M9 6l6 6-6 6" stroke="rgba(0,0,0,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── New5 — Text-only with affirmative/negative/neutral options ──
+const NEW5_TEXT = "Rajan, your Japan trip is veering off course \u2014 you\u2019ve overspent by \u20B915,000 against what we budgeted. Let\u2019s do some damage control while we still can.";
+
+const NEW5_OPTIONS = [
+  "Add ₹5,000 to pot",
+  "I'll handle it myself",
+  "Show me where I overspent",
+];
+
+const MOCK_RESPONSES: Record<string, string> = {
+  "Add ₹5,000 to pot": "Done \u2014 \u20B95,000 moved to your Japan trip pot. You\u2019re now \u20B910,000 behind instead of \u20B915,000. I\u2019ve also tightened your dining budget by \u20B92,000 this month to help close the gap faster.",
+  "I'll handle it myself": "Got it, I\u2019ll leave it with you. Just a heads up \u2014 if the gap grows past \u20B920,000, your December target starts looking tight. I\u2019ll check in again next week.",
+  "Show me where I overspent": "Here\u2019s the breakdown \u2014 dining out was \u20B98,200 (double your usual), shopping hit \u20B94,300, and subscriptions crept up by \u20B92,500. Dining is the big one to rein in.",
+};
+
+// ── Review Rent — rent-specific text-only variant ──
+const RENT_TEXT = "Rajan, your rent of ₹25,000 is due in 5 days but your balance is only ₹11,200.\n\nYour salary of ₹62,000 hits 2 days later — if you can defer rent briefly, you're covered.";
+
+const REVIEW_ONTRACK_TEXT = "Great going, Rajan \u2014 all your goals are **on track**. What do you want to explore today?";
+
+// ── Quick action cards for On Track variant ──
+// Illustrations from Figma Explore cards (placeholder assets)
+const ILLUST_FIRE = "https://www.figma.com/api/mcp/asset/15e3a409-245e-463e-8a32-ebeb66bc7203";
+const ILLUST_SPENDS = "https://www.figma.com/api/mcp/asset/bdb9ebfa-d4f4-4ffe-94e9-06639689fb06";
+const ILLUST_INVITE = "https://www.figma.com/api/mcp/asset/3608b12c-fa3c-450c-8823-64c0412f5e54";
+
+type QuickAction = { category: string; title: string; illustration?: string; bg: string };
+
+// Row 1: two square cards
+const MOSAIC_ROW1: QuickAction[] = [
+  { category: "Budget", title: "Can I afford it?", illustration: ILLUST_FIRE, bg: "linear-gradient(160deg, #ffffff 40%, #e6edf9 100%)" },
+  { category: "Last month", title: "Analyse my spends", illustration: ILLUST_SPENDS, bg: "linear-gradient(160deg, #ffffff 40%, #fff3e3 100%)" },
+];
+// Row 2 left: tall card
+const MOSAIC_TALL: QuickAction = { category: "Feedback", title: "Make Ryan smarter", illustration: ILLUST_INVITE, bg: "linear-gradient(160deg, #ffffff 40%, #fae2fa 100%)" };
+// Row 2 right: two half-height cards stacked
+const MOSAIC_HALF: QuickAction[] = [
+  { category: "For you", title: "Save taxes", bg: "linear-gradient(160deg, #ffffff 40%, #e0f4e8 100%)" },
+  { category: "Explore", title: "Surprise me", bg: "linear-gradient(160deg, #ffffff 40%, #e0e3e6 100%)" },
+];
+
+const ONTRACK_MOCK_RESPONSES: Record<string, string> = {
+  "Can I afford it?": "Your current balance is \u20B919,883 but whether you can afford something depends on what it is, when you need to pay, and what bills are coming up. What are you thinking of buying?",
+  "Analyse my spends": "Last month you spent \u20B947,200 total. Dining was the biggest category at \u20B912,400, followed by groceries at \u20B98,900 and transport at \u20B96,100. Overall **8% less** than the month before \u2014 solid.",
+  "Make Ryan smarter": "I\u2019d love to get better! You can rate my responses with the thumbs up or down after each reply. The more you interact, the better I understand what\u2019s useful to you.",
+  "Save taxes": "Based on your income and spending patterns, you could save up to \u20B945,000 this year. You\u2019re not fully utilising your **80C limit** \u2014 an ELSS fund or extra PPF contribution before March would help.",
+  "Surprise me": "Here\u2019s something \u2014 you spent \u20B90 on subscriptions you actually used last month, but \u20B9799 on ones you didn\u2019t. That\u2019s \u20B99,588 a year on autopilot. Want me to flag these?",
+};
+
+function MosaicCard({
+  action,
+  onSelect,
+  style: extraStyle,
+  className: extraClass = "",
+}: {
+  action: QuickAction;
+  onSelect: () => void;
+  style?: React.CSSProperties;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`relative text-left overflow-hidden transition-transform active:scale-[0.97] ${extraClass}`}
+      style={{
+        background: action.bg,
+        border: "none",
+        borderRadius: 16,
+        boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)",
+        ...extraStyle,
+      }}
+    >
+      <div style={{ position: "absolute", top: 16, left: 16, right: 16, display: "flex", flexDirection: "column", gap: 4 }}>
+        <span style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.7)", whiteSpace: "nowrap" }}>
+          {action.category}
+        </span>
+        <span style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)" }}>
+          {action.title}
+        </span>
+      </div>
+      {action.illustration && (
+        <img
+          src={action.illustration}
+          alt=""
+          style={{ position: "absolute", bottom: 16, right: 16, width: 44, height: 44, objectFit: "contain" }}
+        />
+      )}
+    </button>
+  );
+}
+
+function ReviewOnTrackScreen({
+  onOptionSelect,
+}: {
+  onOptionSelect: (label: string) => void;
+}) {
+  const [typingDone, setTypingDone] = useState(false);
+  const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+  const [replyDone, setReplyDone] = useState(false);
+  const onComplete = useCallback(() => setTypingDone(true), []);
+  const onReplyComplete = useCallback(() => setReplyDone(true), []);
+  const displayedText = useTypewriter(REVIEW_ONTRACK_TEXT, true, onComplete);
+  const mockReply = selectedLabel ? ONTRACK_MOCK_RESPONSES[selectedLabel] ?? "" : "";
+  const displayedReply = useTypewriter(mockReply, !!selectedLabel, onReplyComplete);
+
+  const handleSelect = (title: string) => {
+    setSelectedLabel(title);
+    onOptionSelect(title);
+  };
+
+  return (
+    <div className="shrink-0 mb-6">
+      <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>
+        {highlightValues(displayedText)}
+      </p>
+
+      {!selectedLabel && (
+        <div
+          className={`transition-opacity duration-300 ease-out ${
+            typingDone ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+          style={{ marginTop: typingDone ? 16 : 0, display: "flex", flexDirection: "column", gap: 16 }}
+        >
+          {/* Row 1: two square cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            {MOSAIC_ROW1.map((a) => (
+              <MosaicCard key={a.title} action={a} onSelect={() => handleSelect(a.title)} style={{ aspectRatio: "1 / 1" }} />
+            ))}
+          </div>
+          {/* Row 2: tall card (1:1 square) + two half-height cards stacked */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 16 }}>
+            <MosaicCard
+              action={MOSAIC_TALL}
+              onSelect={() => handleSelect(MOSAIC_TALL.title)}
+              style={{ gridRow: "1 / 3", aspectRatio: "1 / 1" }}
+            />
+            {MOSAIC_HALF.map((a) => (
+              <MosaicCard key={a.title} action={a} onSelect={() => handleSelect(a.title)} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Mock conversation after selection */}
+      {selectedLabel && (
+        <div className="mt-6 space-y-4 animate-chat-message-in">
+          {/* User bubble */}
+          <div className="flex justify-end">
+            <div
+              className="max-w-[75%] rounded-[16px] rounded-tr-lg"
+              style={{ backgroundColor: VALENTINO_50, padding: "12px 16px" }}
+            >
+              <p style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>{selectedLabel}</p>
+            </div>
+          </div>
+          {/* Assistant reply */}
+          <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>
+            {highlightValues(displayedReply)}
+          </p>
+          {replyDone && <FeedbackRow />}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function New5TextOnly({
+  text = NEW5_TEXT,
+  options = NEW5_OPTIONS,
+  mockResponses = MOCK_RESPONSES,
+  onOptionSelect,
+}: {
+  text?: string;
+  options?: string[];
+  mockResponses?: Record<string, string>;
+  onOptionSelect: (label: string) => void;
+}) {
+  const [typingDone, setTypingDone] = useState(false);
+  const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+  const [showReply, setShowReply] = useState(false);
+  const [replyDone, setReplyDone] = useState(false);
+  const onComplete = useCallback(() => setTypingDone(true), []);
+  const onReplyComplete = useCallback(() => setReplyDone(true), []);
+  const displayedText = useTypewriter(text, true, onComplete);
+  const mockReply = selectedLabel ? mockResponses[selectedLabel] ?? "" : "";
+  const displayedReply = useTypewriter(mockReply, showReply, onReplyComplete);
+
+  // Stagger: user bubble appears → 500ms → reply starts typewriting
+  useEffect(() => {
+    if (!selectedLabel) return;
+    const timer = window.setTimeout(() => setShowReply(true), 500);
+    return () => window.clearTimeout(timer);
+  }, [selectedLabel]);
+
+  return (
+    <div className="shrink-0 mb-6">
+      <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>
+        {highlightValues(displayedText)}
+      </p>
+
+      {options.length > 0 && !selectedLabel && (
+        <div
+          className={`transition-opacity duration-300 ease-out ${
+            typingDone ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+          style={{ marginTop: typingDone ? 28 : 0 }}
+        >
+          <div className="flex flex-wrap gap-3">
+            {options.map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => { setSelectedLabel(label); onOptionSelect(label); }}
+                className="transition-transform active:scale-[0.97]"
+                style={{
+                  ...typography.caption,
+                  color: "rgba(0,0,0,0.6)",
+                  backgroundColor: "#ffffff",
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  borderRadius: 100,
+                  padding: "6px 12px",
+                  boxShadow: "0px 1px 4px rgba(0,0,0,0.06)",
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Mock conversation after selection */}
+      {selectedLabel && (
+        <div className="mt-6 space-y-4">
+          {/* User bubble — slides in immediately */}
+          <div className="flex justify-end animate-chat-message-in">
+            <div
+              className="max-w-[75%] rounded-[16px] rounded-tr-lg"
+              style={{ backgroundColor: VALENTINO_50, padding: "12px 16px" }}
+            >
+              <p style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>{selectedLabel}</p>
+            </div>
+          </div>
+          {/* Assistant reply — starts after delay */}
+          {showReply && (
+            <div className="animate-chat-message-in">
+              <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>
+                {highlightValues(displayedReply)}
+              </p>
+              {replyDone && <FeedbackRow />}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── New4 Action Card — self-contained problem + action ─────────
+function New4ActionCard({
+  title,
+  onOptionSelect,
+}: {
+  title: string;
+  onOptionSelect: (label: string) => void;
+}) {
+  const [typingDone, setTypingDone] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const onComplete = useCallback(() => setTypingDone(true), []);
+  const displayedTitle = useTypewriter(title, true, onComplete);
+
+  const pct = 42;
+  const circumference = 2 * Math.PI * 18;
+  const offset = circumference - (pct / 100) * circumference;
+
+  return (
+    <div className="shrink-0 mb-6">
+      {/* Typed-out problem statement */}
+      <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)", marginBottom: 16 }}>
+        {displayedTitle}
+      </p>
+
+      {/* Action card — appears after typing */}
+      <div
+        className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
+          typingDone ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div
+          style={{
+            backgroundColor: BG_SURFACE,
+            borderRadius: 16,
+            padding: 16,
+            marginBottom: 12,
+          }}
+        >
+          {/* Headline */}
+          <p style={{ ...typography.headerH3, color: "rgba(0,0,0,0.9)", margin: 0, marginBottom: 16 }}>
+            Add ₹5,000 to your Japan goal pot
+          </p>
+
+          {/* Progress ring + stats row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+            {/* Ring */}
+            <svg width={48} height={48} viewBox="0 0 48 48" style={{ flexShrink: 0 }}>
+              <circle cx={24} cy={24} r={18} fill="none" stroke={VALENTINO_50} strokeWidth={4.5} />
+              <circle
+                cx={24} cy={24} r={18}
+                fill="none"
+                stroke={VALENTINO_500}
+                strokeWidth={4.5}
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={offset}
+                transform="rotate(-90 24 24)"
+              />
+              <text x={24} y={24} textAnchor="middle" dominantBaseline="central" style={{ fontFamily: "var(--font-rubik), sans-serif", fontSize: 11, fontWeight: 500, fill: "rgba(0,0,0,0.9)" }}>
+                {pct}%
+              </text>
+            </svg>
+
+            {/* Stats */}
+            <div>
+              <p style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)", margin: 0 }}>
+                ₹84k / ₹2L saved
+              </p>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  padding: "2px 6px",
+                  borderRadius: 100,
+                  backgroundColor: ORANGE_50,
+                  marginTop: 4,
+                }}
+              >
+                <span style={{ ...typography.metadata, textTransform: "uppercase", color: ORANGE_500 }}>
+                  4 months left
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginBottom: 16 }} />
+
+          {/* Action row */}
+          {confirmed ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="10" r="10" fill={GREEN_500} />
+                <path d="M6 10.5l2.5 2.5L14 7.5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span style={{ ...typography.buttonSmall, color: GREEN_500 }}>Added to pot</span>
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", margin: 0, marginBottom: 4 }}>
+                  FROM
+                </p>
+                <p style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.7)", margin: 0 }}>
+                  slice savings
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmed(true)}
+                style={{
+                  ...typography.buttonSmall,
+                  border: "none",
+                  background: "#d30ad7",
+                  color: "#fff",
+                  cursor: "pointer",
+                  padding: "10px 24px",
+                  borderRadius: 100,
+                  flexShrink: 0,
+                }}
+              >
+                Add now
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Dismiss options — hide after selection or confirmation */}
+        {!confirmed && (
+          <div className="w-full">
+            {["Not now", "Something else"].map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => onOptionSelect(label)}
+                className="flex w-full items-center text-left transition active:bg-[rgba(0,0,0,0.05)]"
+                style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)", padding: "8px 0", minHeight: 44 }}
+              >
+                <span className="truncate">{label}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginLeft: 8 }}>
+                  <path d="M9 6l6 6-6 6" stroke="rgba(0,0,0,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Chat({
   title,
   subtitle,
@@ -468,14 +1025,20 @@ export default function Chat({
   onInitialSuggestionClick,
   initialScreenVariant = "old",
   thinkingLabel,
+  goalTrailingSlot,
+  goalPlanBuilder,
+  questionnaireOverlay,
 }: ChatProps) {
-  const isNewVariant = initialScreenVariant === "new" || initialScreenVariant === "new2";
+  const isNewVariant = initialScreenVariant === "new" || initialScreenVariant === "new2" || initialScreenVariant === "new3" || initialScreenVariant === "new4" || initialScreenVariant === "new5" || initialScreenVariant === "review-ontrack" || initialScreenVariant === "review-rent" || initialScreenVariant === "review-refresh";
   const [draft, setDraft] = useState("");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [revealedCount, setRevealedCount] = useState(() => (showInitialPrompt && !isNewVariant ? 0 : messages.length));
   const [showProcessingGlow, setShowProcessingGlow] = useState(false);
   const [hasScrolledContent, setHasScrolledContent] = useState(false);
   const [hasContentBelow, setHasContentBelow] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [showMosaicCards, setShowMosaicCards] = useState(false);
+  const [mosaicSelectedLabel, setMosaicSelectedLabel] = useState<string | null>(null);
   const revealTimerRef = useRef<number | null>(null);
 
   // Track which messages have already been typewritten so we never re-typewrite
@@ -484,16 +1047,49 @@ export default function Chat({
   // Alert state for new variants — persists as conversation header
   // "new2" always shows the savings goal alert; "new" picks randomly
   const [alert] = useState<AlertScenario | null>(() => {
-    if (initialScreenVariant === "new2") {
+    if (initialScreenVariant === "review-ontrack") {
+      return {
+        title: "All 3 goals are on track.",
+        subtitle: "Nothing to worry about — I'll nudge you if anything shifts.",
+        icon: null,
+        iconBg: BLUE_50,
+      };
+    }
+    if (initialScreenVariant === "review-rent") {
+      return {
+        title: "Rajan, your rent is at risk.",
+        subtitle: "You're ₹13,800 short with only 5 days to go.",
+        icon: null,
+        iconBg: RED_50,
+      };
+    }
+    if (initialScreenVariant === "new2" || initialScreenVariant === "new3" || initialScreenVariant === "new4" || initialScreenVariant === "new5" || initialScreenVariant === "review-refresh") {
       return {
         title: "Rajan, your trip to Japan is veering dangerously off course.",
         subtitle: "Want to course correct while you still can?",
         icon: null,
-        iconBg: "#e6edf9",
+        iconBg: BLUE_50,
       };
     }
     return isNewVariant ? pickAlert() : null;
   });
+
+  const handleMosaicSelect = useCallback((title: string) => {
+    setMosaicSelectedLabel(title);
+    setHasInteracted(true);
+  }, []);
+
+  // Auto-scroll when mosaic cards are injected via refresh button
+  useEffect(() => {
+    if (showMosaicCards) {
+      const scroller = scrollContainerRef.current;
+      if (scroller) {
+        requestAnimationFrame(() => {
+          scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
+        });
+      }
+    }
+  }, [showMosaicCards, mosaicSelectedLabel]);
 
   // Tracks whether the initial prompt is visually shown (with fade-out delay)
   // For the "new" variant, we never show the initial prompt overlay
@@ -831,6 +1427,7 @@ export default function Chat({
             hasScrolledContent={hasScrolledContent}
             dragHandleOpacity={1}
             hasUserMessages={messages.some((m) => m.role === "user")}
+            goalTrailingSlot={goalTrailingSlot}
           />
         </div>
       )}
@@ -874,8 +1471,14 @@ export default function Chat({
                   hasScrolledContent={hasScrolledContent}
                   hasUserMessages={messages.some((m) => m.role === "user")}
                   floating={true}
+                  goalTrailingSlot={goalTrailingSlot}
                 />
               </div>
+              {goalPlanBuilder && (
+                <div style={{ pointerEvents: 'auto', position: 'relative', zIndex: 1 }}>
+                  {goalPlanBuilder}
+                </div>
+              )}
             </div>
 
             <div
@@ -884,11 +1487,11 @@ export default function Chat({
               style={{ paddingTop: 8, overflowAnchor: "none" }}
             >
               <div ref={contentRef} className="flex flex-col px-6">
-                {/* Top spacer so content clears the floating close button */}
-                <div className="shrink-0" aria-hidden="true" style={{ height: 108 }} />
+                {/* Top spacer so content clears the floating close button + plan builder */}
+                <div className="shrink-0" aria-hidden="true" style={{ height: goalPlanBuilder ? 160 : 108 }} />
 
                 {/* Alert header for new variant — persists at top of conversation */}
-                {alert && (
+                {alert && initialScreenVariant !== "new3" && initialScreenVariant !== "new4" && initialScreenVariant !== "new5" && initialScreenVariant !== "review-ontrack" && initialScreenVariant !== "review-rent" && initialScreenVariant !== "review-refresh" && (
                   <button
                     className="shrink-0 mb-6 text-left active:opacity-70 transition-opacity"
                     style={{ display: "flex", flexDirection: "column", gap: 12, border: "none", background: "none", padding: 0 }}
@@ -897,19 +1500,66 @@ export default function Chat({
                     <h1 style={{ ...typography.headerH2, color: "rgba(0,0,0,0.9)" }}>
                       {alert.title}
                     </h1>
-                    <p style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.45)" }}>
+                    <p style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.5)" }}>
                       {alert.subtitle}<InlineChevron />
                     </p>
                   </button>
                 )}
 
+                {/* New3 variant — typed-out title + option list */}
+                {alert && initialScreenVariant === "new3" && (
+                  <New3AlertHeader
+                    title={alert.title}
+                    subtitle={alert.subtitle}
+                    onOptionSelect={(label) => onSubmit?.(label)}
+                  />
+                )}
+
+                {/* New4 variant — self-contained action card */}
+                {alert && initialScreenVariant === "new4" && (
+                  <New4ActionCard
+                    title={alert.title}
+                    onOptionSelect={(label) => onSubmit?.(label)}
+                  />
+                )}
+
+                {/* New5 / Review Behind — typewriter text + plain options */}
+                {alert && initialScreenVariant === "new5" && (
+                  <New5TextOnly
+                    onOptionSelect={() => { setHasInteracted(true); }}
+                  />
+                )}
+
+                {/* Review Refresh — same initial screen as Behind */}
+                {alert && initialScreenVariant === "review-refresh" && (
+                  <New5TextOnly
+                    onOptionSelect={() => { setHasInteracted(true); }}
+                  />
+                )}
+
+                {/* Review on-track — reassuring text + quick action cards */}
+                {alert && initialScreenVariant === "review-ontrack" && (
+                  <ReviewOnTrackScreen
+                    onOptionSelect={() => { setHasInteracted(true); }}
+                  />
+                )}
+
+                {/* Review Rent — typewriter text only, no options */}
+                {alert && initialScreenVariant === "review-rent" && (
+                  <New5TextOnly
+                    text={RENT_TEXT}
+                    options={[]}
+                    onOptionSelect={() => {}}
+                  />
+                )}
+
                 {(drawerContent || pinnedContent) && (
                   <div className="mb-4 space-y-2">
                     {drawerContent ? (
-                      <div className="rounded-2xl border p-3" style={{ ...typography.caption, borderColor: "#f0f4f7", backgroundColor: "#f6f9fc", color: "rgba(0,0,0,0.5)" }}>{drawerContent}</div>
+                      <div className="rounded-2xl border p-3" style={{ ...typography.caption, borderColor: BG_SURFACE_2, backgroundColor: BG_SURFACE, color: "rgba(0,0,0,0.5)" }}>{drawerContent}</div>
                     ) : null}
                     {pinnedContent ? (
-                      <div className="rounded-2xl border p-3" style={{ ...typography.caption, borderColor: "#e0f4e8", backgroundColor: "#e0f4e8", color: "rgba(0,0,0,0.9)" }}>{pinnedContent}</div>
+                      <div className="rounded-2xl border p-3" style={{ ...typography.caption, borderColor: GREEN_50, backgroundColor: GREEN_50, color: "rgba(0,0,0,0.9)" }}>{pinnedContent}</div>
                     ) : null}
                   </div>
                 )}
@@ -925,6 +1575,8 @@ export default function Chat({
                     if (shouldTypewrite) {
                       typewrittenIdsRef.current.add(message.id);
                     }
+                    // Show feedback row after the last assistant message
+                    const isLastAssistant = message.role === "assistant" && !renderedMessages.slice(index + 1).some((m) => m.role === "assistant");
                     return (
                       <div
                         key={message.id}
@@ -946,6 +1598,7 @@ export default function Chat({
                         ) : (
                           <Bubble message={message} typewrite={shouldTypewrite} />
                         )}
+                        {isLastAssistant && !message.streaming && !thinkingLabel && <FeedbackRow />}
                       </div>
                     );
                   })}
@@ -958,6 +1611,37 @@ export default function Chat({
                   )}
 
                   {chips.length > 0 && renderedMessages.length === 0 ? <OptionList chips={chips} onChipSelect={onChipSelect} /> : null}
+
+                  {/* Mosaic cards injected via refresh button */}
+                  {showMosaicCards && initialScreenVariant === "review-refresh" && (
+                    <div className="w-full animate-chat-message-in">
+                      <p className="mb-4" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>
+                        What else would you like to explore?
+                      </p>
+                      {!mosaicSelectedLabel && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                            {MOSAIC_ROW1.map((a) => (
+                              <MosaicCard key={a.title} action={a} onSelect={() => handleMosaicSelect(a.title)} style={{ aspectRatio: "1 / 1" }} />
+                            ))}
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 16 }}>
+                            <MosaicCard
+                              action={MOSAIC_TALL}
+                              onSelect={() => handleMosaicSelect(MOSAIC_TALL.title)}
+                              style={{ gridRow: "1 / 3", aspectRatio: "1 / 1" }}
+                            />
+                            {MOSAIC_HALF.map((a) => (
+                              <MosaicCard key={a.title} action={a} onSelect={() => handleMosaicSelect(a.title)} />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {mosaicSelectedLabel && (
+                        <MosaicCardReply label={mosaicSelectedLabel} />
+                      )}
+                    </div>
+                  )}
                 </div>
                 {/* Spacer so last content clears the floating input bar */}
                 <div className="shrink-0" aria-hidden="true" style={{ height: 120 }} />
@@ -965,42 +1649,64 @@ export default function Chat({
             </div>
 
             {/* Scroll-to-bottom pill (new variant only) */}
-            {isNewVariant && hasContentBelow && renderedMessages.length > 0 && (
-              <button
-                onClick={() => {
-                  const scroller = scrollContainerRef.current;
-                  if (scroller) scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
-                }}
-                className="absolute z-20 flex items-center justify-center rounded-full bg-white shadow-md active:scale-95 transition-transform"
-                style={{
-                  bottom: 110,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: 36,
-                  height: 36,
-                  border: "1px solid rgba(0,0,0,0.08)",
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 3v10M4 9l4 4 4-4" stroke="rgba(0,0,0,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            )}
+            <button
+              onClick={() => {
+                const scroller = scrollContainerRef.current;
+                if (scroller) scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
+              }}
+              className="absolute z-20 flex items-center justify-center rounded-full bg-white shadow-md active:scale-95 transition-all duration-200 ease-out"
+              style={{
+                bottom: 110,
+                right: 24,
+                width: 36,
+                height: 36,
+                border: "1px solid rgba(0,0,0,0.08)",
+                opacity: isNewVariant && hasContentBelow && renderedMessages.length > 0 ? 1 : 0,
+                pointerEvents: isNewVariant && hasContentBelow && renderedMessages.length > 0 ? "auto" : "none",
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 3v10M4 9l4 4 4-4" stroke="rgba(0,0,0,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
 
             <div className="absolute bottom-0 left-0 right-0" style={{ pointerEvents: 'none' }}>
               <div style={{ pointerEvents: 'auto' }}>
-                <TypeBox
-                  value={draft}
-                  onChange={setDraft}
-                  onSubmit={() => {
-                    const text = draft.trim();
-                    if (!text) return;
-                    setDraft("");
-                    onSubmit?.(text);
-                  }}
-                  placeholder={inputPlaceholder ?? "Start typing..."}
-                  showElevation={hasContentBelow}
-                />
+                {questionnaireOverlay ?? (
+                  <TypeBox
+                    value={draft}
+                    onChange={setDraft}
+                    onSubmit={() => {
+                      const text = draft.trim();
+                      if (!text) return;
+                      setDraft("");
+                      onSubmit?.(text);
+                    }}
+                    placeholder={inputPlaceholder ?? (renderedMessages.length > 0 || hasInteracted ? "Reply to Ryan..." : "Ask Ryan...")}
+                    showElevation={hasContentBelow}
+                    leftAction={
+                      initialScreenVariant === "review-refresh" ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowMosaicCards(true);
+                            setMosaicSelectedLabel(null);
+                          }}
+                          className="shrink-0 flex items-center justify-center rounded-full active:scale-95 transition-transform"
+                          style={{
+                            width: 44,
+                            height: 44,
+                            backgroundColor: "#fff",
+                            border: `1px solid ${OUTLINE_SUBTLE}`,
+                            boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)",
+                          }}
+                        >
+                          <RefreshIcon />
+                        </button>
+                      ) : undefined
+                    }
+                  />
+                )}
               </div>
             </div>
           </div>

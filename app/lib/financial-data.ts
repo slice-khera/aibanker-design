@@ -247,7 +247,7 @@ export function computeWrappedSlides(): WrappedSlide[] {
   ];
 }
 
-export function computeSuggestedBudgets(): MockProfile["suggested_budgets"] {
+function computeSuggestedBudgets(): MockProfile["suggested_budgets"] {
   const months = getMonthCount();
   const categories = getLifestyleCategories();
 
@@ -340,7 +340,7 @@ export function computePacePresets(goalAmount: number): PacePreset[] {
   ];
 }
 
-export function generateReceipts(): MockProfile["receipts"] {
+function generateReceipts(): MockProfile["receipts"] {
   const receipts: MockProfile["receipts"]  = [];
   const lifestyleCategories = [
     "Food Delivery (Swiggy)",
@@ -661,7 +661,7 @@ export function computeLeakInsights(): LeakInsight[] {
   return insights.sort((a, b) => b.volatility - a.volatility);
 }
 
-export type RatingTransaction = {
+type RatingTransaction = {
   id: string;
   time: string;
   category: string;
