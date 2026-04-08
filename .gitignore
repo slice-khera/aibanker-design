@@ -39,3 +39,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# screenshots / dev artifacts
+*.png
+PLAN.md
+changes.md
+full-snapshot.md
+
+# AI tool configs
+.agent/
+.agents/
+.claude/
+.kiro/
+.playwright-mcp/
+.mcp.json
+skills-lock.json

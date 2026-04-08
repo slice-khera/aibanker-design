@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState, useRef, type ReactNode } from "react";
 import Chat, { type ChatChip, type ChatMessage } from "./components/Chat";
 import ChatCard, { type ChatCardData, CATEGORY_ICONS, CATEGORY_COLORS } from "./components/ChatCards";
-import PersonaQuizStack, { type RevealData } from "./components/PersonaQuizStack";
 import { getSuggestions } from "./components/ChatInitialScreen";
 import { AppBar, BOTTOM_INSET, NavButton } from "./components/AppChrome";
 import GoalTracker, { type GoalIndicatorData } from "./components/GoalTracker";
@@ -21,7 +20,6 @@ import {
   goalChips,
   leakFixChips,
   onTrackChips,
-  personaQuestions,
   paceChoiceChips,
   planConfirmChips,
   planAdjustChips,
@@ -54,14 +52,12 @@ import type {
   ChatMessage as AIChatMessage,
   FlowAssistResponse,
   FlowAction,
-  PersonaStage,
   HomeSubflow,
 } from "./lib/types";
 import { getEffectiveBudget } from "./lib/budget-utils";
 import { useUserState } from "./hooks/useUserState";
 import { typography } from "./lib/typography";
 
-type PersonaStageKey = "q1" | "q2" | "q2-follow" | "q3" | "q4";
 type GoalProgressCardData = Extract<ChatCardData, { type: "goal-progress" }>;
 type GoalDetailSnapshot = {
   name: string;
@@ -80,22 +76,6 @@ type GoalDetailSnapshot = {
   productLabel: string;
   amountRemaining: number;
   startedLabel: string;
-};
-
-const personaStageOrder: PersonaStageKey[] = ["q1", "q2", "q2-follow", "q3", "q4"];
-const personaQuestionMap: Record<PersonaStageKey, number> = {
-  q1: 0,
-  q2: 1,
-  "q2-follow": 2,
-  q3: 3,
-  q4: 4,
-};
-const personaQuestionStageMap: Record<string, PersonaStageKey> = {
-  "q1-savings": "q1",
-  "q2-disposable": "q2",
-  "q2-followup": "q2-follow",
-  "q3-persona": "q3",
-  "q4-confidence": "q4",
 };
 
 // Derive profile from real transaction data
@@ -480,7 +460,6 @@ export default function Home() {
 
   // Derived from userState — variable names stay backward-compatible
   const step = userState?.currentStep ?? "wrapped";
-  const personaStage = userState?.personaStage ?? "q1";
   const goalStage = userState?.goalStage ?? "choice";
   const budgetStage = userState?.budgetStage ?? "digest";
   const budgetOverrides = userState?.budgetOverrides ?? {};
@@ -629,12 +608,6 @@ export default function Home() {
   const [activeChips, setActiveChips] = useState<ChatChip[]>([]);
   const [homeSubflow, setHomeSubflow] = useState<HomeSubflow>("idle");
   const [subflowData, setSubflowData] = useState<Record<string, string>>({});
-  const [personaDraftAnswers, setPersonaDraftAnswers] = useState<Record<string, string>>({});
-  const [personaActiveIndex, setPersonaActiveIndex] = useState(0);
-  const [personaTransitioning, setPersonaTransitioning] = useState(false);
-  const [personaRevealVisible, setPersonaRevealVisible] = useState(false);
-  const [personaRevealData, setPersonaRevealData] = useState<RevealData | undefined>();
-  const [personaStoryIndex, setPersonaStoryIndex] = useState(-1);
   const [insightsMode, setInsightsMode] = useState(false);
 
   // Data-driven state (transient)
@@ -835,24 +808,6 @@ export default function Home() {
 
   const toChips = (options: ChipOption[]): ChatChip[] =>
     options.map((o) => ({ id: o.id, label: o.label }));
-
-  const hydratePersonaDraftFromState = useCallback((answers: Record<string, string>, stage: PersonaStage) => {
-    const draft: Record<string, string> = {};
-    for (const question of personaQuestions) {
-      const stageKey = personaQuestionStageMap[question.id];
-      if (stageKey && answers[stageKey]) {
-        draft[question.id] = answers[stageKey];
-      }
-    }
-
-    setPersonaDraftAnswers(draft);
-
-    const nextIndex = personaQuestionMap[stage] ?? 0;
-    const answeredCount = Object.keys(draft).length;
-    const isComplete = answeredCount >= personaQuestions.length;
-    setPersonaActiveIndex(isComplete ? personaQuestions.length - 1 : nextIndex);
-    setPersonaTransitioning(false);
-  }, []);
 
   // ============ AI CHAT HANDLER ============
   const handleChatSubmit = async (text: string) => {
@@ -1436,27 +1391,7 @@ Be insightful, not just descriptive.`;
     setActiveChips(getBucketOptionChips());
   };
 
-  // ============ WRAPPED COMPLETE ============
-  const activeSlides = insightsMode ? INSIGHT_SLIDES : dynamicWrappedSlides;
-  const handleStoryAdvance = useCallback(() => {
-    if (personaStoryIndex < activeSlides.length - 1) {
-      setPersonaStoryIndex(personaStoryIndex + 1);
-    } else if (insightsMode) {
-      // Insights done — exit back to home
-      setInsightsMode(false);
-      mutate({ currentStep: "home" });
-    } else {
-      // Stories done — go straight to quiz Q1 (no cover card)
-      setPersonaStoryIndex(-1);
-    }
-  }, [personaStoryIndex, activeSlides.length, insightsMode, mutate]);
-
-  const handleStoryBack = useCallback(() => {
-    if (personaStoryIndex > 0) {
-      setPersonaStoryIndex(personaStoryIndex - 1);
-    }
-  }, [personaStoryIndex]);
-
+  // ============ WRAPPED / INSIGHTS ============
   const openWrappedStories = useCallback(() => {
     setChatVisible(false);
     setChatScreenPhase("closed");
@@ -1465,13 +1400,8 @@ Be insightful, not just descriptive.`;
     setRdDetailVisible(false);
     setMessages([]);
     setActiveChips([]);
-    setPersonaDraftAnswers({});
-    setPersonaActiveIndex(0);
-    setPersonaTransitioning(false);
-    setPersonaRevealVisible(false);
-    setPersonaStoryIndex(0);
     setInsightsMode(false);
-    mutate({ currentStep: "persona", personaStage: "q1" });
+    mutate({ currentStep: "home" });
   }, [mutate]);
 
   const openInsights = useCallback(() => {
@@ -1482,91 +1412,9 @@ Be insightful, not just descriptive.`;
     setRdDetailVisible(false);
     setMessages([]);
     setActiveChips([]);
-    setPersonaDraftAnswers({});
-    setPersonaActiveIndex(0);
-    setPersonaTransitioning(false);
-    setPersonaRevealVisible(false);
-    setPersonaStoryIndex(0);
     setInsightsMode(true);
-    mutate({ currentStep: "persona", personaStage: "q1" });
+    mutate({ currentStep: "home" });
   }, [mutate]);
-
-
-  // ============ PERSONA FLOW ============
-  const handlePersonaAnswer = (questionIndex: number, chip: ChipOption) => {
-    if (personaTransitioning) return;
-
-    const question = personaQuestions[questionIndex];
-    if (!question) return;
-
-    const stageKey = personaQuestionStageMap[question.id];
-    const nextDraft = {
-      ...personaDraftAnswers,
-      [question.id]: chip.id,
-    };
-
-    setPersonaDraftAnswers(nextDraft);
-    setPersonaTransitioning(true);
-
-    const isLastQuestion = questionIndex >= personaQuestions.length - 1;
-    const nextStage = !isLastQuestion ? personaStageOrder[questionIndex + 1] : "q4";
-
-    mutate({
-      personaAnswers: { ...userState?.personaAnswers, ...(stageKey ? { [stageKey]: chip.id } : {}) },
-      personaStage: nextStage as PersonaStage,
-    });
-
-    window.setTimeout(() => {
-      setPersonaTransitioning(false);
-      if (isLastQuestion) {
-        setPersonaRevealData({
-          savingsGuess: nextDraft["q1-savings"] ? personaQuestions[0].chips.find(c => c.id === nextDraft["q1-savings"])?.label ?? nextDraft["q1-savings"] : profile.persona.user_guess_savings_pct,
-          savingsActual: profile.persona.actual_savings_pct,
-          personaGuess: nextDraft["q3-persona"] ? personaQuestions[3].chips.find(c => c.id === nextDraft["q3-persona"])?.label ?? nextDraft["q3-persona"] : profile.persona.persona_guess,
-          personaActual: profile.persona.persona_actual,
-        });
-        setPersonaRevealVisible(true);
-      } else {
-        setPersonaActiveIndex(questionIndex + 1);
-      }
-    }, 220);
-  };
-
-  const submitPersonaQuiz = (draftAnswers = personaDraftAnswers) => {
-    const nextAnswers = { ...(userState?.personaAnswers || {}) };
-    for (const question of personaQuestions) {
-      const stageKey = personaQuestionStageMap[question.id];
-      const answerId = draftAnswers[question.id];
-      if (stageKey && answerId) {
-        nextAnswers[stageKey] = answerId;
-      }
-    }
-
-    handoffToGoalFromQuiz(nextAnswers);
-  };
-
-  const handoffToGoalFromQuiz = useCallback((answerSnapshot?: Record<string, string>) => {
-    const answers = answerSnapshot ?? userState?.personaAnswers ?? {};
-
-    storeMemoryDecision(
-      "persona_quiz",
-      `User thinks they save ${answers["q1"] || "unknown"}. Top category guess: ${answers["q2"] || "unknown"}. Identifies as: ${answers["q3"] || "unknown"}. Confidence: ${answers["q4"] || "unknown"}.`
-    );
-
-    mutate({ currentStep: "goal", goalStage: "choice", personaAnswers: answers, personaStage: "q4" });
-    clearMsgQueue();
-    setMessages([]);
-    setActiveChips([]);
-    setReceiptsOpen(false);
-    showChatOverlay(false);
-
-    queueMessage("assistant", "You don't have bad habits, your money just has habits. Let's set up a savings goal — what are you saving toward?");
-
-    goalOnboardingTimerRef.current = window.setTimeout(() => {
-      setActiveChips(toChips(goalChips));
-      goalOnboardingTimerRef.current = null;
-    }, 1800);
-  }, [userState?.personaAnswers, mutate, clearMsgQueue, showChatOverlay, queueMessage]);
 
   // ============ GOAL REVIEW ============
   const getGoalContributionSummary = useCallback(() => {
@@ -2146,7 +1994,6 @@ Be insightful, not just descriptive.`;
           queueMessage("assistant", "Tracking only for now.");
           finishBudget();
         } else {
-          mutate({ personaAnswers: { ...userState?.personaAnswers, selectedLever: chip.id } });
           queueMessage("assistant", "Do you want me to set a budget for this category?");
           mutate({ budgetStage: "budgetChoice" });
           setActiveChips(toChips(budgetAgreementChips));
@@ -2172,7 +2019,6 @@ Be insightful, not just descriptive.`;
 
       case "budgetStyle":
         mutate({
-          personaAnswers: { ...userState?.personaAnswers, budgetStyle: chip.id },
           budgetStyle: chip.id as "strict" | "chill" | "bucket",
           budgetStage: "actionConfirm",
         });
@@ -3692,8 +3538,6 @@ Be insightful, not just descriptive.`;
   // ============ MAIN CHIP HANDLER ============
   const handleChipSelect = (chip: ChatChip) => {
     switch (step) {
-      case "persona":
-        break;
       case "goal":
         handleGoalChip(chip);
         break;
@@ -3875,16 +3719,11 @@ Be insightful, not just descriptive.`;
     setSwipeQueue([]);
     setIsAgentProcessingGlow(false);
 
-    // Load directly into chat (design-exploration: skip wrapped/persona story).
+    // Load directly into chat.
     mutate({ currentStep: "home" });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHydrated]);
-
-  useEffect(() => {
-    if (step !== "persona") return;
-    hydratePersonaDraftFromState(userState?.personaAnswers || {}, personaStage);
-  }, [hydratePersonaDraftFromState, personaStage, step, userState?.personaAnswers]);
 
   // ============ DRAWER CONTENT ============
   const receiptsDrawer = receiptsOpen ? (
@@ -4045,26 +3884,8 @@ Be insightful, not just descriptive.`;
                 <PayScreen onChatOpen={openChatOverlay} onProfileOpen={openWrappedStories} />
               </div>
 
-              {step === "persona" ? (
-                <div className="absolute inset-0 z-30">
-                  <PersonaQuizStack
-                    slides={activeSlides}
-                    storyIndex={personaStoryIndex}
-                    onStoryAdvance={handleStoryAdvance}
-                    onStoryBack={handleStoryBack}
-                    questions={personaQuestions}
-                    activeIndex={personaActiveIndex}
-                    showReveal={personaRevealVisible}
-                    revealData={personaRevealData}
-                    isTransitioning={personaTransitioning}
-                    onSelect={handlePersonaAnswer}
-                    onRevealDone={() => submitPersonaQuiz()}
-                  />
-                </div>
-              ) : null}
-
               {/* ── Chat (full-screen overlay) ── */}
-              {chatVisible && step !== "persona" && (
+              {chatVisible && (
               <div
                 className="absolute inset-0 z-20"
                 style={{

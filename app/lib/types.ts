@@ -164,9 +164,8 @@ export type Memory = {
 
 // ============ FLOW STEP TYPES ============
 
-type FlowStep = "wrapped" | "persona" | "reality" | "goal" | "budget" | "home";
+type FlowStep = "wrapped" | "reality" | "goal" | "budget" | "home";
 
-export type PersonaStage = "q1" | "q2" | "q2-follow" | "q3" | "q4";
 type GoalStage = "choice" | "destination" | "timeline" | "amount" | "savings-ask" | "plan" | "plan-adjust" | "pinned";
 type BudgetStage = "obligations" | "digest" | "onTrack" | "lever" | "budgetChoice" | "budgetStyle" | "bigExpenses" | "action" | "actionConfirm";
 export type HomeSubflow =
@@ -230,10 +229,8 @@ export type UserState = {
   userId: string;
   onboardingComplete: boolean;
   currentStep: FlowStep;
-  personaStage: PersonaStage;
   goalStage: GoalStage;
   budgetStage: BudgetStage;
-  personaAnswers: Record<string, string>;
 
   obligations: {
     confirmed: { payee: string; amount: number; type: string }[];

@@ -1,7 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { DerivedProfile, Memory, ChatMessage, FlowAssistRequest, FlowAssistResponse, FlowAction } from "./types";
 import { getFinancialSummaryForAI } from "./financial-data";
-
 let anthropicClient: Anthropic | null = null;
 
 function getClient(): Anthropic {
@@ -13,6 +12,25 @@ function getClient(): Anthropic {
   return anthropicClient;
 }
 
+const IDENTITY_INTRO = `You are the AI banker inside a banking app called "slice Banker". You are a calm financial operator — not a chatbot, not a coach, not a customer support agent.`;
+
+const PERSONALITY = `PERSONALITY:
+- Calm, direct, observant, non-judgmental.
+- Short sentences. 1–3 sentences by default unless the user asks for detail.
+- Lead with observations and facts, not suggestions.
+- Use INR formatting (₹X,XXX or ₹Xk/₹XL). Be specific — never say "a lot", say "₹6,354".
+- No emojis. No greetings. No filler phrases ("Got it!", "Great question", "Happy to help").
+- No humor, sarcasm, or judgment about spending behavior.
+- Never reveal raw narrations, account numbers, or IFSC codes.
+- Insight structure: Observation → Context → Suggestion (optional).`;
+
+const IMPORTANT_RULES = `1. When asked about spending, use EXACT numbers from the financial data.
+2. For affordability questions, consider: category budget remaining, buffer, upcoming bills, and goal impact.
+3. Don't make up transactions or amounts not in the data.
+4. If you don't know something, say so — don't fabricate.
+5. For goals, factor in the user's actual savings rate and investment patterns.
+6. Never judge or shame spending behavior. Surface facts, not verdicts.`;
+
 export function buildSystemPrompt(
   profile: DerivedProfile,
   memories: Memory[],
@@ -21,21 +39,13 @@ export function buildSystemPrompt(
     currentPace?: string;
     currentBudgetStyle?: string;
     recentFlow?: string;
-  }
+  },
 ): string {
   const financialData = getFinancialSummaryForAI();
 
-  let prompt = `You are the AI banker inside a banking app called "slice Banker". You are a calm financial operator — not a chatbot, not a coach, not a customer support agent.
+  let prompt = `${IDENTITY_INTRO}
 
-PERSONALITY:
-- Calm, direct, observant, non-judgmental.
-- Short sentences. 1–3 sentences by default unless the user asks for detail.
-- Lead with observations and facts, not suggestions.
-- Use INR formatting (₹X,XXX or ₹Xk/₹XL). Be specific — never say "a lot", say "₹6,354".
-- No emojis. No greetings. No filler phrases ("Got it!", "Great question", "Happy to help").
-- No humor, sarcasm, or judgment about spending behavior.
-- Never reveal raw narrations, account numbers, or IFSC codes.
-- Insight structure: Observation → Context → Suggestion (optional).
+${PERSONALITY}
 
 ${financialData}
 
@@ -68,13 +78,7 @@ USER PROFILE:
     prompt += `\nUse these memories to personalize responses. Respect stated preferences (e.g., if they said "don't cut my food budget", don't suggest cutting food).`;
   }
 
-  prompt += `\n\nIMPORTANT RULES:
-1. When asked about spending, use EXACT numbers from the financial data.
-2. For affordability questions, consider: category budget remaining, buffer, upcoming bills, and goal impact.
-3. Don't make up transactions or amounts not in the data.
-4. If you don't know something, say so — don't fabricate.
-5. For goals, factor in the user's actual savings rate and investment patterns.
-6. Never judge or shame spending behavior. Surface facts, not verdicts.`;
+  prompt += `\n\nIMPORTANT RULES:\n${IMPORTANT_RULES}`;
 
   return prompt;
 }
@@ -174,20 +178,13 @@ const flowTools: Anthropic.Tool[] = [
 function buildFlowAssistSystemPrompt(
   profile: DerivedProfile,
   memories: Memory[],
-  request: FlowAssistRequest
+  request: FlowAssistRequest,
 ): string {
   const financialData = getFinancialSummaryForAI();
 
-  let prompt = `You are the AI banker inside a banking app called "slice Banker". You are a calm financial operator — not a chatbot, not a coach, not a customer support agent.
+  let prompt = `${IDENTITY_INTRO}
 
-PERSONALITY:
-- Calm, direct, observant, non-judgmental.
-- Short sentences. 1–3 sentences by default unless the user asks for detail.
-- Lead with observations and facts. Use INR formatting (₹X,XXX or ₹Xk/₹XL).
-- Be specific — never say "a lot", say "₹6,354".
-- No emojis. No greetings. No filler phrases.
-- No humor, sarcasm, or judgment about spending.
-- Never reveal raw narrations, account numbers, or IFSC codes.
+${PERSONALITY}
 
 ${financialData}
 
@@ -243,7 +240,7 @@ Write a concise, factual analysis of the data provided. Lead with the most signi
 export async function flowAssist(
   request: FlowAssistRequest,
   profile: DerivedProfile,
-  memories: Memory[]
+  memories: Memory[],
 ): Promise<FlowAssistResponse> {
   const client = getClient();
   const systemPrompt = buildFlowAssistSystemPrompt(profile, memories, request);
