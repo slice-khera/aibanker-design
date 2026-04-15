@@ -152,6 +152,7 @@ type AppBarProps = {
   trailing?: ReactNode;
   shadow?: boolean;
   backgroundColor?: string;
+  hideStatusBar?: boolean;
 };
 
 export function AppBar({
@@ -160,6 +161,7 @@ export function AppBar({
   trailing,
   shadow = false,
   backgroundColor = "#fff",
+  hideStatusBar = false,
 }: AppBarProps) {
   return (
     <div
@@ -170,7 +172,7 @@ export function AppBar({
       }}
     >
       {/* Status bar chrome */}
-      <StatusBar backgroundColor={backgroundColor} />
+      {!hideStatusBar && <StatusBar backgroundColor={backgroundColor} />}
 
       {/* App bar content — Figma: flex, pl-12 pr-8 py-8 */}
       <div
