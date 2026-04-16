@@ -230,7 +230,7 @@ export default function RefreshSessionSimV1() {
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
   const [showReply, setShowReply] = useState(false);
   const [replyDone, setReplyDone] = useState(false);
-  const [refreshTapped, setRefreshTapped] = useState(false);
+  const [refreshCount, setRefreshCount] = useState(0);
   const [showFollowup, setShowFollowup] = useState(false);
   const [followupDone, setFollowupDone] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -256,10 +256,13 @@ export default function RefreshSessionSimV1() {
 
   // After refresh tapped → short pause → show followup prompt
   useEffect(() => {
-    if (!refreshTapped) return;
+    if (refreshCount === 0) return;
+    // Reset followup state so cards re-animate
+    setFollowupDone(false);
+    setShowFollowup(false);
     const timer = window.setTimeout(() => setShowFollowup(true), 300);
     return () => window.clearTimeout(timer);
-  }, [refreshTapped]);
+  }, [refreshCount]);
 
   // Auto-scroll to bottom during reply typing
   useEffect(() => {
@@ -347,8 +350,8 @@ export default function RefreshSessionSimV1() {
             {highlightValues(displayedText)}
           </p>
 
-          {/* Chip selections — fade in after typing completes */}
-          {!selectedLabel && (
+          {/* Chip selections — fade in after typing completes, hidden once refresh tapped */}
+          {!selectedLabel && refreshCount === 0 && (
             <div
               className={`transition-opacity duration-300 ease-out ${typingDone ? "opacity-100" : "opacity-0 pointer-events-none"}`}
               style={{ marginTop: typingDone ? SPACE_L : 0 }}
@@ -367,7 +370,6 @@ export default function RefreshSessionSimV1() {
                       border: `1px solid ${OUTLINE_SUBTLE}`,
                       borderRadius: RADIUS_PILL,
                       padding: `${SPACE_XS}px ${SPACE_M}px`,
-                      
                     }}
                   >
                     {label}
@@ -395,48 +397,49 @@ export default function RefreshSessionSimV1() {
                   <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>
                     {highlightValues(displayedReply)}
                   </p>
-                  {replyDone && !refreshTapped && <FeedbackRow />}
+                  {replyDone && refreshCount === 0 && <FeedbackRow />}
                 </div>
               )}
+            </div>
+          )}
 
-              {/* Follow-up prompt + mosaic cards */}
-              {showFollowup && (
-                <div ref={followupRef} className="animate-chat-message-in" style={{ paddingTop: SPACE_L }}>
-                  <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>
-                    {displayedFollowup}
-                  </p>
+          {/* Follow-up prompt + mosaic cards — shown when refresh is tapped */}
+          {showFollowup && (
+            <div ref={followupRef} className="animate-chat-message-in" style={{ paddingTop: SPACE_L }}>
+              <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>
+                {displayedFollowup}
+              </p>
 
-                  {/* Mosaic grid — fade in after followup typewriter finishes */}
-                  <div
-                    className="transition-opacity duration-300 ease-out"
-                    style={{
-                      marginTop: SPACE_L,
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: SPACE_M,
-                      opacity: followupDone ? 1 : 0,
-                      pointerEvents: followupDone ? "auto" : "none",
-                    }}
-                  >
-                    {/* Row 1: two square cards */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: SPACE_M }}>
-                      {MOSAIC_ROW1.map((a) => (
-                        <MosaicCard key={a.title} action={a} style={{ aspectRatio: "1 / 1" }} />
-                      ))}
-                    </div>
-                    {/* Row 2: tall card + two half-height stacked */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: SPACE_M }}>
-                      <MosaicCard
-                        action={MOSAIC_TALL}
-                        style={{ gridRow: "1 / 3", aspectRatio: "1 / 1" }}
-                      />
-                      {MOSAIC_HALF.map((a) => (
-                        <MosaicCard key={a.title} action={a} />
-                      ))}
-                    </div>
-                  </div>
+              {/* Mosaic grid — fade in after followup typewriter finishes */}
+              <div
+                key={refreshCount}
+                className="transition-opacity duration-300 ease-out"
+                style={{
+                  marginTop: SPACE_L,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: SPACE_M,
+                  opacity: followupDone ? 1 : 0,
+                  pointerEvents: followupDone ? "auto" : "none",
+                }}
+              >
+                {/* Row 1: two square cards */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: SPACE_M }}>
+                  {MOSAIC_ROW1.map((a) => (
+                    <MosaicCard key={a.title} action={a} style={{ aspectRatio: "1 / 1" }} />
+                  ))}
                 </div>
-              )}
+                {/* Row 2: tall card + two half-height stacked */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: SPACE_M }}>
+                  <MosaicCard
+                    action={MOSAIC_TALL}
+                    style={{ gridRow: "1 / 3", aspectRatio: "1 / 1" }}
+                  />
+                  {MOSAIC_HALF.map((a) => (
+                    <MosaicCard key={a.title} action={a} />
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -445,19 +448,19 @@ export default function RefreshSessionSimV1() {
       </div>
 
       {/* Input bar + gesture nav */}
-      <div className="absolute bottom-0 left-0 right-0 z-15">
+      <div className="absolute bottom-0 left-0 right-0 z-20">
         <FooterInset backgroundColor="transparent" paddingX={16} paddingTop={8} minBottomPadding={0}>
           <div className="flex items-center" style={{ gap: 12 }}>
             {/* Refresh button — identical container to close button & goal ring */}
             <div
-              onClick={() => { if (replyDone && !refreshTapped) setRefreshTapped(true); }}
+              onClick={() => setRefreshCount((c) => c + 1)}
               className="flex items-center justify-center rounded-full bg-white shrink-0 transition-transform active:scale-[0.97]"
               style={{
                 width: 48,
                 height: 48,
                 border: `1px solid ${OUTLINE_SUBTLE}`,
                 boxShadow: ELEVATION_CARD,
-                cursor: replyDone && !refreshTapped ? "pointer" : "default",
+                cursor: "pointer",
               }}
             >
               <img src="/icons/reload.svg" alt="Refresh" width={20} height={20} style={{ display: "block" }} />

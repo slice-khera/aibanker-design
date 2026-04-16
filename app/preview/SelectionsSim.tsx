@@ -275,7 +275,7 @@ export default function SelectionsSim() {
       </div>
 
       {/* Input bar + gesture nav */}
-      <div className="absolute bottom-0 left-0 right-0 z-15">
+      <div className="absolute bottom-0 left-0 right-0 z-[15]">
         <FooterInset backgroundColor="transparent" paddingX={16} paddingTop={8} minBottomPadding={0}>
           <div className="flex items-center" style={{ gap: 12 }}>
             <div

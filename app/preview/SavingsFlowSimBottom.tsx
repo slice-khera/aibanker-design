@@ -549,7 +549,7 @@ export default function SavingsFlowSimBottom() {
 
       {/* ── Bottom anchored area: cruncher + input bar + gesture nav ── */}
       <div
-        className="absolute bottom-0 left-0 right-0 z-15"
+        className="absolute bottom-0 left-0 right-0 z-[15]"
         style={{ pointerEvents: "none" }}
       >
         {/* Bottom fade gradient — fades chat into the bottom controls */}

@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { typography } from "../lib/typography";
 import { VALENTINO_50, OUTLINE_SUBTLE, TEXT_PRIMARY, TEXT_SECONDARY, ALPHA_BLACK_30, BG_PRIMARY, BG_SECONDARY } from "../lib/colors";
-import { RADIUS_CIRCLE, RADIUS_PILL } from "../lib/radii";
-import { SPACE_XS, SPACE_M, SPACE_L } from "../lib/spacing";
+import { SPACE_XS, SPACE_S, SPACE_M, SPACE_L } from "../lib/spacing";
+import { RADIUS_S, RADIUS_M, RADIUS_PILL, RADIUS_CIRCLE } from "../lib/radii";
 import { ELEVATION_CARD } from "../lib/elevation";
 import { StatusBar, GestureNav, FooterInset } from "../components/AppChrome";
 import GoalTracker from "../components/GoalTracker";
@@ -29,6 +29,22 @@ const MOCK_RESPONSES: Record<string, string> = {
   "Show me where I overspent":
     "Here\u2019s the breakdown \u2014 dining out was \u20B98,200 (double your usual), shopping hit \u20B94,300, and subscriptions crept up by \u20B92,500. Dining is the big one to rein in.",
 };
+
+// ── Popover menu items ──────────────────────────────────────────
+
+const ILLUST_FIRE = "https://www.figma.com/api/mcp/asset/15e3a409-245e-463e-8a32-ebeb66bc7203";
+const ILLUST_SPENDS = "https://www.figma.com/api/mcp/asset/bdb9ebfa-d4f4-4ffe-94e9-06639689fb06";
+const ILLUST_INVITE = "https://www.figma.com/api/mcp/asset/3608b12c-fa3c-450c-8823-64c0412f5e54";
+
+type MenuItem = { label: string; illustration?: string; bg: string };
+
+const MENU_ITEMS: MenuItem[] = [
+  { label: "Afford it", illustration: ILLUST_FIRE, bg: "linear-gradient(160deg, #ffffff 40%, #e6edf9 100%)" },
+  { label: "My spends", illustration: ILLUST_SPENDS, bg: "linear-gradient(160deg, #ffffff 40%, #fff3e3 100%)" },
+  { label: "Feedback", illustration: ILLUST_INVITE, bg: "linear-gradient(160deg, #ffffff 40%, #fae2fa 100%)" },
+  { label: "Save taxes", bg: "linear-gradient(160deg, #ffffff 40%, #e0f4e8 100%)" },
+  { label: "Surprise me", bg: "linear-gradient(160deg, #ffffff 40%, #e0e3e6 100%)" },
+];
 
 // ── Feedback row icons ──────────────────────────────────────────
 
@@ -170,6 +186,7 @@ export default function RefreshSessionSimV2() {
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
   const [showReply, setShowReply] = useState(false);
   const [replyDone, setReplyDone] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -186,6 +203,15 @@ export default function RefreshSessionSimV2() {
     const timer = window.setTimeout(() => setShowReply(true), 500);
     return () => window.clearTimeout(timer);
   }, [selectedLabel]);
+
+  // Auto-scroll to bottom during reply typing
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    requestAnimationFrame(() => {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    });
+  }, [showReply, displayedReply]);
 
   // Track scroll for top fade gradient
   useEffect(() => {
@@ -246,7 +272,6 @@ export default function RefreshSessionSimV2() {
                       border: `1px solid ${OUTLINE_SUBTLE}`,
                       borderRadius: RADIUS_PILL,
                       padding: `${SPACE_XS}px ${SPACE_M}px`,
-                      
                     }}
                   >
                     {label}
@@ -284,10 +309,100 @@ export default function RefreshSessionSimV2() {
         </div>
       </div>
 
+      {/* Popover tap-to-dismiss layer (no dim) */}
+      {menuOpen && (
+        <div
+          onClick={() => setMenuOpen(false)}
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 25,
+          }}
+        />
+      )}
+
+      {/* Popover menu — anchored above plus button */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 80,
+          left: SPACE_M,
+          width: 240,
+          backgroundColor: BG_PRIMARY,
+          borderRadius: RADIUS_M,
+          boxShadow: `${ELEVATION_CARD}, 0px 8px 24px rgba(0,0,0,0.12)`,
+          zIndex: 30,
+          overflow: "hidden",
+          opacity: menuOpen ? 1 : 0,
+          pointerEvents: menuOpen ? "auto" : "none",
+          transition: "opacity 150ms ease",
+        }}
+      >
+        {MENU_ITEMS.map((item, i) => (
+          <div
+            key={item.label}
+            onClick={() => setMenuOpen(false)}
+            className="transition-colors active:bg-gray-50"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: SPACE_S,
+              padding: `${SPACE_S}px ${SPACE_M}px`,
+              cursor: "pointer",
+              borderBottom: i < MENU_ITEMS.length - 1 ? `1px solid ${OUTLINE_SUBTLE}` : "none",
+            }}
+          >
+            {/* Leading icon container */}
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: RADIUS_S,
+                background: item.bg,
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+                position: "relative",
+              }}
+            >
+              {item.illustration && (
+                <img
+                  src={item.illustration}
+                  alt=""
+                  style={{ width: 24, height: 24, objectFit: "contain" }}
+                />
+              )}
+            </div>
+            {/* Label */}
+            <span style={{ ...typography.buttonSmall, color: TEXT_PRIMARY }}>
+              {item.label}
+            </span>
+          </div>
+        ))}
+      </div>
+
       {/* Input bar + gesture nav */}
-      <div className="absolute bottom-0 left-0 right-0 z-15">
+      <div className="absolute bottom-0 left-0 right-0 z-[15]">
         <FooterInset backgroundColor="transparent" paddingX={16} paddingTop={8} minBottomPadding={0}>
-          <div className="flex items-center" style={{ gap: 12 }}>
+          <div className="flex items-center" style={{ gap: SPACE_S }}>
+            {/* Plus button — identical container to close button & goal ring */}
+            <div
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex items-center justify-center rounded-full bg-white shrink-0 transition-transform active:scale-[0.97]"
+              style={{
+                width: 48,
+                height: 48,
+                border: `1px solid ${OUTLINE_SUBTLE}`,
+                boxShadow: ELEVATION_CARD,
+                cursor: "pointer",
+                zIndex: 30,
+              }}
+            >
+              <img src="/icons/add.svg" alt="More actions" width={24} height={24} style={{ display: "block" }} />
+            </div>
+            {/* Input pill */}
             <div
               className="flex items-center overflow-hidden flex-1"
               style={{ height: 48, backgroundColor: BG_PRIMARY, border: `1px solid ${OUTLINE_SUBTLE}`, borderRadius: RADIUS_CIRCLE, boxShadow: ELEVATION_CARD }}
