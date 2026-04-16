@@ -3,7 +3,6 @@
 import { useState, useRef, useCallback } from "react";
 import { StatusBar } from "./AppChrome";
 import Chat from "./Chat";
-import GoalTracker from "./GoalTracker";
 import { typography } from "../lib/typography";
 import {
   TEXT_PRIMARY,
@@ -11,15 +10,12 @@ import {
   TEXT_TERTIARY,
   BG_PRIMARY,
   BG_SECONDARY,
-  SLATE_30,
   SLATE_50,
   ALPHA_BLACK_05,
   ALPHA_BLACK_10,
   ALPHA_BLACK_30,
   GREEN_500,
   RED_500,
-  BLUE_500,
-  ORANGE_500,
   VALENTINO_500,
   GREEN_50,
   BLUE_50,
@@ -27,6 +23,9 @@ import {
   VALENTINO_50,
   RED_50,
 } from "../lib/colors";
+import { RADIUS_S, RADIUS_M, RADIUS_L } from "../lib/radii";
+import { ELEVATION_CARD, ELEVATION_BELOW } from "../lib/elevation";
+import { SPACE_S } from "../lib/spacing";
 
 /* ─── Constants ─────────────────────────────────────────────────── */
 
@@ -42,12 +41,12 @@ function MyMoneyScreen() {
 
   return (
     <div style={{ background: BG_PRIMARY, height: "100%", display: "flex", flexDirection: "column" }}>
-      {/* Fixed L0 App bar — stays in place, shadow on scroll */}
+      {/* L1 App bar — nav icon + H3 title, shadow on scroll */}
       <div
         className="shrink-0"
         style={{
           background: BG_PRIMARY,
-          boxShadow: scrolled ? "0px 6px 8px 0px rgba(0,0,0,0.05)" : "none",
+          boxShadow: scrolled ? ELEVATION_BELOW : "none",
           transition: "box-shadow 200ms ease",
           zIndex: 1,
         }}
@@ -61,25 +60,15 @@ function MyMoneyScreen() {
             gap: 8,
             paddingTop: 8,
             paddingBottom: 8,
-            paddingLeft: 24,
-            paddingRight: 20,
+            paddingLeft: 12,
+            paddingRight: 12,
           }}
         >
-          <span style={{ ...typography.headerH2, color: TEXT_PRIMARY, flex: "1 0 0", minWidth: 1 }}>My money</span>
-          <GoalTracker
-            goals={[{
-              id: "japan",
-              name: "Japan trip",
-              pct: 72,
-              status: "on-track",
-              daysLabel: "45 days left",
-              saved: 108000,
-              target: 150000,
-              icon: "plane",
-              ringColor: GREEN_500,
-            }]}
-            onGoalTap={NOOP}
-          />
+          {/* Leading nav icon — 48×48 touch target, 24×24 glyph */}
+          <div style={{ width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <img src="/icons/chevron-left.svg" alt="Back" width={24} height={24} style={{ display: "block" }} />
+          </div>
+          <span style={{ ...typography.headerH3, color: TEXT_PRIMARY, flex: "1 0 0", minWidth: 1 }}>My money</span>
         </div>
       </div>
 
@@ -89,52 +78,89 @@ function MyMoneyScreen() {
         style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch" }}
         onScroll={(e) => setScrolled((e.target as HTMLElement).scrollTop > 0)}
       >
-      {/* Hero wealth */}
-      <div style={{ textAlign: "center", padding: "24px 24px" }}>
-        <p style={{ ...typography.metadata, color: TEXT_TERTIARY, textTransform: "uppercase", margin: 0 }}>
+      {/* Hero wealth — 3-line Stash pattern */}
+      <div style={{ textAlign: "center", padding: "24px 24px 32px", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+        <p style={{ ...typography.bodySmall, color: TEXT_TERTIARY, margin: 0 }}>
           Total wealth
         </p>
-        <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, margin: "8px 0 0" }}>
+        <p style={{ ...typography.displaySmall, color: TEXT_PRIMARY, margin: 0 }}>
           &#x20B9;3,90,434
         </p>
-        <p style={{ ...typography.caption, color: RED_500, margin: "4px 0 0" }}>
-          &#x2193; &#x20B9;11 (0.0%) 1 day
-        </p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 24 }}>
+          <img src="/icons/analytics-down.svg" alt="" width={16} height={16} style={{ display: "block" }} />
+          <p style={{ ...typography.buttonSmall, color: RED_500, margin: 0 }}>
+            &#x20B9;11 (0.0%) 1 day
+          </p>
+        </div>
       </div>
 
-      {/* Divider */}
-      <div style={{ height: 8, background: BG_SECONDARY }} />
-
-      {/* View your wealth — Section Header/List */}
-      <div style={{ background: BG_SECONDARY, padding: "8px 24px" }}>
-        <p style={{ ...typography.metadata, color: TEXT_TERTIARY, textTransform: "uppercase", margin: 0 }}>
-          View your wealth
-        </p>
+      {/* Goal progress card */}
+      <div style={{ padding: "0 24px 16px" }}>
+        <div
+          style={{
+            background: BG_PRIMARY,
+            border: `1px solid ${ALPHA_BLACK_05}`,
+            borderRadius: RADIUS_M,
+            padding: 16,
+            boxShadow: ELEVATION_CARD,
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
+          {/* Top row: thumbnail + goal info */}
+          <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: RADIUS_S,
+                background: GREEN_50,
+                border: `0.3px solid ${ALPHA_BLACK_05}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                fontSize: 24,
+              }}
+            >
+              ✈️
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <span style={{ ...typography.buttonSmall, color: TEXT_PRIMARY, flex: 1, minWidth: 0 }}>Trip to Japan</span>
+                <span style={{ ...typography.buttonSmall, color: TEXT_PRIMARY, flexShrink: 0 }}>&#x20B9;1,08,000</span>
+              </div>
+              <p style={{ ...typography.caption, color: TEXT_TERTIARY, margin: "4px 0 0" }}>&#x20B9;2L by October</p>
+            </div>
+          </div>
+          {/* Progress bar */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <span style={{ ...typography.caption, color: TEXT_TERTIARY, flex: 1 }}>Progress</span>
+              <span style={{ ...typography.caption, color: GREEN_500, fontWeight: 500 }}>54%</span>
+            </div>
+            <div style={{ position: "relative", height: 8 }}>
+              <div style={{ position: "absolute", top: 1, left: 0, right: 0, height: 6, borderRadius: RADIUS_S, background: SLATE_50 }} />
+              <div style={{ position: "absolute", top: 0, left: 0, width: "54%", height: 8, borderRadius: RADIUS_S, background: GREEN_500, boxShadow: `0px 1px 4px rgba(0,166,62,0.24)` }} />
+            </div>
+          </div>
+        </div>
       </div>
-      <div style={{ padding: "0 24px" }}>
-        <WealthRow icon="bank" label="Bank accounts" sub="1.29% allocation" value="&#x20B9;5,049" />
-        <WealthRow icon="stocks" label="Stocks" sub="0.2% allocation" value="&#x20B9;775" change={{ text: "1.51% (1 day)", negative: true }} />
-        <WealthRow icon="mf" label="Mutual funds" sub="98.51% allocation" value="&#x20B9;3,84,610" />
-        <WealthRow icon="gold" label="Gold" sub="" value="" actionLabel="Connect" />
-        <WealthRow icon="fd" label="Fixed deposits" sub="" value="" actionLabel="Book now" last />
-      </div>
 
-      {/* Divider */}
-      <div style={{ height: 8, background: BG_SECONDARY }} />
-
-      {/* Quick actions — Section Header/List */}
-      <div style={{ background: BG_SECONDARY, padding: "8px 24px" }}>
-        <p style={{ ...typography.metadata, color: TEXT_TERTIARY, textTransform: "uppercase", margin: 0 }}>
+      {/* Quick actions — Section Header Bold + 3×2 Grid */}
+      <div style={{ padding: "24px 24px 12px" }}>
+        <p style={{ ...typography.headerH4, color: TEXT_PRIMARY, margin: 0 }}>
           Quick actions
         </p>
       </div>
-      <div style={{ padding: "0 24px" }}>
-        <ActionRow icon="budget" label="Can I afford it?" sub="Check before you spend" color={BLUE_500} bg={BLUE_50} />
-        <ActionRow icon="spends" label="Analyse my spends" sub="Last month breakdown" color={ORANGE_500} bg={ORANGE_50} />
-        <ActionRow icon="goal" label="View my goals" sub="Track your savings targets" color={GREEN_500} bg={GREEN_50} />
-        <ActionRow icon="tax" label="Save taxes" sub="Optimise your 80C" color={VALENTINO_500} bg={VALENTINO_50} />
-        <ActionRow icon="surprise" label="Surprise me" sub="A random insight" color={TEXT_SECONDARY} bg={SLATE_50} />
-        <ActionRow icon="feedback" label="Make Ryan smarter" sub="Rate and improve" color={RED_500} bg={RED_50} last />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, padding: "16px 24px" }}>
+        <ActionTile icon="/icons/rupees.svg" label="Afford It" bg={BLUE_50} />
+        <ActionTile icon="/icons/graph.svg" label="My Spends" bg={ORANGE_50} />
+        <ActionTile icon="/icons/dashboard.svg" label="My Goals" bg={GREEN_50} />
+        <ActionTile icon="/icons/save-doc.svg" label="Save Taxes" bg={VALENTINO_50} />
+        <ActionTile icon="/icons/spark-line.svg" label="Surprise Me" bg={SLATE_50} />
+        <ActionTile icon="/icons/message.svg" label="Rate Ryan" bg={RED_50} />
       </div>
 
       {/* Divider */}
@@ -145,10 +171,10 @@ function MyMoneyScreen() {
         <div
           style={{
             background: `linear-gradient(160deg, #ffffff 40%, ${VALENTINO_50} 100%)`,
-            borderRadius: 16,
+            borderRadius: RADIUS_M,
             padding: "24px 24px",
             border: `1px solid ${ALPHA_BLACK_05}`,
-            boxShadow: `0px 2px 32px ${ALPHA_BLACK_05}`,
+            boxShadow: ELEVATION_CARD,
           }}
         >
           <p style={{ ...typography.headerH4, color: TEXT_PRIMARY, margin: 0 }}>Share the privilege.</p>
@@ -162,17 +188,17 @@ function MyMoneyScreen() {
       {/* Divider */}
       <div style={{ height: 8, background: BG_SECONDARY }} />
 
-      {/* More actions — Section Header/List */}
-      <div style={{ background: BG_SECONDARY, padding: "8px 24px" }}>
-        <p style={{ ...typography.metadata, color: TEXT_TERTIARY, textTransform: "uppercase", margin: 0 }}>
+      {/* More actions — Section Header Bold */}
+      <div style={{ padding: "24px 24px 12px" }}>
+        <p style={{ ...typography.headerH4, color: TEXT_PRIMARY, margin: 0 }}>
           More actions
         </p>
       </div>
       <div style={{ padding: "0 24px" }}>
-        <MoreRow label="Share your feedback" sub="Help us improve your experience" />
-        <MoreRow label="Privacy, security & FAQs" sub="Your data is for your eyes only" />
-        <MoreRow label="Contact support" sub="Reach out for any help" />
-        <MoreRow label="Manage accounts" sub="Manage accounts on money" last />
+        <MoreRow icon="/icons/share-general.svg" label="Share your feedback" sub="Help us improve your experience" />
+        <MoreRow icon="/icons/shield.svg" label="Privacy, security & FAQs" sub="Your data is for your eyes only" />
+        <MoreRow icon="/icons/telephone.svg" label="Contact support" sub="Reach out for any help" />
+        <MoreRow icon="/icons/settings.svg" label="Manage accounts" sub="Manage accounts on money" last />
       </div>
 
       {/* Bottom spacing so content isn't hidden behind collapsed pill */}
@@ -185,242 +211,66 @@ function MyMoneyScreen() {
 /* ─── Sub-components (all static, no state) ─────────────────────── */
 
 
-function WealthRow({
+
+function ActionTile({
   icon,
   label,
-  sub,
-  value,
-  change,
-  actionLabel,
-  last,
-}: {
-  icon: string;
-  label: string;
-  sub: string;
-  value?: string;
-  change?: { text: string; negative: boolean };
-  actionLabel?: string;
-  last?: boolean;
-}) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        padding: "16px 0",
-        borderBottom: last ? "none" : `1px solid ${ALPHA_BLACK_05}`,
-        gap: 12,
-      }}
-    >
-      <div
-        style={{
-          width: 36,
-          height: 36,
-          borderRadius: 8,
-          background: BG_SECONDARY,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-        }}
-      >
-        <WealthIcon kind={icon} />
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ ...typography.bodySmall, fontWeight: 500, color: TEXT_PRIMARY, margin: 0 }}>{label}</p>
-        {sub && <p style={{ ...typography.caption, color: TEXT_TERTIARY, margin: 0 }}>{sub}</p>}
-      </div>
-      {value ? (
-        <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <p style={{ ...typography.bodySmall, fontWeight: 500, color: TEXT_PRIMARY, margin: 0 }}>{value}</p>
-          {change && (
-            <p style={{ ...typography.caption, color: change.negative ? RED_500 : GREEN_500, margin: 0 }}>
-              {change.negative ? "\u2193" : "\u2191"} {change.text}
-            </p>
-          )}
-        </div>
-      ) : actionLabel ? (
-        <div
-          style={{
-            ...typography.buttonSmall,
-            color: TEXT_PRIMARY,
-            background: SLATE_30,
-            borderRadius: 100,
-            padding: "8px 16px",
-            flexShrink: 0,
-          }}
-        >
-          {actionLabel}
-        </div>
-      ) : null}
-      {value && (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-          <path d="M9 6l6 6-6 6" stroke={TEXT_TERTIARY} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      )}
-    </div>
-  );
-}
-
-function WealthIcon({ kind }: { kind: string }) {
-  const s = { width: 18, height: 18 };
-  const c = TEXT_SECONDARY;
-  switch (kind) {
-    case "bank":
-      return (
-        <svg {...s} viewBox="0 0 24 24" fill="none">
-          <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v8M20 10v8M8 10v8M12 10v8M16 10v8" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case "stocks":
-      return (
-        <svg {...s} viewBox="0 0 24 24" fill="none">
-          <path d="M3 17l6-6 4 4 8-8" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M17 7h4v4" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case "mf":
-      return (
-        <svg {...s} viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="3" width="7" height="18" rx="1" stroke={c} strokeWidth="1.5" />
-          <rect x="14" y="8" width="7" height="13" rx="1" stroke={c} strokeWidth="1.5" />
-        </svg>
-      );
-    case "gold":
-      return (
-        <svg {...s} viewBox="0 0 24 24" fill="none">
-          <path d="M12 2l3 7h7l-5.5 4.5 2 7L12 16l-6.5 4.5 2-7L2 9h7l3-7z" stroke={c} strokeWidth="1.5" strokeLinejoin="round" />
-        </svg>
-      );
-    case "fd":
-      return (
-        <svg {...s} viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="6" width="18" height="12" rx="2" stroke={c} strokeWidth="1.5" />
-          <path d="M3 10h18" stroke={c} strokeWidth="1.5" />
-          <path d="M7 15h4" stroke={c} strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-      );
-    default:
-      return null;
-  }
-}
-
-function ActionRow({
-  icon,
-  label,
-  sub,
-  color,
   bg,
-  last,
 }: {
   icon: string;
   label: string;
-  sub: string;
-  color: string;
   bg: string;
-  last?: boolean;
 }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        padding: "14px 0",
-        borderBottom: last ? "none" : `1px solid ${ALPHA_BLACK_05}`,
-        gap: 12,
-      }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
       <div
         style={{
-          width: 36,
-          height: 36,
-          borderRadius: 8,
+          width: 48,
+          height: 48,
+          borderRadius: RADIUS_M,
           background: bg,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          flexShrink: 0,
         }}
       >
-        <ActionIcon kind={icon} color={color} />
+        <img src={icon} alt="" width={20} height={20} style={{ display: "block" }} />
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ ...typography.bodySmall, fontWeight: 500, color: TEXT_PRIMARY, margin: 0 }}>{label}</p>
-        <p style={{ ...typography.caption, color: TEXT_TERTIARY, margin: 0 }}>{sub}</p>
-      </div>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-        <path d="M9 6l6 6-6 6" stroke={TEXT_TERTIARY} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+      <p
+        style={{
+          ...typography.caption,
+          fontWeight: 500,
+          color: TEXT_PRIMARY,
+          margin: 0,
+          textAlign: "center",
+          lineHeight: "1.2",
+        }}
+      >
+        {label}
+      </p>
     </div>
   );
 }
 
-function ActionIcon({ kind, color }: { kind: string; color: string }) {
-  const s = { width: 18, height: 18 };
-  switch (kind) {
-    case "budget":
-      return (
-        <svg {...s} viewBox="0 0 24 24" fill="none">
-          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case "spends":
-      return (
-        <svg {...s} viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="12" width="4" height="8" rx="1" stroke={color} strokeWidth="1.5" />
-          <rect x="10" y="8" width="4" height="12" rx="1" stroke={color} strokeWidth="1.5" />
-          <rect x="17" y="4" width="4" height="16" rx="1" stroke={color} strokeWidth="1.5" />
-        </svg>
-      );
-    case "goal":
-      return (
-        <svg {...s} viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.5" />
-          <circle cx="12" cy="12" r="5" stroke={color} strokeWidth="1.5" />
-          <circle cx="12" cy="12" r="1.5" fill={color} />
-        </svg>
-      );
-    case "tax":
-      return (
-        <svg {...s} viewBox="0 0 24 24" fill="none">
-          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case "surprise":
-      return (
-        <svg {...s} viewBox="0 0 24 24" fill="none">
-          <path d="M12 2l1.09 6.26L20 9.27l-5 4.87L16.18 22 12 18.27 7.82 22 9 14.14l-5-4.87 6.91-1.01L12 2z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
-        </svg>
-      );
-    case "feedback":
-      return (
-        <svg {...s} viewBox="0 0 24 24" fill="none">
-          <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    default:
-      return null;
-  }
-}
-
-function MoreRow({ label, sub, last }: { label: string; sub: string; last?: boolean }) {
+function MoreRow({ icon, label, sub, last }: { icon: string; label: string; sub: string; last?: boolean }) {
   return (
     <div
       style={{
         display: "flex",
         alignItems: "center",
-        padding: "14px 0",
+        padding: `${SPACE_S}px 0`,
         borderBottom: last ? "none" : `1px solid ${ALPHA_BLACK_05}`,
         gap: 12,
       }}
     >
+      <div style={{ width: 36, height: 36, borderRadius: RADIUS_S, background: BG_SECONDARY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <img src={icon} alt="" width={20} height={20} style={{ display: "block" }} />
+      </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ ...typography.bodySmall, fontWeight: 500, color: TEXT_PRIMARY, margin: 0 }}>{label}</p>
         <p style={{ ...typography.caption, color: TEXT_TERTIARY, margin: 0 }}>{sub}</p>
       </div>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-        <path d="M9 6l6 6-6 6" stroke={TEXT_TERTIARY} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+      <img src="/icons/chevron-right.svg" alt="" width={16} height={16} style={{ display: "block", flexShrink: 0 }} />
     </div>
   );
 }
@@ -561,7 +411,7 @@ export default function DrawerExperienceSim() {
             right: 12,
             height: SHEET_COLLAPSED_HEIGHT,
             background: BG_PRIMARY,
-            borderRadius: 20,
+            borderRadius: RADIUS_L,
             border: "none",
             boxShadow: `0 4px 24px ${ALPHA_BLACK_10}, 0 0 0 1px ${ALPHA_BLACK_05}`,
             display: "flex",
@@ -621,8 +471,8 @@ export default function DrawerExperienceSim() {
               </div>
             </div>
 
-            {/* Real Chat component */}
-            <div style={{ flex: 1, overflow: "hidden" }}>
+            {/* Real Chat component — fade content as sheet drags to mask width shrink */}
+            <div style={{ flex: 1, overflow: "hidden", opacity: progress < 0.5 ? 1 : Math.max(0, 1 - (progress - 0.5) * 4), transition: dragging.current ? "none" : "opacity 0.3s ease" }}>
               <Chat
                 title="Ryan"
                 messages={DRAWER_CHAT_MESSAGES}

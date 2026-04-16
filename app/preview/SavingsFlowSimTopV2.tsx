@@ -15,7 +15,7 @@ import { RADIUS_CIRCLE, RADIUS_PILL } from "../lib/radii";
 import { SPACE_XS, SPACE_M } from "../lib/spacing";
 import { ELEVATION_CARD } from "../lib/elevation";
 import { StatusBar, GestureNav, FooterInset } from "../components/AppChrome";
-import PlanCruncher from "../components/PlanCruncher";
+import PlanCruncherV2 from "../components/PlanCruncherV2";
 import QuestionnaireOverlay from "../components/QuestionnaireOverlay";
 import type { QuestionOption } from "../components/QuestionnaireOverlay";
 import MockKeyboard from "../components/MockKeyboard";
@@ -29,31 +29,28 @@ import {
 // ── Flow phases ─────────────────────────────────────────────────
 
 type Phase =
-  | "questionnaire"   // QuestionnaireOverlay visible
-  | "working"         // PlanCruncher at top, clarifying questions drip in
-  | "result";         // Plan complete, cruncher tappable
+  | "questionnaire"
+  | "working"
+  | "result";
 
-// ── Cruncher status texts mapped to conversation stages ─────────
-// Each clarifying question has a matching cruncher status.
-// After all questions, these remaining texts cycle on a timer.
+// ── Cruncher status texts ─────────────────────────────────────
 
 const IDLE_CRUNCHER_TEXTS = [
-  "Comparing savings instruments\u2026",
-  "Optimising monthly allocation\u2026",
-  "Projecting returns\u2026",
-  "Running scenarios\u2026",
-  "Crunching the numbers\u2026",
-  "Building your savings plan\u2026",
+  "Comparing savings instruments",
+  "Optimising monthly allocation",
+  "Projecting returns",
+  "Running scenarios",
+  "Crunching the numbers",
+  "Building your savings plan",
 ];
-
-// ── Plan summary for expanded view (plain English sentences) ────
 
 const PLAN_SUMMARY_ITEMS = [
-  { label: "Save ₹25,000 per month for 6 months" },
-  { label: "Set up an RD at 7.25% p.a." },
-  { label: "Use existing savings of ₹50,000 towards the goal" },
-  { label: "You'll reach ₹2,01,875 by October" },
+  { label: "Start a \u20B920k/mo RD for 6 months" },
+  { label: "Use \u20B950k from existing savings" },
+  { label: "Cut \u20B95k/mo from eating out" },
 ];
+
+const CELEBRATORY_TEXT = "You\u2019ll reach \u20B92,01,875 by October";
 
 // ── Bubble ──────────────────────────────────────────────────────
 
@@ -82,7 +79,7 @@ function Bubble({ msg }: { msg: SimMessage }) {
   );
 }
 
-// ── Chip list (pill-style) ───────────────────────────────────────
+// ── Chip list ───────────────────────────────────────────────────
 
 function ChipList({
   chips,
@@ -170,20 +167,19 @@ function FloatingAppBar() {
 
 // ── Main simulation ─────────────────────────────────────────────
 
-export default function SavingsFlowSim() {
+export default function SavingsFlowSimTopV2() {
   const [messages, setMessages] = useState<SimMessage[]>([]);
   const [phase, setPhase] = useState<Phase>("working");
   const [quizIndex, setQuizIndex] = useState(0);
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [cruncherVisible, setCruncherVisible] = useState(false);
   const [cruncherCompleted, setCruncherCompleted] = useState(false);
-  const [cruncherStatus, setCruncherStatus] = useState("Gathering your preferences\u2026");
+  const [cruncherStatus, setCruncherStatus] = useState("Gathering your preferences");
   const [goalName, setGoalName] = useState("Savings goal");
   const [showThinking, setShowThinking] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [inputBarVisible, setInputBarVisible] = useState(true);
 
-  // Clarifying questions state
   const [clarifyIndex, setClarifyIndex] = useState(0);
   const [showClarifyChips, setShowClarifyChips] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -195,8 +191,6 @@ export default function SavingsFlowSim() {
   const snappedIdsRef = useRef<Set<string>>(new Set());
   const cruncherVisibleRef = useRef(false);
 
-  // Snap-scroll: when a user bubble mounts, scroll so it sits just below the
-  // fixed header (app bar = 108px, app bar + cruncher = 200px) with 16px gap.
   const userBubbleRef = useCallback((el: HTMLElement | null) => {
     if (!el) return;
     const id = el.getAttribute("data-msg-id");
@@ -214,13 +208,11 @@ export default function SavingsFlowSim() {
       const bubbleTopInScroller = bubbleRect.top - scrollerRect.top + scroller.scrollTop;
       const target = Math.max(0, bubbleTopInScroller - headerHeight - 16);
 
-      // Ensure content is tall enough to scroll to target position
       const minHeight = target + scroller.clientHeight;
       if (content.scrollHeight < minHeight) {
         content.style.minHeight = `${minHeight}px`;
       }
 
-      // Smooth scroll animation
       const start = scroller.scrollTop;
       const distance = target - start;
       if (Math.abs(distance) < 1) return;
@@ -231,9 +223,7 @@ export default function SavingsFlowSim() {
         const elapsed = now - startTime;
         const progress = Math.min(elapsed / duration, 1);
         scroller.scrollTop = start + distance * ease(progress);
-        if (progress < 1) {
-          requestAnimationFrame(step);
-        }
+        if (progress < 1) requestAnimationFrame(step);
       };
       requestAnimationFrame(step);
     }, 300);
@@ -258,26 +248,22 @@ export default function SavingsFlowSim() {
     if (didBootRef.current) return;
     didBootRef.current = true;
 
-    // 1. User message
     schedule(() => {
       setMessages([INITIAL_MESSAGES[0]]);
       scrollToBottom();
     }, 600);
 
-    // 2. Thinking
     schedule(() => {
       setShowThinking(true);
       scrollToBottom();
     }, 1000);
 
-    // 3. Bot reply
     schedule(() => {
       setShowThinking(false);
       setMessages(INITIAL_MESSAGES);
       scrollToBottom();
     }, 1800);
 
-    // 4. Questionnaire
     schedule(() => {
       setPhase("questionnaire");
     }, 2400);
@@ -326,16 +312,15 @@ export default function SavingsFlowSim() {
     setPhase("working");
     setMessages((prev) => [
       ...prev,
-      { id: "nudge", role: "assistant", text: "No worries — whenever you're ready, just say \"savings goal\" and we'll pick up where we left off." },
+      { id: "nudge", role: "assistant", text: "No worries \u2014 whenever you're ready, just say \"savings goal\" and we'll pick up where we left off." },
     ]);
     scrollToBottom();
   }, [scrollToBottom]);
 
-  // ── Cruncher status texts mapped to each clarifying question ────
   const CRUNCHER_STATUS_BY_QUESTION = [
-    "Checking monthly obligations\u2026",   // cq-obligations
-    "Reviewing your finances\u2026",         // cq-existing
-    "Analysing risk profile\u2026",          // cq-risk
+    "Checking monthly obligations",
+    "Reviewing your finances",
+    "Analysing risk profile",
   ];
 
   // ── Post-questionnaire ────────────────────────────────────────
@@ -348,27 +333,24 @@ export default function SavingsFlowSim() {
     const name = dest ? `Trip to ${dest}` : goalType;
     setGoalName(name);
 
-    // User bubble: "Shared preferences"
     setMessages((prev) => [
       ...prev,
       { id: "u-shared", role: "user", text: "Shared preferences" },
     ]);
 
-    // After a beat: show PlanCruncher (keep input bar for clarifying Qs)
     schedule(() => {
       setCruncherVisible(true);
       cruncherVisibleRef.current = true;
-      setCruncherStatus("Gathering your preferences\u2026");
+      setCruncherStatus("Gathering your preferences");
       setShowThinking(true);
       scrollToBottom();
     }, 600);
 
-    // Bot acknowledges
     schedule(() => {
       setShowThinking(false);
       setMessages((prev) => [
         ...prev,
-        { id: "pq-summary", role: "assistant", text: "Got it — let me check your finances and put together a plan." },
+        { id: "pq-summary", role: "assistant", text: "Got it \u2014 let me check your finances and put together a plan." },
       ]);
       scrollToBottom();
     }, 1400);
@@ -378,7 +360,6 @@ export default function SavingsFlowSim() {
       scrollToBottom();
     }, 2000);
 
-    // First clarifying question — sync cruncher status
     schedule(() => {
       setShowThinking(false);
       setCruncherStatus(CRUNCHER_STATUS_BY_QUESTION[0]);
@@ -398,7 +379,6 @@ export default function SavingsFlowSim() {
     setShowClarifyChips(false);
     const currentCQ = CLARIFYING_QUESTIONS[clarifyIndex];
 
-    // User response
     setMessages((prev) => [
       ...prev,
       { id: `u-${currentCQ.id}`, role: "user", text: chip.label },
@@ -409,7 +389,6 @@ export default function SavingsFlowSim() {
     const nextIndex = clarifyIndex + 1;
 
     if (nextIndex < CLARIFYING_QUESTIONS.length) {
-      // Next clarifying question — sync cruncher status
       schedule(() => {
         setShowThinking(false);
         setCruncherStatus(CRUNCHER_STATUS_BY_QUESTION[nextIndex]);
@@ -423,33 +402,30 @@ export default function SavingsFlowSim() {
         scrollToBottom();
       }, 1200);
     } else {
-      // All clarifying questions answered — hide input bar, bot confirms
       schedule(() => {
         setShowThinking(false);
         setInputBarVisible(false);
         setMessages((prev) => [
           ...prev,
-          { id: "pq-final", role: "assistant", text: "Thanks — this might take a moment while I crunch the numbers. I\u2019ll notify you when your plan is ready, so no need to wait here." },
+          { id: "pq-final", role: "assistant", text: "Thanks \u2014 this might take a moment while I crunch the numbers. I\u2019ll notify you when your plan is ready, so no need to wait here." },
         ]);
         scrollToBottom();
       }, 1000);
 
-      // Cycle through idle cruncher texts during the 10s wait
       let delay = 1500;
       IDLE_CRUNCHER_TEXTS.forEach((text) => {
         schedule(() => {
           setCruncherStatus(text);
         }, delay);
-        delay += 1400; // spread texts across ~10s
+        delay += 1400;
       });
 
-      // After 10 seconds, mark complete
       schedule(() => {
         setCruncherCompleted(true);
         setPhase("result");
         setMessages((prev) => [
           ...prev,
-          { id: "r1", role: "assistant", text: "Your plan is ready — take a look and let me know if you\u2019d like to tweak anything." },
+          { id: "r1", role: "assistant", text: "Your plan is ready \u2014 take a look and let me know if you\u2019d like to tweak anything." },
         ]);
         setInputBarVisible(true);
         scrollToBottom();
@@ -457,7 +433,6 @@ export default function SavingsFlowSim() {
     }
   }, [clarifyIndex, scrollToBottom, schedule]);
 
-  // Track scroll position for top fade gradient
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -466,12 +441,10 @@ export default function SavingsFlowSim() {
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Cleanup
   useEffect(() => {
     return () => timersRef.current.forEach(clearTimeout);
   }, []);
 
-  // Show mock keyboard when any input inside the sim is focused
   const handleFocusCapture = useCallback((e: React.FocusEvent) => {
     if (e.target instanceof HTMLInputElement) setKeyboardVisible(true);
   }, []);
@@ -488,10 +461,8 @@ export default function SavingsFlowSim() {
       onFocusCapture={handleFocusCapture}
       onBlurCapture={handleBlurCapture}
     >
-      {/* Floating app bar */}
       <FloatingAppBar />
 
-      {/* Top fade gradient — visible on scroll, covers app bar + below */}
       <div
         className="absolute left-0 right-0 z-[9]"
         style={{
@@ -504,30 +475,29 @@ export default function SavingsFlowSim() {
         }}
       />
 
-      {/* PlanCruncher — pinned below app bar, always visible once shown */}
+      {/* PlanCruncherV2 — pinned below app bar */}
       {cruncherVisible && (
         <div className="absolute top-0 left-0 right-0 z-10" style={{ pointerEvents: "none", paddingTop: 116 }}>
           <div style={{ pointerEvents: "auto", position: "relative", zIndex: 1, padding: "0 16px" }}>
-            <PlanCruncher
+            <PlanCruncherV2
               goalName={goalName}
               visible
               completed={cruncherCompleted}
               statusText={cruncherStatus}
               completedSubtitle="Save ₹2L by October"
               planSummary={PLAN_SUMMARY_ITEMS}
+              celebratoryText={CELEBRATORY_TEXT}
             />
           </div>
         </div>
       )}
 
-      {/* Scroll container */}
       <div
         ref={scrollRef}
         className="absolute inset-0 w-full overflow-y-auto overscroll-contain scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         style={{ overflowAnchor: "none" }}
       >
         <div ref={contentRef} className="flex flex-col px-6">
-          {/* Fixed clearance for app bar + cruncher */}
           <div className="shrink-0" aria-hidden="true" style={{ height: cruncherVisible ? 200 : 108 }} />
 
           <div className="w-full space-y-4">
@@ -542,14 +512,12 @@ export default function SavingsFlowSim() {
               </div>
             ))}
 
-            {/* Thinking indicator */}
             {showThinking && (
               <div className="animate-chat-message-in">
                 <ThinkingIndicator />
               </div>
             )}
 
-            {/* Clarifying question chips */}
             {showClarifyChips && clarifyIndex < CLARIFYING_QUESTIONS.length && (
               <div className="animate-chat-message-in">
                 <ChipList
@@ -564,7 +532,6 @@ export default function SavingsFlowSim() {
         </div>
       </div>
 
-      {/* TypeBox + gesture nav — slides down when hidden */}
       <div
         className="absolute bottom-0 left-0 right-0 z-15"
         style={{
@@ -594,7 +561,6 @@ export default function SavingsFlowSim() {
         <GestureNav />
       </div>
 
-      {/* Questionnaire overlay */}
       {phase === "questionnaire" && (
         <div className="absolute bottom-0 left-0 right-0 z-20" style={{ pointerEvents: "auto", transition: "transform 250ms ease", transform: keyboardVisible ? "translateY(-260px)" : "translateY(0)" }}>
           <QuestionnaireOverlay
@@ -609,7 +575,6 @@ export default function SavingsFlowSim() {
         </div>
       )}
 
-      {/* Mock Android keyboard */}
       <MockKeyboard visible={keyboardVisible} />
     </div>
   );

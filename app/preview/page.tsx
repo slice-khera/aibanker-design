@@ -102,23 +102,17 @@ function PreviewContent() {
     );
   }
 
-  // If a single noFrame variant, render it full-page without any gallery wrapper
-  const allNoFrame = exploration.variants.every((v) => v.noFrame);
-  if (allNoFrame && exploration.variants.length === 1) {
-    return <>{exploration.variants[0].render()}</>;
-  }
-
   return (
-    <div style={{ padding: 40, fontFamily: "system-ui, sans-serif" }}>
+    <div style={{ padding: 40, fontFamily: "system-ui, sans-serif", backgroundColor: "#0a0a0a", minHeight: "100vh" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 32 }}>
-        <a href="/preview" style={{ color: "#999", textDecoration: "none", fontSize: 14 }}>
+        <a href="/preview" style={{ color: "#666", textDecoration: "none", fontSize: 14 }}>
           All explorations
         </a>
-        <span style={{ color: "#ccc" }}>/</span>
-        <h1 style={{ fontSize: 24, fontWeight: 600, margin: 0 }}>
+        <span style={{ color: "#444" }}>/</span>
+        <h1 style={{ fontSize: 24, fontWeight: 600, margin: 0, color: "#fff" }}>
           {exploration.component}
         </h1>
-        <span style={{ color: "#999", fontSize: 14 }}>
+        <span style={{ color: "#666", fontSize: 14 }}>
           {exploration.variants.length} variant{exploration.variants.length !== 1 ? "s" : ""}
         </span>
       </div>
@@ -146,27 +140,37 @@ function PreviewContent() {
           >
             {/* Label */}
             <div>
-              <h2 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: "#fff" }}>
                 {variant.name}
               </h2>
-              <p style={{ fontSize: 13, color: "#999", margin: "4px 0 0" }}>
+              <p style={{ fontSize: 13, color: "#666", margin: "4px 0 0" }}>
                 {variant.description}
               </p>
             </div>
 
-            {/* Phone frame */}
+            {/* Device frame — matches main app bezel */}
             <div
               style={{
-                width: 390,
-                height: 844,
-                borderRadius: 24,
-                border: "1px solid #e0e0e0",
-                overflow: "hidden",
-                background: "#fff",
-                position: "relative",
+                width: 372, /* 360 + 6px padding each side */
+                borderRadius: 32,
+                backgroundColor: "#1a1a1e",
+                padding: 6,
+                boxShadow: "0 28px 70px rgba(0,0,0,0.16), 0 6px 18px rgba(0,0,0,0.05)",
+                outline: "1px solid rgba(255,255,255,0.05)",
               }}
             >
-              {variant.render()}
+              <div
+                style={{
+                  width: 360,
+                  aspectRatio: "360/780",
+                  borderRadius: 26,
+                  overflow: "hidden",
+                  background: "#fff",
+                  position: "relative",
+                }}
+              >
+                {variant.render()}
+              </div>
             </div>
           </div>
         ))}

@@ -7,6 +7,8 @@ import { RADIUS_CIRCLE, RADIUS_PILL } from "../lib/radii";
 import { SPACE_XS, SPACE_M, SPACE_L } from "../lib/spacing";
 import { ELEVATION_CARD } from "../lib/elevation";
 import { StatusBar, GestureNav, FooterInset } from "../components/AppChrome";
+import GoalTracker from "../components/GoalTracker";
+import type { GoalIndicatorData } from "../components/GoalTracker";
 
 // ── Hardcoded content ───────────────────────────────────────────
 
@@ -125,6 +127,14 @@ function useTypewriter(fullText: string, active: boolean, onComplete?: () => voi
   return displayed;
 }
 
+// ── Goal data for trailing ring ─────────────────────────────────
+
+const JAPAN_GOAL: GoalIndicatorData = {
+  id: "1", name: "Trip to Japan", pct: 42, status: "on-track",
+  icon: "plane", ringColor: "#d30ad7", daysLabel: "4 months left",
+  saved: 84000, target: 200000,
+};
+
 // ── Floating AppBar ─────────────────────────────────────────────
 
 function FloatingAppBar() {
@@ -146,7 +156,7 @@ function FloatingAppBar() {
           <div style={{ flex: 1, textAlign: "center", ...typography.headerH4, color: TEXT_PRIMARY }}>
             Ryan
           </div>
-          <div style={{ width: 48, height: 48 }} />
+          <GoalTracker goals={[JAPAN_GOAL]} onGoalTap={() => {}} />
         </div>
       </div>
     </div>
@@ -155,7 +165,7 @@ function FloatingAppBar() {
 
 // ── Main simulation ─────────────────────────────────────────────
 
-export default function SelectionsSim() {
+export default function RefreshSessionSimV2() {
   const [typingDone, setTypingDone] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
   const [showReply, setShowReply] = useState(false);

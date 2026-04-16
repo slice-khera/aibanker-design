@@ -30,12 +30,10 @@ import {
 
 type Phase =
   | "questionnaire"   // QuestionnaireOverlay visible
-  | "working"         // PlanCruncher at top, clarifying questions drip in
+  | "working"         // PlanCruncher at bottom, clarifying questions drip in
   | "result";         // Plan complete, cruncher tappable
 
 // ── Cruncher status texts mapped to conversation stages ─────────
-// Each clarifying question has a matching cruncher status.
-// After all questions, these remaining texts cycle on a timer.
 
 const IDLE_CRUNCHER_TEXTS = [
   "Comparing savings instruments\u2026",
@@ -46,7 +44,7 @@ const IDLE_CRUNCHER_TEXTS = [
   "Building your savings plan\u2026",
 ];
 
-// ── Plan summary for expanded view (plain English sentences) ────
+// ── Plan summary for expanded view ────
 
 const PLAN_SUMMARY_ITEMS = [
   { label: "Save ₹25,000 per month for 6 months" },
@@ -170,7 +168,7 @@ function FloatingAppBar() {
 
 // ── Main simulation ─────────────────────────────────────────────
 
-export default function SavingsFlowSim() {
+export default function SavingsFlowSimBottom() {
   const [messages, setMessages] = useState<SimMessage[]>([]);
   const [phase, setPhase] = useState<Phase>("working");
   const [quizIndex, setQuizIndex] = useState(0);
@@ -193,10 +191,9 @@ export default function SavingsFlowSim() {
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const didBootRef = useRef(false);
   const snappedIdsRef = useRef<Set<string>>(new Set());
-  const cruncherVisibleRef = useRef(false);
 
-  // Snap-scroll: when a user bubble mounts, scroll so it sits just below the
-  // fixed header (app bar = 108px, app bar + cruncher = 200px) with 16px gap.
+  // Snap-scroll: when a user bubble mounts, scroll so it sits comfortably.
+  // In the bottom variant, the cruncher is at the bottom so top clearance is just the app bar.
   const userBubbleRef = useCallback((el: HTMLElement | null) => {
     if (!el) return;
     const id = el.getAttribute("data-msg-id");
@@ -208,7 +205,7 @@ export default function SavingsFlowSim() {
     if (!scroller || !content) return;
 
     setTimeout(() => {
-      const headerHeight = cruncherVisibleRef.current ? 200 : 108;
+      const headerHeight = 108; // app bar only — cruncher is at the bottom now
       const scrollerRect = scroller.getBoundingClientRect();
       const bubbleRect = el.getBoundingClientRect();
       const bubbleTopInScroller = bubbleRect.top - scrollerRect.top + scroller.scrollTop;
@@ -354,10 +351,10 @@ export default function SavingsFlowSim() {
       { id: "u-shared", role: "user", text: "Shared preferences" },
     ]);
 
-    // After a beat: show PlanCruncher (keep input bar for clarifying Qs)
+    // After a beat: show PlanCruncher at the bottom (replaces input bar)
     schedule(() => {
       setCruncherVisible(true);
-      cruncherVisibleRef.current = true;
+      setInputBarVisible(false); // hide input bar, cruncher takes its place
       setCruncherStatus("Gathering your preferences\u2026");
       setShowThinking(true);
       scrollToBottom();
@@ -378,10 +375,11 @@ export default function SavingsFlowSim() {
       scrollToBottom();
     }, 2000);
 
-    // First clarifying question — sync cruncher status
+    // First clarifying question — sync cruncher status, restore input bar
     schedule(() => {
       setShowThinking(false);
       setCruncherStatus(CRUNCHER_STATUS_BY_QUESTION[0]);
+      setInputBarVisible(true);
       const cq = CLARIFYING_QUESTIONS[0];
       setMessages((prev) => [
         ...prev,
@@ -423,7 +421,7 @@ export default function SavingsFlowSim() {
         scrollToBottom();
       }, 1200);
     } else {
-      // All clarifying questions answered — hide input bar, bot confirms
+      // All clarifying questions answered — hide input bar, cruncher stays at bottom
       schedule(() => {
         setShowThinking(false);
         setInputBarVisible(false);
@@ -440,7 +438,7 @@ export default function SavingsFlowSim() {
         schedule(() => {
           setCruncherStatus(text);
         }, delay);
-        delay += 1400; // spread texts across ~10s
+        delay += 1400;
       });
 
       // After 10 seconds, mark complete
@@ -504,22 +502,6 @@ export default function SavingsFlowSim() {
         }}
       />
 
-      {/* PlanCruncher — pinned below app bar, always visible once shown */}
-      {cruncherVisible && (
-        <div className="absolute top-0 left-0 right-0 z-10" style={{ pointerEvents: "none", paddingTop: 116 }}>
-          <div style={{ pointerEvents: "auto", position: "relative", zIndex: 1, padding: "0 16px" }}>
-            <PlanCruncher
-              goalName={goalName}
-              visible
-              completed={cruncherCompleted}
-              statusText={cruncherStatus}
-              completedSubtitle="Save ₹2L by October"
-              planSummary={PLAN_SUMMARY_ITEMS}
-            />
-          </div>
-        </div>
-      )}
-
       {/* Scroll container */}
       <div
         ref={scrollRef}
@@ -527,8 +509,8 @@ export default function SavingsFlowSim() {
         style={{ overflowAnchor: "none" }}
       >
         <div ref={contentRef} className="flex flex-col px-6">
-          {/* Fixed clearance for app bar + cruncher */}
-          <div className="shrink-0" aria-hidden="true" style={{ height: cruncherVisible ? 200 : 108 }} />
+          {/* Fixed clearance for app bar only — cruncher is at the bottom */}
+          <div className="shrink-0" aria-hidden="true" style={{ height: 108 }} />
 
           <div className="w-full space-y-4">
             {messages.map((msg) => (
@@ -560,38 +542,71 @@ export default function SavingsFlowSim() {
             )}
           </div>
 
-          <div className="shrink-0" aria-hidden="true" style={{ height: 120 }} />
+          {/* Bottom clearance — extra space when cruncher is visible at the bottom */}
+          <div className="shrink-0" aria-hidden="true" style={{ height: cruncherVisible ? 180 : 120 }} />
         </div>
       </div>
 
-      {/* TypeBox + gesture nav — slides down when hidden */}
+      {/* ── Bottom anchored area: cruncher + input bar + gesture nav ── */}
       <div
         className="absolute bottom-0 left-0 right-0 z-15"
-        style={{
-          pointerEvents: inputBarVisible ? "auto" : "none",
-          transform: inputBarVisible ? "translateY(0)" : "translateY(100%)",
-          opacity: inputBarVisible ? 1 : 0,
-          transition: "transform 300ms ease, opacity 200ms ease",
-        }}
+        style={{ pointerEvents: "none" }}
       >
-        <FooterInset backgroundColor="transparent" paddingX={16} paddingTop={8} minBottomPadding={0}>
-          <div className="flex items-center" style={{ gap: 12 }}>
-            <div
-              className="flex items-center overflow-hidden flex-1"
-              style={{ height: 48, backgroundColor: BG_PRIMARY, border: `1px solid ${OUTLINE_SUBTLE}`, borderRadius: RADIUS_CIRCLE, boxShadow: ELEVATION_CARD }}
-            >
-              <div
-                className="flex items-center w-full h-full"
-                style={{ backgroundColor: BG_PRIMARY, borderRadius: RADIUS_CIRCLE, paddingLeft: 16, paddingRight: 8, paddingTop: 8, paddingBottom: 8 }}
-              >
-                <span className="flex-1" style={{ ...typography.bodySmall, color: ALPHA_BLACK_30 }}>
-                  Reply to Ryan...
-                </span>
-              </div>
+        {/* Bottom fade gradient — fades chat into the bottom controls */}
+        <div
+          style={{
+            height: 40,
+            pointerEvents: "none",
+            background: "linear-gradient(to bottom, transparent, white 100%)",
+          }}
+        />
+
+        <div style={{ backgroundColor: "white", pointerEvents: "auto" }}>
+          {/* PlanCruncher — anchored to bottom, above input bar */}
+          {cruncherVisible && (
+            <div style={{ padding: "0 16px", paddingBottom: 8 }}>
+              <PlanCruncher
+                goalName={goalName}
+                visible
+                completed={cruncherCompleted}
+                statusText={cruncherStatus}
+                completedSubtitle="Save ₹2L by October"
+                planSummary={PLAN_SUMMARY_ITEMS}
+              />
             </div>
+          )}
+
+          {/* TypeBox — slides down when hidden */}
+          <div
+            style={{
+              pointerEvents: inputBarVisible ? "auto" : "none",
+              maxHeight: inputBarVisible ? 100 : 0,
+              opacity: inputBarVisible ? 1 : 0,
+              overflow: "hidden",
+              transition: "max-height 300ms ease, opacity 200ms ease",
+            }}
+          >
+            <FooterInset backgroundColor="transparent" paddingX={16} paddingTop={8} minBottomPadding={0}>
+              <div className="flex items-center" style={{ gap: 12 }}>
+                <div
+                  className="flex items-center overflow-hidden flex-1"
+                  style={{ height: 48, backgroundColor: BG_PRIMARY, border: `1px solid ${OUTLINE_SUBTLE}`, borderRadius: RADIUS_CIRCLE, boxShadow: ELEVATION_CARD }}
+                >
+                  <div
+                    className="flex items-center w-full h-full"
+                    style={{ backgroundColor: BG_PRIMARY, borderRadius: RADIUS_CIRCLE, paddingLeft: 16, paddingRight: 8, paddingTop: 8, paddingBottom: 8 }}
+                  >
+                    <span className="flex-1" style={{ ...typography.bodySmall, color: ALPHA_BLACK_30 }}>
+                      Reply to Ryan...
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </FooterInset>
           </div>
-        </FooterInset>
-        <GestureNav />
+
+          <GestureNav />
+        </div>
       </div>
 
       {/* Questionnaire overlay */}
