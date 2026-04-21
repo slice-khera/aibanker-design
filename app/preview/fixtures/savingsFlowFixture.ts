@@ -145,3 +145,23 @@ export const FINAL_PLAN_SUMMARY = {
   existingInvestments: "₹50,000 counted",
   projectedTotal: "₹2,01,875",
 };
+
+// ── Verbose plan reply (shown as a regular chat bubble once the cruncher finishes) ──
+// Written to simulate what a real, unstructured model response might look like — long,
+// conversational, not a neat 1-2-3 list. Replaces the plan-summary card in the cruncher.
+
+export const VERBOSE_PLAN_TEXT = `Alright — here's what I'd put together based on what you shared.
+
+You're aiming for ₹2L by October, which gives us about six months. With ₹50,000 already saved and some room to redirect spending, this is very doable without anything drastic.
+
+Here's how I'd split it. First, open a Recurring Deposit at 7.25% p.a. for six months with ₹20,000 going in every month. I'm picking an RD over a regular savings account because the rate is nearly double and the auto-debit makes it easier to stay consistent. Over six months that alone compounds to about ₹1,23,000.
+
+Next, move your existing ₹50,000 into the same RD upfront so it starts earning the same rate immediately — by October that parks at roughly ₹51,875.
+
+Finally, trim around ₹5,000/month from discretionary spending. Looking at the last three months, you're averaging about ₹8,000/month on eating out and subscriptions, so there's comfortable room here without cutting anything essential. That adds another ₹30,000 over the six months.
+
+Stacked together, you land at roughly ₹2,04,875 by October — a small buffer over your goal.
+
+A few things worth knowing: the RD locks in your 7.25% rate, so even if rates drop later you're protected. If something unexpected comes up and you need to pull money out early, you can break it — though you'd lose a bit of accrued interest. I'll also set up a heads-up two weeks before each auto-debit in case you want to pause a month.
+
+Want me to go ahead and set this up, or would you like to tweak any piece of it first?`;

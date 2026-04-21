@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { StatusBar } from "./AppChrome";
 import Chat from "./Chat";
 import { typography } from "../lib/typography";
@@ -307,12 +307,46 @@ const DRAWER_CHAT_MESSAGES = [
 
 /* ─── Main Sim ──────────────────────────────────────────────────── */
 
+/* Message reveal delays (ms) — after drawer opens, each subsequent message
+   appears after a pause. Bot messages get a longer "typing" delay. */
+const MESSAGE_DELAYS = [
+  0,     // msg 0 — first bot greeting, visible immediately on open
+  1400,  // msg 1 — user: "How's my Japan trip fund looking?"
+  1800,  // msg 2 — bot: savings breakdown (longer = "thinking")
+  1400,  // msg 3 — user: "Can I skip this month's contribution?"
+  2000,  // msg 4 — bot: final advisory reply
+];
+
 export default function DrawerExperienceSim() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [sheetTop, setSheetTop] = useState(SHEET_EXPANDED_TOP);
+  const [visibleCount, setVisibleCount] = useState(1); // start with first bot msg
+  const [hasSeenChat, setHasSeenChat] = useState(false);
+  const simTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const dragging = useRef(false);
   const dragStartY = useRef(0);
   const dragStartTop = useRef(SHEET_EXPANDED_TOP);
+
+  /* Clean up simulation timers on unmount */
+  useEffect(() => {
+    return () => simTimers.current.forEach(clearTimeout);
+  }, []);
+
+  /* Kick off the auto-play sequence: reveal messages one at a time */
+  const startSimulation = useCallback(() => {
+    // Clear any prior run
+    simTimers.current.forEach(clearTimeout);
+    simTimers.current = [];
+    setVisibleCount(1); // reset to just greeting
+
+    let cumulative = 0;
+    for (let i = 1; i < DRAWER_CHAT_MESSAGES.length; i++) {
+      cumulative += MESSAGE_DELAYS[i];
+      const count = i + 1;
+      const t = setTimeout(() => setVisibleCount(count), cumulative);
+      simTimers.current.push(t);
+    }
+  }, []);
 
   const handleDragStart = useCallback(
     (clientY: number) => {
@@ -347,6 +381,8 @@ export default function DrawerExperienceSim() {
       const bottomTop = PHONE_H - SHEET_COLLAPSED_HEIGHT;
       setSheetTop(bottomTop);
       setCollapsed(false);
+      setHasSeenChat(true);
+      startSimulation(); // begin auto-play conversation
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setSheetTop(SHEET_EXPANDED_TOP);
@@ -356,12 +392,13 @@ export default function DrawerExperienceSim() {
       // Animate sheet down to bottom, then collapse to pill
       const bottomTop = PHONE_H - SHEET_COLLAPSED_HEIGHT;
       setSheetTop(bottomTop);
+      simTimers.current.forEach(clearTimeout); // stop simulation
       setTimeout(() => {
         setCollapsed(true);
         setSheetTop(SHEET_EXPANDED_TOP);
       }, 300);
     }
-  }, [collapsed]);
+  }, [collapsed, startSimulation]);
 
   return (
     <div
@@ -421,9 +458,15 @@ export default function DrawerExperienceSim() {
             zIndex: 20,
           }}
         >
-          <div style={{ flex: 1, textAlign: "left", display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ flex: 1, textAlign: "left", display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
             <p style={{ ...typography.headerH4, color: TEXT_PRIMARY, margin: 0 }}>Chat with Ryan</p>
-            <p style={{ ...typography.caption, color: VALENTINO_500, margin: 0 }}>2 new messages</p>
+            {hasSeenChat ? (
+              <p style={{ ...typography.caption, color: TEXT_TERTIARY, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {DRAWER_CHAT_MESSAGES[visibleCount - 1]?.text.replace(/\*\*/g, "")}
+              </p>
+            ) : (
+              <p style={{ ...typography.caption, color: VALENTINO_500, margin: 0 }}>1 new message</p>
+            )}
           </div>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M18 15l-6-6-6 6" stroke={TEXT_TERTIARY} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -475,7 +518,7 @@ export default function DrawerExperienceSim() {
             <div style={{ flex: 1, overflow: "hidden", opacity: progress < 0.5 ? 1 : Math.max(0, 1 - (progress - 0.5) * 4), transition: dragging.current ? "none" : "opacity 0.3s ease" }}>
               <Chat
                 title="Ryan"
-                messages={DRAWER_CHAT_MESSAGES}
+                messages={DRAWER_CHAT_MESSAGES.slice(0, visibleCount)}
                 chips={[]}
                 onChipSelect={NOOP}
                 onSheetClose={() => {
@@ -488,6 +531,7 @@ export default function DrawerExperienceSim() {
                   }, 300);
                 }}
                 hideStatusBar
+                showFeedbackRow={visibleCount >= DRAWER_CHAT_MESSAGES.length}
                 sheetTransitionProgress={progress}
               />
             </div>

@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
 import SavingsFlowSim from "./SavingsFlowSim";
 import SavingsFlowSimBottom from "./SavingsFlowSimBottom";
-import SavingsFlowSimTopV2 from "./SavingsFlowSimTopV2";
 import SelectionsSim from "./SelectionsSim";
 import AppEntryPointSim from "./AppEntryPointSim";
 import DrawerExperienceSim from "../components/DrawerExperienceSim";
+
 import RefreshSessionSimV1 from "./RefreshSessionSimV1";
 import RefreshSessionSimV2 from "./RefreshSessionSimV2";
+import DegenModeSimV1 from "./DegenModeSimV1";
 
 export type Variant = {
   name: string;
@@ -38,18 +39,13 @@ export const explorations: Exploration[] = [
     variants: [
       {
         name: "top",
-        description: "Interactive savings goal conversation — tap chips to advance",
+        description: "Spinner-based cruncher with checklist expand and celebratory footer",
         render: () => <SavingsFlowSim />,
       },
       {
         name: "bottom",
         description: "Interactive savings goal conversation — bottom variant exploration",
         render: () => <SavingsFlowSimBottom />,
-      },
-      {
-        name: "top-v2",
-        description: "Spinner-based cruncher with checklist expand and celebratory footer",
-        render: () => <SavingsFlowSimTopV2 />,
       },
     ],
   },
@@ -71,7 +67,16 @@ export const explorations: Exploration[] = [
     }],
   },
   { component: "GoalScreen", variants: [], empty: true },
-  { component: "Tone", variants: [], empty: true },
+  {
+    component: "DegenMode",
+    variants: [
+      {
+        name: "v1",
+        description: "Degen Mode — baseline (copied from RefreshSession v1)",
+        render: () => <DegenModeSimV1 />,
+      },
+    ],
+  },
   {
     component: "RefreshSession",
     variants: [
@@ -89,10 +94,12 @@ export const explorations: Exploration[] = [
   },
   {
     component: "DrawerExperience",
-    variants: [{
-      name: "full-sim",
-      description: "Drawer push up/down — My Money back layer + Chat sheet",
-      render: () => <DrawerExperienceSim />,
-    }],
+    variants: [
+      {
+        name: "v1",
+        description: "Drawer push up/down — My Money back layer + Chat sheet",
+        render: () => <DrawerExperienceSim />,
+      },
+    ],
   },
 ];

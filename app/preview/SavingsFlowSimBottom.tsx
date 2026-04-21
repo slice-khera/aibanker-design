@@ -19,10 +19,12 @@ import PlanCruncher from "../components/PlanCruncher";
 import QuestionnaireOverlay from "../components/QuestionnaireOverlay";
 import type { QuestionOption } from "../components/QuestionnaireOverlay";
 import MockKeyboard from "../components/MockKeyboard";
+import { useTypewriter } from "../components/Chat";
 import {
   INITIAL_MESSAGES,
   GOAL_QUESTIONS,
   CLARIFYING_QUESTIONS,
+  VERBOSE_PLAN_TEXT,
   type SimMessage,
 } from "./fixtures/savingsFlowFixture";
 
@@ -44,18 +46,12 @@ const IDLE_CRUNCHER_TEXTS = [
   "Building your savings plan\u2026",
 ];
 
-// ── Plan summary for expanded view ────
-
-const PLAN_SUMMARY_ITEMS = [
-  { label: "Save ₹25,000 per month for 6 months" },
-  { label: "Set up an RD at 7.25% p.a." },
-  { label: "Use existing savings of ₹50,000 towards the goal" },
-  { label: "You'll reach ₹2,01,875 by October" },
-];
-
 // ── Bubble ──────────────────────────────────────────────────────
 
-function Bubble({ msg }: { msg: SimMessage }) {
+function Bubble({ msg, typewrite = false }: { msg: SimMessage; typewrite?: boolean }) {
+  const streamed = useTypewriter(msg.text, typewrite && msg.role === "assistant");
+  const text = typewrite && msg.role === "assistant" ? streamed : msg.text;
+
   if (msg.role === "user") {
     return (
       <div className="flex flex-col items-end">
@@ -74,7 +70,7 @@ function Bubble({ msg }: { msg: SimMessage }) {
   return (
     <div className="flex flex-col items-start">
       <p className="whitespace-pre-line text-[var(--chat-text-primary)] w-full" style={typography.bodySmall}>
-        {msg.text}
+        {text}
       </p>
     </div>
   );
@@ -142,7 +138,7 @@ function FloatingAppBar() {
                 style={{ width: 48, height: 48, border: `1px solid ${OUTLINE_SUBTLE}`, boxShadow: ELEVATION_CARD }}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M18 6L6 18M6 6l12 12" stroke={TEXT_SECONDARY} strokeWidth="2" strokeLinecap="round" />
+                  <path d="M18 6L6 18M6 6l12 12" stroke={TEXT_PRIMARY} strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </div>
             </div>
@@ -174,7 +170,6 @@ export default function SavingsFlowSimBottom() {
   const [quizIndex, setQuizIndex] = useState(0);
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [cruncherVisible, setCruncherVisible] = useState(false);
-  const [cruncherCompleted, setCruncherCompleted] = useState(false);
   const [cruncherStatus, setCruncherStatus] = useState("Gathering your preferences\u2026");
   const [goalName, setGoalName] = useState("Savings goal");
   const [showThinking, setShowThinking] = useState(false);
@@ -441,17 +436,23 @@ export default function SavingsFlowSimBottom() {
         delay += 1400;
       });
 
-      // After 10 seconds, mark complete
+      // After 10 seconds, hide cruncher and drop the verbose plan in as chat
       schedule(() => {
-        setCruncherCompleted(true);
+        setCruncherVisible(false);
+        setShowThinking(true);
+        scrollToBottom();
+      }, 10000);
+
+      schedule(() => {
+        setShowThinking(false);
         setPhase("result");
         setMessages((prev) => [
           ...prev,
-          { id: "r1", role: "assistant", text: "Your plan is ready — take a look and let me know if you\u2019d like to tweak anything." },
+          { id: "r1", role: "assistant", text: VERBOSE_PLAN_TEXT },
         ]);
         setInputBarVisible(true);
         scrollToBottom();
-      }, 10000);
+      }, 10800);
     }
   }, [clarifyIndex, scrollToBottom, schedule]);
 
@@ -468,6 +469,19 @@ export default function SavingsFlowSimBottom() {
   useEffect(() => {
     return () => timersRef.current.forEach(clearTimeout);
   }, []);
+
+  // Keep scroll pinned to bottom while the verbose plan streams in.
+  useEffect(() => {
+    if (phase !== "result") return;
+    const scroller = scrollRef.current;
+    const content = contentRef.current;
+    if (!scroller || !content) return;
+    const ro = new ResizeObserver(() => {
+      scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
+    });
+    ro.observe(content);
+    return () => ro.disconnect();
+  }, [phase]);
 
   // Show mock keyboard when any input inside the sim is focused
   const handleFocusCapture = useCallback((e: React.FocusEvent) => {
@@ -520,7 +534,7 @@ export default function SavingsFlowSimBottom() {
                 ref={msg.role === "user" ? userBubbleRef : undefined}
                 className="animate-chat-message-in"
               >
-                <Bubble msg={msg} />
+                <Bubble msg={msg} typewrite={msg.id === "r1"} />
               </div>
             ))}
 
@@ -568,10 +582,7 @@ export default function SavingsFlowSimBottom() {
               <PlanCruncher
                 goalName={goalName}
                 visible
-                completed={cruncherCompleted}
                 statusText={cruncherStatus}
-                completedSubtitle="Save ₹2L by October"
-                planSummary={PLAN_SUMMARY_ITEMS}
               />
             </div>
           )}
