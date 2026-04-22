@@ -8,8 +8,10 @@ import { typography } from "../lib/typography";
 import { ILLUST_AFFORD_IT, ILLUST_MY_SPENDS, ILLUST_FEEDBACK } from "../lib/illustrations";
 import {
   VALENTINO_500, VALENTINO_50, GREEN_500, GREEN_50, ORANGE_500, ORANGE_50,
-  BG_SURFACE, BG_SURFACE_2, BLUE_50, RED_50, OUTLINE_SUBTLE,
+  BG_SURFACE, BG_SURFACE_2, BG_SECONDARY, BLUE_50, RED_50, OUTLINE_SUBTLE, TEXT_PRIMARY,
 } from "../lib/colors";
+import { RADIUS_PILL } from "../lib/radii";
+import { SPACE_XS, SPACE_M } from "../lib/spacing";
 
 // ── Feedback row (inline SVGs with proper color tokens) ─────────
 
@@ -451,21 +453,27 @@ function AssistantOptionsCard({
             resolvedShowOptions ? "max-h-[420px] opacity-100" : "max-h-0 opacity-0"
           }`}
         >
-          {chips.slice(0, 6).map((chip) => (
-            <button
-              key={chip.id}
-              type="button"
-              onClick={() => onChipSelect(chip)}
-              disabled={!resolvedShowOptions}
-              className="flex w-full items-center text-left transition active:bg-[rgba(0,0,0,0.05)]"
-              style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)", padding: "8px 0", minHeight: 48 }}
-            >
-              <span>{chip.label}</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginLeft: 8 }}>
-                <path d="M9 6l6 6-6 6" stroke="rgba(0,0,0,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          ))}
+          <div className="flex flex-wrap gap-3">
+            {chips.slice(0, 6).map((chip) => (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => onChipSelect(chip)}
+                disabled={!resolvedShowOptions}
+                className="transition-transform active:scale-[0.97]"
+                style={{
+                  ...typography.buttonSmall,
+                  color: TEXT_PRIMARY,
+                  backgroundColor: BG_SECONDARY,
+                  border: `1px solid ${OUTLINE_SUBTLE}`,
+                  borderRadius: RADIUS_PILL,
+                  padding: `${SPACE_XS}px ${SPACE_M}px`,
+                }}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -484,19 +492,23 @@ function OptionList({
   if (chips.length === 0) return null;
 
   return (
-    <div className={`w-full ${compactTop ? "mt-1" : ""}`}>
+    <div className={`flex flex-wrap gap-3 ${compactTop ? "mt-1" : ""}`}>
       {chips.slice(0, 6).map((chip) => (
         <button
           key={chip.id}
           type="button"
           onClick={() => onChipSelect(chip)}
-          className="flex w-full items-center text-left transition active:bg-[rgba(0,0,0,0.05)]"
-          style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)", padding: "8px 0", minHeight: 48 }}
+          className="transition-transform active:scale-[0.97]"
+          style={{
+            ...typography.buttonSmall,
+            color: TEXT_PRIMARY,
+            backgroundColor: BG_SECONDARY,
+            border: `1px solid ${OUTLINE_SUBTLE}`,
+            borderRadius: RADIUS_PILL,
+            padding: `${SPACE_XS}px ${SPACE_M}px`,
+          }}
         >
-          <span className="truncate">{chip.label}</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginLeft: 8 }}>
-            <path d="M9 6l6 6-6 6" stroke="rgba(0,0,0,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          {chip.label}
         </button>
       ))}
     </div>

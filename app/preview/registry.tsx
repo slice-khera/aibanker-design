@@ -1,13 +1,16 @@
 import type { ReactNode } from "react";
 import SavingsFlowSim from "./SavingsFlowSim";
 import SavingsFlowSimBottom from "./SavingsFlowSimBottom";
-import SelectionsSim from "./SelectionsSim";
+
 import AppEntryPointSim from "./AppEntryPointSim";
 import DrawerExperienceSim from "../components/DrawerExperienceSim";
+import WrappedStorySim from "./WrappedStorySim";
 
 import RefreshSessionSimV1 from "./RefreshSessionSimV1";
 import RefreshSessionSimV2 from "./RefreshSessionSimV2";
 import DegenModeSimV1 from "./DegenModeSimV1";
+import VisualizationsChatSimV1 from "./VisualizationsChatSimV1";
+import VisualizationsChatSimV2 from "./VisualizationsChatSimV2";
 
 export type Variant = {
   name: string;
@@ -50,14 +53,20 @@ export const explorations: Exploration[] = [
     ],
   },
   {
-    component: "Selections",
-    variants: [{
-      name: "full-sim",
-      description: "Selection chips — falling behind on goal scenario",
-      render: () => <SelectionsSim />,
-    }],
+    component: "Visualizations",
+    variants: [
+      {
+        name: "v1",
+        description: "Staged chat showing all card types interspersed with user messages",
+        render: () => <VisualizationsChatSimV1 />,
+      },
+      {
+        name: "v2",
+        description: "Visualizations chat — duplicate of V1 for iteration",
+        render: () => <VisualizationsChatSimV2 />,
+      },
+    ],
   },
-  { component: "Visualizations", variants: [], empty: true },
   {
     component: "AppEntryPoint",
     variants: [{
@@ -99,6 +108,16 @@ export const explorations: Exploration[] = [
         name: "v1",
         description: "Drawer push up/down — My Money back layer + Chat sheet",
         render: () => <DrawerExperienceSim />,
+      },
+    ],
+  },
+  {
+    component: "WrappedStory",
+    variants: [
+      {
+        name: "v1",
+        description: "Instagram Stories-style financial wrapped — tap/swipe, auto-advance",
+        render: () => <WrappedStorySim />,
       },
     ],
   },

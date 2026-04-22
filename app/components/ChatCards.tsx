@@ -764,6 +764,23 @@ function GoalProgressCard({ data }: { data: Extract<ChatCardData, { type: "goal-
   const statusBg = status === "ahead" ? "#e0f4e8" : status === "behind" ? "#f9e4e5" : "#fff3e3";
   const clampedPct = Math.min(pct, 100);
 
+  const statusPill = (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        padding: "4px 8px",
+        borderRadius: 100,
+        backgroundColor: statusBg,
+        flexShrink: 0,
+      }}
+    >
+      <span style={{ ...typography.metadata, textTransform: "uppercase", color: statusColor }}>
+        {daysLabel}
+      </span>
+    </div>
+  );
+
   const content = (
     <>
       <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)", marginBottom: 16 }}>
@@ -783,27 +800,12 @@ function GoalProgressCard({ data }: { data: Extract<ChatCardData, { type: "goal-
       </div>
 
       {/* Stats row */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ ...typography.caption, color: "rgba(0,0,0,0.5)" }}>
           {formatINRFull(saved)} / {formatINRFull(target)}
         </span>
         <span style={{ ...typography.headerH2, color: "rgba(0,0,0,0.9)" }}>
           {pct}%
-        </span>
-      </div>
-
-      {/* Status pill */}
-      <div
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          padding: "4px 8px",
-          borderRadius: 100,
-          backgroundColor: statusBg,
-        }}
-      >
-        <span style={{ ...typography.metadata, textTransform: "uppercase", color: statusColor }}>
-          {daysLabel}
         </span>
       </div>
     </>
@@ -815,7 +817,13 @@ function GoalProgressCard({ data }: { data: Extract<ChatCardData, { type: "goal-
 
   return (
     <div style={shell}>
-      <CardHeader label="Goal progress" onArrowTap={onArrowTap} />
+      {/* Header row: label left, status pill right */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <span style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.5)" }}>
+          Goal progress
+        </span>
+        {statusPill}
+      </div>
       {content}
     </div>
   );
@@ -1839,6 +1847,10 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
   const [editedAmounts, setEditedAmounts] = useState<Record<string, number>>({});
   const [editedTypes, setEditedTypes] = useState<Record<string, string>>({});
 
+  const handleExpand = (id: string) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
+
   const getAmount = (item: typeof display[0]) => editedAmounts[item.id] ?? item.amount;
   const getType = (item: typeof display[0]) => editedTypes[item.id] ?? item.type;
 
@@ -1857,10 +1869,6 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
       }
       return next;
     });
-  };
-
-  const handleExpand = (id: string) => {
-    setExpandedId((prev) => (prev === id ? null : id));
   };
 
   const handleSubmit = () => {
@@ -1941,27 +1949,30 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
                 gap: 8,
                 padding: i === display.length - 1 ? "16px 0 0 0" : "16px 0",
                 borderBottom: (!isExpanded && i < display.length - 1) ? "1px solid rgba(0,0,0,0.05)" : "none",
+                transition: "border-color 200ms ease",
               }}
             >
-              {/* Narrow checkbox: 32w × 48h — icon is 24px, 4px either side */}
+              {/* Checkbox with scale transition */}
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); handleToggle(item.id); }}
                 style={{ width: 32, height: 48, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "transparent", padding: 0, cursor: "pointer", flexShrink: 0 }}
                 aria-label={isChecked ? "Deselect" : "Select"}
               >
-                {isChecked ? (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <rect x="2" y="2" width="20" height="20" rx="4" fill="#d30ad7" />
-                    <path d="M7 12.5L10.5 16L17 9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                ) : (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <rect x="2.5" y="2.5" width="19" height="19" rx="3.5" stroke="rgba(0,0,0,0.2)" strokeWidth="1" />
-                  </svg>
-                )}
+                <div style={{ transition: "transform 150ms ease", transform: isChecked ? "scale(1)" : "scale(0.9)" }}>
+                  {isChecked ? (
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <rect x="2" y="2" width="20" height="20" rx="4" fill="#d30ad7" />
+                      <path d="M7 12.5L10.5 16L17 9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <rect x="2.5" y="2.5" width="19" height="19" rx="3.5" stroke="rgba(0,0,0,0.2)" strokeWidth="1" />
+                    </svg>
+                  )}
+                </div>
               </button>
-              {/* Content block: 3 rows */}
+              {/* Content block */}
               <div style={{ flex: 1, minWidth: 0, cursor: "pointer" }} onClick={() => handleExpand(item.id)}>
                 {/* Row 1: Title + Amount */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1977,105 +1988,128 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
                   <p style={{ ...typography.caption, color: "rgba(0,0,0,0.7)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
                     {currentType}
                   </p>
-                  {!isExpanded && (
-                    <span
-                      style={{ ...typography.caption, color: "#d30ad7", flexShrink: 0, whiteSpace: "nowrap", marginLeft: 8, cursor: "pointer" }}
-                      onClick={(e) => { e.stopPropagation(); handleExpand(item.id); }}
-                    >
-                      Edit
-                    </span>
-                  )}
+                  <span
+                    style={{
+                      ...typography.caption,
+                      color: "#d30ad7",
+                      flexShrink: 0,
+                      whiteSpace: "nowrap",
+                      marginLeft: 8,
+                      cursor: "pointer",
+                      opacity: isExpanded ? 0 : 1,
+                      transition: "opacity 200ms ease",
+                      pointerEvents: isExpanded ? "none" : "auto",
+                    }}
+                    onClick={(e) => { e.stopPropagation(); handleExpand(item.id); }}
+                  >
+                    Edit
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Expanded inline edit — full width, slider + chips */}
-            {isExpanded && (
-              <div
-                style={{
-                  borderBottom: i < display.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
-                  paddingBottom: 16,
-                }}
-              >
-                {/* Amount slider */}
-                <div style={{ marginBottom: 12 }}>
-                  <input
-                    type="range"
-                    min={0}
-                    max={Math.ceil((item.amount * 1.5) / getSnapStep(item.amount)) * getSnapStep(item.amount)}
-                    step={getSnapStep(item.amount)}
-                    value={currentAmount}
-                    onChange={(e) => setEditedAmounts((prev) => ({ ...prev, [item.id]: Number(e.target.value) }))}
-                    style={{ width: "100%", accentColor: "#d30ad7", cursor: "pointer" }}
-                  />
-                </div>
+            {/* Expanded inline edit — animated height + opacity */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateRows: isExpanded ? "1fr" : "0fr",
+                opacity: isExpanded ? 1 : 0,
+                transition: "grid-template-rows 250ms ease, opacity 200ms ease",
+                borderBottom: (isExpanded && i < display.length - 1) ? "1px solid rgba(0,0,0,0.05)" : "none",
+              }}
+            >
+              <div style={{ overflow: "hidden" }}>
+                <div style={{ paddingBottom: 16 }}>
+                  {/* Amount slider */}
+                  <div style={{ marginBottom: 12 }}>
+                    <input
+                      type="range"
+                      min={0}
+                      max={Math.ceil((item.amount * 1.5) / getSnapStep(item.amount)) * getSnapStep(item.amount)}
+                      step={getSnapStep(item.amount)}
+                      value={currentAmount}
+                      onChange={(e) => setEditedAmounts((prev) => ({ ...prev, [item.id]: Number(e.target.value) }))}
+                      style={{ width: "100%", accentColor: "#d30ad7", cursor: "pointer" }}
+                    />
+                  </div>
 
-                {/* Type chips — scroll to card edge, no right clip */}
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 8,
-                    overflowX: "auto",
-                    flexWrap: "nowrap",
-                    msOverflowStyle: "none",
-                    scrollbarWidth: "none",
-                    marginRight: -12,
-                    paddingRight: 12,
-                  }}
-                >
-                  {ALL_TAG_OPTIONS.slice(0, 5).map((tag) => {
-                    const isActive = currentType === tag;
-                    return (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => setEditedTypes((prev) => ({ ...prev, [item.id]: tag }))}
-                        style={{
-                          ...typography.bodySmall,
-                          height: 32,
-                          padding: "0 16px",
-                          borderRadius: 64,
-                          border: isActive ? "1px solid #d30ad7" : "1px solid rgba(0,0,0,0.2)",
-                          backgroundColor: isActive ? VALENTINO_50 : "#fff",
-                          color: "rgba(0,0,0,0.9)",
-                          cursor: "pointer",
-                          whiteSpace: "nowrap",
-                          flexShrink: 0,
-                          transition: "all 150ms ease",
-                        }}
-                      >
-                        {tag}
-                      </button>
-                    );
-                  })}
+                  {/* Type chips */}
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      overflowX: "auto",
+                      flexWrap: "nowrap",
+                      msOverflowStyle: "none",
+                      scrollbarWidth: "none",
+                      marginRight: -12,
+                      paddingRight: 12,
+                    }}
+                  >
+                    {ALL_TAG_OPTIONS.slice(0, 5).map((tag) => {
+                      const isActive = currentType === tag;
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => setEditedTypes((prev) => ({ ...prev, [item.id]: tag }))}
+                          style={{
+                            ...typography.bodySmall,
+                            height: 32,
+                            padding: "0 16px",
+                            borderRadius: 64,
+                            border: isActive ? "1px solid #d30ad7" : "1px solid rgba(0,0,0,0.2)",
+                            backgroundColor: isActive ? VALENTINO_50 : "#fff",
+                            color: "rgba(0,0,0,0.9)",
+                            cursor: "pointer",
+                            whiteSpace: "nowrap",
+                            flexShrink: 0,
+                            transition: "all 150ms ease",
+                          }}
+                        >
+                          {tag}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         );
       })}
 
-      {/* Submit — appears once ≥1 item selected */}
-      {!submitted && onSubmit && selected.size > 0 && (
-        <div style={{ marginTop: 24 }}>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            style={{
-              ...typography.buttonSmall,
-              height: 36,
-              borderRadius: 100,
-              backgroundColor: "#d30ad7",
-              color: "#fff",
-              border: "none",
-              cursor: "pointer",
-              padding: "0 16px",
-            }}
-          >
-            Looks right
-          </button>
+      {/* Submit — fade in once ≥1 item selected */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: (!submitted && onSubmit && selected.size > 0) ? "1fr" : "0fr",
+          opacity: (!submitted && onSubmit && selected.size > 0) ? 1 : 0,
+          transition: "grid-template-rows 250ms ease, opacity 200ms ease",
+        }}
+      >
+        <div style={{ overflow: "hidden" }}>
+          <div style={{ marginTop: 24 }}>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              style={{
+                ...typography.buttonSmall,
+                height: 36,
+                borderRadius: 100,
+                backgroundColor: "#d30ad7",
+                color: "#fff",
+                border: "none",
+                cursor: "pointer",
+                padding: "0 16px",
+                transition: "transform 150ms ease",
+              }}
+            >
+              Looks right
+            </button>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
