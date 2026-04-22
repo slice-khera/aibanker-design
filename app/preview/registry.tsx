@@ -75,7 +75,6 @@ export const explorations: Exploration[] = [
       render: () => <AppEntryPointSim />,
     }],
   },
-  { component: "GoalScreen", variants: [], empty: true },
   {
     component: "DegenMode",
     variants: [

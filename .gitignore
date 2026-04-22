@@ -46,6 +46,12 @@ PLAN.md
 changes.md
 full-snapshot.md
 
+# runtime session data
+/data/
+
+# test artifacts
+/test-results/
+
 # AI tool configs
 .agent/
 .agents/

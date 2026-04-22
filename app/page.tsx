@@ -8,7 +8,7 @@ import { AppBar, BOTTOM_INSET, NavButton } from "./components/AppChrome";
 import GoalTracker, { type GoalIndicatorData } from "./components/GoalTracker";
 import GoalListScreen from "./components/GoalListScreen";
 import PotDetail from "./components/PotDetail";
-import GoalPlanBuilder, { type PlanStep } from "./components/GoalPlanBuilder";
+import PlanMode, { type PlanStep } from "./components/PlanMode";
 import PayScreen from "./components/PayScreen";
 import QuestionnaireOverlay, { type Question, type QuestionOption } from "./components/QuestionnaireOverlay";
 import {
@@ -3954,7 +3954,7 @@ Be insightful, not just descriptive.`;
                   }
                   goalPlanBuilder={
                     goalPlanVisible ? (
-                      <GoalPlanBuilder
+                      <PlanMode
                         steps={goalPlanSteps}
                         visible={goalPlanVisible}
                         completed={goalPlanCompleted}
