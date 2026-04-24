@@ -4,7 +4,7 @@ import SavingsFlowSimBottom from "./SavingsFlowSimBottom";
 
 import AppEntryPointSim from "./AppEntryPointSim";
 import DrawerExperienceSim from "../components/DrawerExperienceSim";
-import WrappedStorySim from "./WrappedStorySim";
+import OnboardingSim from "./OnboardingSim";
 
 import RefreshSessionSimV1 from "./RefreshSessionSimV1";
 import RefreshSessionSimV2 from "./RefreshSessionSimV2";
@@ -111,12 +111,12 @@ export const explorations: Exploration[] = [
     ],
   },
   {
-    component: "WrappedStory",
+    component: "Onboarding",
     variants: [
       {
         name: "v1",
-        description: "Instagram Stories-style financial wrapped — tap/swipe, auto-advance",
-        render: () => <WrappedStorySim />,
+        description: "7-stage onboarding: entry → wrapped → quiz → Ryan → AA → chat",
+        render: () => <OnboardingSim />,
       },
     ],
   },
