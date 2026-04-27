@@ -9,13 +9,15 @@ import OnboardingSim from "./OnboardingSim";
 import RefreshSessionSimV1 from "./RefreshSessionSimV1";
 import RefreshSessionSimV2 from "./RefreshSessionSimV2";
 import DegenModeSimV1 from "./DegenModeSimV1";
+import RedditSimV1 from "./RedditSimV1";
+import RedditSimV2 from "./RedditSimV2";
 import VisualizationsChatSimV1 from "./VisualizationsChatSimV1";
 import VisualizationsChatSimV2 from "./VisualizationsChatSimV2";
 
 export type Variant = {
   name: string;
   description: string;
-  render: () => ReactNode;
+  render: (autoplay?: boolean) => ReactNode;
 };
 
 export type Exploration = {
@@ -82,6 +84,21 @@ export const explorations: Exploration[] = [
         name: "v1",
         description: "Degen Mode — baseline (copied from RefreshSession v1)",
         render: () => <DegenModeSimV1 />,
+      },
+    ],
+  },
+  {
+    component: "Reddit",
+    variants: [
+      {
+        name: "screen-recording",
+        description: "Full goal-setting flow — animated sim for screen recording",
+        render: (autoplay) => <RedditSimV1 autoplay={autoplay} />,
+      },
+      {
+        name: "screenshot",
+        description: "Static conversation — Byron\u2019s opening reply for screenshot",
+        render: () => <RedditSimV2 />,
       },
     ],
   },

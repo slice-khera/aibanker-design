@@ -85,6 +85,8 @@ export function useTypewriter(fullText: string, active: boolean, onComplete?: ()
   const posRef = useRef(0);
   const timerRef = useRef<number | null>(null);
   const completeCalled = useRef(false);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
     if (!active) {
@@ -107,7 +109,7 @@ export function useTypewriter(fullText: string, active: boolean, onComplete?: ()
       if (nextPos >= fullText.length) {
         if (!completeCalled.current) {
           completeCalled.current = true;
-          onComplete?.();
+          onCompleteRef.current?.();
         }
         return;
       }
@@ -124,7 +126,7 @@ export function useTypewriter(fullText: string, active: boolean, onComplete?: ()
         timerRef.current = null;
       }
     };
-  }, [fullText, active, onComplete]);
+  }, [fullText, active]);
 
   return displayed;
 }
@@ -553,11 +555,11 @@ const MOSAIC_HALF: QuickAction[] = [
 ];
 
 const ONTRACK_MOCK_RESPONSES: Record<string, string> = {
-  "Can I afford it?": "Your current balance is \u20B919,883 but whether you can afford something depends on what it is, when you need to pay, and what bills are coming up. What are you thinking of buying?",
-  "Analyse my spends": "Last month you spent \u20B947,200 total. Dining was the biggest category at \u20B912,400, followed by groceries at \u20B98,900 and transport at \u20B96,100. Overall **8% less** than the month before \u2014 solid.",
-  "Make Ryan smarter": "I\u2019d love to get better! You can rate my responses with the thumbs up or down after each reply. The more you interact, the better I understand what\u2019s useful to you.",
-  "Save taxes": "Based on your income and spending patterns, you could save up to \u20B945,000 this year. You\u2019re not fully utilising your **80C limit** \u2014 an ELSS fund or extra PPF contribution before March would help.",
-  "Surprise me": "Here\u2019s something \u2014 you spent \u20B90 on subscriptions you actually used last month, but \u20B9799 on ones you didn\u2019t. That\u2019s \u20B99,588 a year on autopilot. Want me to flag these?",
+  "Can I afford it?": "Balance is \u20B919,883 but whether you can afford something depends on what it is, when you need to pay, and what bills are coming up. What are you thinking of buying?",
+  "Analyse my spends": "Last month you spent \u20B947,200 total. Dining was the biggest at \u20B912,400, then groceries at \u20B98,900 and transport at \u20B96,100. Overall **8% less** than the month before. Whatever you did, it\u2019s working.",
+  "Make Ryan smarter": "You can rate my responses with the thumbs up or down after each reply. The more you interact, the sharper I get. Let\u2019s keep going.",
+  "Save taxes": "You could save up to \u20B945,000 this year. You\u2019re not fully using your **80C limit** \u2014 an ELSS fund or extra PPF contribution before March would help. Want to look at the options?",
+  "Surprise me": "\u20B9799 a month on subscriptions you did not use last month. That\u2019s \u20B99,588 a year on autopilot. Want to see the full list and kill the ones you do not actually use?",
 };
 
 function MosaicCard({

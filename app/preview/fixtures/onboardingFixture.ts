@@ -188,16 +188,16 @@ export function formatGuess(questionId: string, answerId: string): string {
 
 export const RYAN_FEATURES = [
   {
-    title: "Sees what you don't",
-    subtitle: "Spending habits hiding in plain sight",
+    title: "Sees what you don\u2019t",
+    subtitle: "Spending patterns hiding in plain sight",
   },
   {
-    title: "Gets better with you",
-    subtitle: "The more you use it, the sharper it gets",
+    title: "Gets sharper with you",
+    subtitle: "The more you interact, the better it gets",
   },
   {
     title: "Not perfect yet",
-    subtitle: "Early days — always double-check the details",
+    subtitle: "Early days \u2014 always double-check the details",
   },
 ];
 

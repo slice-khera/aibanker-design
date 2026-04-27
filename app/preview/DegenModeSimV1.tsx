@@ -29,7 +29,7 @@ const PERSONAS: Record<Persona, PersonaContent> = {
   ryan: {
     name: "Ryan",
     assistantText:
-      "Rajan, your Japan trip is veering off course \u2014 you\u2019ve overspent by \u20B915,000 against what we budgeted. Let\u2019s do some damage control while we still can.",
+      "Your Japan trip is \u20B915,000 over budget. One rough month does not break the plan \u2014 let\u2019s figure out what needs to change to get back on track.",
     chipOptions: [
       "Add \u20B95,000 to pot",
       "I\u2019ll handle it myself",
@@ -37,20 +37,20 @@ const PERSONAS: Record<Persona, PersonaContent> = {
     ],
     mockResponses: {
       "Add \u20B95,000 to pot":
-        "Done \u2014 \u20B95,000 moved to your Japan trip pot. You\u2019re now \u20B910,000 behind instead of \u20B915,000. I\u2019ve also tightened your dining budget by \u20B92,000 this month to help close the gap faster.",
+        "Done \u2014 \u20B95,000 moved to your Japan pot. You\u2019re \u20B910,000 behind instead of \u20B915,000. Want to trim \u20B92,000 off dining this month and close the gap faster?",
       "I\u2019ll handle it myself":
-        "Got it, I\u2019ll leave it with you. Just a heads up \u2014 if the gap grows past \u20B920,000, your December target starts looking tight. I\u2019ll check in again next week.",
+        "Got it, it\u2019s with you. Just a heads up \u2014 if the gap grows past \u20B920,000, December starts looking tight. I\u2019ll check in next week.",
       "Show me where I overspent":
-        "Here\u2019s the breakdown \u2014 dining out was \u20B98,200 (double your usual), shopping hit \u20B94,300, and subscriptions crept up by \u20B92,500. Dining is the big one to rein in.",
+        "Dining was \u20B98,200 \u2014 double your usual. Shopping hit \u20B94,300 and subscriptions crept up by \u20B92,500. Dining is the big one. Want to set a cap for next week so it does not sneak up again?",
     },
-    followupText: "What else would you like to explore?",
+    followupText: "What else would you like to look at?",
     disclaimer: "Ryan is AI and can make mistakes. Always double-check responses.",
     inputPlaceholder: "Reply to Ryan...",
   },
   byron: {
     name: "Byron",
     assistantText:
-      "Bro. You blew \u20B915,000 over budget on Japan. Dining out twice a day? Subscriptions you forgot existed? Classic. Let\u2019s fix this before it gets embarrassing.",
+      "\u20B915,000 over budget on Japan. Dining out twice a day? Subscriptions you forgot existed? At this pace Japan is a 2027 problem.",
     chipOptions: [
       "Fine, move \u20B95k",
       "I got this, back off",
@@ -58,11 +58,11 @@ const PERSONAS: Record<Persona, PersonaContent> = {
     ],
     mockResponses: {
       "Fine, move \u20B95k":
-        "Moved. You\u2019re still \u20B910,000 in the hole but at least you\u2019re trying. I cut \u20B92,000 from your dining budget too \u2014 you\u2019ll survive without the third latte.",
+        "Moved. You\u2019re still \u20B910,000 in the hole but at least you\u2019re trying. Cut \u20B92,000 off dining or Japan becomes a postcard someone else sends you.",
       "I got this, back off":
-        "Sure thing, champ. Just know that if you slip past \u20B920,000 behind, December is cooked. I\u2019ll be back next week whether you like it or not.",
+        "Sure thing. Just know if you slip past \u20B920,000 behind, December is cooked. I\u2019ll be back next week whether you like it or not.",
       "Roast my spending":
-        "\u20B98,200 on dining \u2014 that\u2019s double your usual. \u20B94,300 on shopping, because apparently you needed more stuff. And \u20B92,500 on subscriptions you don\u2019t use. Want me to keep going?",
+        "\u20B98,200 on dining \u2014 double your usual. \u20B94,300 on shopping, because apparently your closet was not full enough. And \u20B92,500 on subscriptions that have been billing you longer than most of your situationships.",
     },
     followupText: "What else you wanna dig into?",
     disclaimer: "Byron is AI with attitude.\nStill double-check everything.",

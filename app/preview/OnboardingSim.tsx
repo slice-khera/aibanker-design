@@ -31,22 +31,13 @@ import {
   ONBOARDING_GOAL,
 } from "./fixtures/onboardingFixture";
 
-// ── Types ─────────────────────────────────────────────────────────
-
-type OnboardingStage =
-  | "app-entry"
-  | "wrapped"
-  | "quiz"
-  | "ryan-intro"
-  | "aa-consent"
-  | "chat";
-
-type AAStep = "value-prop" | "bank-select" | "success";
-
 // ── Shared transition config ──────────────────────────────────────
 
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 const DURATION = 460;
+
+// Push-screen order inside the slide-up overlay
+const PUSH_SCREENS = ["wrapped", "quiz", "ryan-intro", "aa-value-prop", "aa-bank-select", "aa-success"];
 
 // ── Inline SVG icons ──────────────────────────────────────────────
 
@@ -72,7 +63,7 @@ function WrappedIcon({ size = 16, color = TEXT_ON_COLOR_PRIMARY }: { size?: numb
 function ArrowRightIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path d="M5 12h14M13 6l6 6-6 6" stroke={ALPHA_WHITE_FF} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 12h14M13 6l6 6-6 6" stroke={ALPHA_WHITE_FF} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -88,7 +79,7 @@ function CheckIcon({ size = 48, color = ALPHA_WHITE_FF }: { size?: number; color
 function ShieldIcon({ color = TEXT_TERTIARY }: { color?: string }) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path d="M12 2L4 6v5c0 5.25 3.4 10.15 8 11.25 4.6-1.1 8-6 8-11.25V6l-8-4z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 2L4 6v5c0 5.25 3.4 10.15 8 11.25 4.6-1.1 8-6 8-11.25V6l-8-4z" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -96,7 +87,7 @@ function ShieldIcon({ color = TEXT_TERTIARY }: { color?: string }) {
 function MessageIcon({ color = TEXT_TERTIARY }: { color?: string }) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -104,7 +95,7 @@ function MessageIcon({ color = TEXT_TERTIARY }: { color?: string }) {
 function SparkIcon({ color = TEXT_TERTIARY }: { color?: string }) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
     </svg>
   );
 }
@@ -112,7 +103,7 @@ function SparkIcon({ color = TEXT_TERTIARY }: { color?: string }) {
 function GraphIcon({ color = TEXT_TERTIARY }: { color?: string }) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path d="M3 20h18M5 17V10M9 17V7M13 17V12M17 17V5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3 20h18M5 17V10M9 17V7M13 17V12M17 17V5" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -126,7 +117,7 @@ function BackIcon() {
 function PrivacyIcon({ color = GREEN_500 }: { color?: string }) {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path d="M12 2L4 6v5c0 5.25 3.4 10.15 8 11.25 4.6-1.1 8-6 8-11.25V6l-8-4z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 2L4 6v5c0 5.25 3.4 10.15 8 11.25 4.6-1.1 8-6 8-11.25V6l-8-4z" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -175,75 +166,50 @@ function Fab({ onClick }: { onClick: () => void }) {
 // ══════════════════════════════════════════════════════════════════
 
 export default function OnboardingSim() {
-  const [stage, setStage] = useState<OnboardingStage>("app-entry");
-
-  // Quiz answers (populated when QuizCardStack completes)
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
 
-  // AA sub-state
-  const [aaStep, setAaStep] = useState<AAStep>("value-prop");
+  // Slide-up overlay (contains all push screens)
+  const [overlayOpen, setOverlayOpen] = useState(false);
+  const [overlayMounted, setOverlayMounted] = useState(false);
 
-  // Overlay slide-up animation (wrapped/quiz)
-  const [overlayVisible, setOverlayVisible] = useState(false);
-
-  // Push-in animation (ryan-intro, aa-consent)
-  const [slideVisible, setSlideVisible] = useState(false);
+  // Which push screen is active inside the overlay (index into PUSH_SCREENS)
+  const [pushIndex, setPushIndex] = useState(0);
 
   // Chat overlay
-  const [chatPhase, setChatPhase] = useState<"closed" | "entering" | "open" | "exiting">("closed");
+  const [chatPhase, setChatPhase] = useState<"closed" | "entering" | "open">("closed");
 
-  // ── Stage transitions ────────────────────────────────────────
+  // ── Navigation ───────────────────────────────────────────────
 
   const goToWrapped = useCallback(() => {
-    setOverlayVisible(false);
-    setStage("wrapped");
-    requestAnimationFrame(() => requestAnimationFrame(() => setOverlayVisible(true)));
+    setPushIndex(0);
+    setOverlayMounted(true);
+    setOverlayOpen(true);
   }, []);
 
-  const goToQuiz = useCallback(() => {
-    setStage("quiz");
-  }, []);
+  const goToQuiz = useCallback(() => setPushIndex(1), []);
+  const goToRyanIntro = useCallback(() => setPushIndex(2), []);
+  const goBack = useCallback(() => setPushIndex((i) => Math.max(0, i - 1)), []);
 
   const dismissOverlay = useCallback(() => {
-    setOverlayVisible(false);
-    setTimeout(() => setStage("app-entry"), DURATION);
-  }, []);
-
-  const dismissSlide = useCallback(() => {
-    setSlideVisible(false);
+    setOverlayOpen(false);
     setTimeout(() => {
-      setStage("quiz");
+      setOverlayMounted(false);
+      setPushIndex(0);
     }, DURATION);
   }, []);
 
-
-  const goToRyanIntro = useCallback(() => {
-    setSlideVisible(false);
-    setStage("ryan-intro");
-    requestAnimationFrame(() => requestAnimationFrame(() => setSlideVisible(true)));
-  }, []);
-
-  const goToAA = useCallback(() => {
-    setAaStep("value-prop");
-    setSlideVisible(false);
-    setStage("aa-consent");
-    requestAnimationFrame(() => requestAnimationFrame(() => setSlideVisible(true)));
-  }, []);
-
   const goToChat = useCallback(() => {
-    setStage("chat");
     setChatPhase("entering");
     requestAnimationFrame(() => requestAnimationFrame(() => setChatPhase("open")));
   }, []);
 
-
-  // AA success auto-advance
+  // AA success auto-advance to chat
   useEffect(() => {
-    if (aaStep === "success") {
+    if (PUSH_SCREENS[pushIndex] === "aa-success") {
       const timer = setTimeout(goToChat, 1500);
       return () => clearTimeout(timer);
     }
-  }, [aaStep, goToChat]);
+  }, [pushIndex, goToChat]);
 
   // ═════════════════════════════════════════════════════════════
   //  STAGE RENDERERS
@@ -299,18 +265,6 @@ export default function OnboardingSim() {
           </div>
         </div>
 
-        {/* Wrapped overlay — presents from bottom (modal overlay) */}
-        {(stage === "wrapped" || stage === "quiz") && (
-          <div
-            className="absolute inset-0 z-20"
-            style={{
-              transform: overlayVisible ? "translateY(0%)" : "translateY(100%)",
-              transition: `transform ${DURATION}ms ${EASE}`,
-            }}
-          >
-            {renderActiveStage()}
-          </div>
-        )}
       </div>
     );
   }
@@ -349,7 +303,7 @@ export default function OnboardingSim() {
             aria-label="Close"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M18 6L6 18M6 6l12 12" stroke={TEXT_PRIMARY} strokeWidth="2" strokeLinecap="round" />
+              <path d="M18 6L6 18M6 6l12 12" stroke={TEXT_PRIMARY} strokeWidth="2.5" strokeLinecap="round" />
             </svg>
           </button>
           <span className="flex-1" />
@@ -475,7 +429,7 @@ export default function OnboardingSim() {
           >
             <button
               type="button"
-              onClick={dismissSlide}
+              onClick={goBack}
               className="flex items-center justify-center"
               style={{ width: 48, height: 48, background: "none", border: "none", cursor: "pointer", padding: 12 }}
             >
@@ -514,7 +468,7 @@ export default function OnboardingSim() {
               Ryan
             </h1>
             <p style={{ ...typography.bodyNormal, color: TEXT_TERTIARY, margin: 0 }}>
-              An AI that actually gets how you spend, save, and slip up.
+              Rooting for you. Always honest. Never preachy.
             </p>
           </div>
 
@@ -535,7 +489,7 @@ export default function OnboardingSim() {
         {/* FAB + Gesture nav — absolute bottom */}
         <div className="absolute bottom-0 left-0 w-full flex flex-col items-stretch">
           <div className="flex justify-end" style={{ padding: `0 ${SPACE_XL}px ${SPACE_L}px` }}>
-            <Fab onClick={goToAA} />
+            <Fab onClick={() => setPushIndex(3)} />
           </div>
           <GestureNav />
         </div>
@@ -544,12 +498,6 @@ export default function OnboardingSim() {
   }
 
   // ── Stage 6: AA Consent ─────────────────────────────────────
-
-  function renderAAConsent() {
-    if (aaStep === "value-prop") return renderAAValueProp();
-    if (aaStep === "bank-select") return renderAABankSelect();
-    return renderAASuccess();
-  }
 
   function renderAAValueProp() {
     return (
@@ -567,7 +515,7 @@ export default function OnboardingSim() {
         >
           <button
             type="button"
-            onClick={goToRyanIntro}
+            onClick={goBack}
             className="flex items-center justify-center"
             style={{ width: 48, height: 48, background: "none", border: "none", cursor: "pointer", padding: 12 }}
           >
@@ -617,7 +565,7 @@ export default function OnboardingSim() {
         {/* FAB + Gesture nav */}
         <div className="shrink-0">
           <div className="flex justify-end" style={{ padding: `0 ${SPACE_XL}px ${SPACE_L}px` }}>
-            <Fab onClick={() => setAaStep("bank-select")} />
+            <Fab onClick={() => setPushIndex(4)} />
           </div>
           <GestureNav />
         </div>
@@ -641,7 +589,7 @@ export default function OnboardingSim() {
         >
           <button
             type="button"
-            onClick={() => setAaStep("value-prop")}
+            onClick={goBack}
             className="flex items-center justify-center"
             style={{ width: 48, height: 48, background: "none", border: "none", cursor: "pointer", padding: 12 }}
           >
@@ -671,7 +619,7 @@ export default function OnboardingSim() {
             <button
               key={bank.id}
               type="button"
-              onClick={() => setAaStep("success")}
+              onClick={() => setPushIndex(5)}
               className="flex flex-col items-center justify-center transition-transform active:scale-[0.97]"
               style={{
                 height: 134,
@@ -754,7 +702,7 @@ export default function OnboardingSim() {
     {
       id: "ryan-1",
       role: "assistant",
-      text: "Hey! I'm Ryan — your AI banker. I've been looking at your numbers, and I think we can do something interesting together.\n\nLet's start with a goal. What are you building toward?",
+      text: "Hey! I\u2019m Ryan \u2014 your AI banker. I\u2019ve been looking at your numbers and I think we can do something interesting together.\n\nLet\u2019s start with a goal. What are you building toward?",
     },
   ];
 
@@ -799,27 +747,24 @@ export default function OnboardingSim() {
   }
 
   // ═════════════════════════════════════════════════════════════
-  //  ACTIVE STAGE ROUTER
+  //  PUSH SCREEN ROUTER
   // ═════════════════════════════════════════════════════════════
 
-  function renderActiveStage() {
-    switch (stage) {
-      case "wrapped":
-        return renderWrapped();
-      case "quiz":
-        return renderQuiz();
-      default:
-        return null;
+  function renderScreen(screen: string) {
+    switch (screen) {
+      case "wrapped": return renderWrapped();
+      case "quiz": return renderQuiz();
+      case "ryan-intro": return renderRyanIntro();
+      case "aa-value-prop": return renderAAValueProp();
+      case "aa-bank-select": return renderAABankSelect();
+      case "aa-success": return renderAASuccess();
+      default: return null;
     }
   }
 
   // ═════════════════════════════════════════════════════════════
   //  RENDER
   // ═════════════════════════════════════════════════════════════
-
-  // Slide-based stages (ryan-intro, aa-consent) and chat
-  const isSlideStage = stage === "ryan-intro" || stage === "aa-consent";
-  const isChatStage = stage === "chat";
 
   return (
     <div
@@ -829,32 +774,38 @@ export default function OnboardingSim() {
       {/* Layer 0: App entry (always rendered as base) */}
       {renderAppEntry()}
 
-      {/* Layer 1: Slide stages (ryan-intro, aa-consent) — push from right */}
-      {isSlideStage && (
-        <div
-          className="absolute inset-0 z-30"
-          style={{
-            backgroundColor: BG_PRIMARY,
-            transform: slideVisible ? "translateX(0%)" : "translateX(100%)",
-            transition: `transform ${DURATION}ms ${EASE}`,
-            willChange: "transform",
-          }}
-        >
-          {stage === "ryan-intro" && renderRyanIntro()}
-          {stage === "aa-consent" && renderAAConsent()}
-        </div>
-      )}
+      {/* Layer 1: Push overlay — slides up, screens push left/right inside */}
+      <div
+        className="absolute inset-0 z-20"
+        style={{
+          transform: overlayOpen ? "translateY(0%)" : "translateY(100%)",
+          transition: `transform ${DURATION}ms ${EASE}`,
+          overflow: "hidden",
+        }}
+      >
+        {PUSH_SCREENS.map((screen, i) => (
+          <div
+            key={screen}
+            className="absolute inset-0"
+            style={{
+              transform: `translateX(${(i - pushIndex) * 100}%)`,
+              transition: `transform ${DURATION}ms ${EASE}`,
+            }}
+          >
+            {overlayMounted && Math.abs(i - pushIndex) <= 1 && renderScreen(screen)}
+          </div>
+        ))}
+      </div>
 
       {/* Layer 2: Chat overlay — slides up */}
-      {isChatStage && (
+      {chatPhase !== "closed" && (
         <div
           className="absolute inset-0 z-40"
           style={{
             backgroundColor: BG_PRIMARY,
             transform: chatPhase === "open" ? "translateY(0%)" : "translateY(100%)",
-            opacity: chatPhase === "open" ? 1 : 0.98,
-            transition: `transform ${DURATION}ms ${EASE}, opacity 260ms ease-out`,
-            willChange: "transform, opacity",
+            transition: `transform ${DURATION}ms ${EASE}`,
+            willChange: "transform",
           }}
         >
           {renderChat()}

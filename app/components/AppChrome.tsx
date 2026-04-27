@@ -8,7 +8,7 @@ export const BOTTOM_INSET = 20; // gesture nav: 8px + 4px bar + 8px
 
 // ── Status bar (decorative) ─────────────────────────────────────────────────
 
-export function StatusBar({ backgroundColor = "#fff" }: { backgroundColor?: string }) {
+export function StatusBar({ backgroundColor = "#fff", time = "9:41" }: { backgroundColor?: string; time?: string }) {
   return (
     <div
       aria-hidden="true"
@@ -36,7 +36,7 @@ export function StatusBar({ backgroundColor = "#fff" }: { backgroundColor?: stri
             margin: 0,
           }}
         >
-          9:41
+          {time}
         </p>
 
         {/* Status icons — Figma: right 30px, vertically centered, gap 6.436px */}
@@ -257,7 +257,7 @@ export function FooterInset({
         paddingLeft: paddingX,
         paddingRight: paddingX,
         paddingTop,
-        paddingBottom: Math.max(BOTTOM_INSET, minBottomPadding),
+        paddingBottom: minBottomPadding,
         boxShadow,
         ...style,
       }}

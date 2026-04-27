@@ -84,6 +84,27 @@ function PreviewContent() {
     );
   }
 
+  // Fullscreen mode — render a single variant with no gallery chrome
+  const fullscreen = searchParams.get("fullscreen") === "1";
+  const variantName = searchParams.get("variant");
+  const autoplay = searchParams.get("autoplay") === "1";
+
+  if (fullscreen && componentName) {
+    const exp = explorations.find((e) => e.component === componentName);
+    const variant = exp?.variants.find((v) => v.name === variantName) ?? exp?.variants[0];
+    if (!variant) {
+      return <div style={{ padding: 40, color: "#fff" }}>Variant not found</div>;
+    }
+    return (
+      <>
+        <style>{`* { cursor: none !important; }`}</style>
+        <div style={{ width: 360, height: 780, overflow: "hidden", position: "relative", background: "#fff" }}>
+          {variant.render(autoplay)}
+        </div>
+      </>
+    );
+  }
+
   // Component gallery — show all variants
   const exploration = explorations.find((e) => e.component === componentName);
   if (!exploration) {
