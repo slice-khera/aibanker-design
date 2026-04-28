@@ -5,10 +5,12 @@ import SavingsFlowSimBottom from "./SavingsFlowSimBottom";
 import AppEntryPointSim from "./AppEntryPointSim";
 import DrawerExperienceSim from "../components/DrawerExperienceSim";
 import OnboardingSim from "./OnboardingSim";
+import OnboardingSimV2 from "./OnboardingSimV2";
 
 import RefreshSessionSimV1 from "./RefreshSessionSimV1";
 import RefreshSessionSimV2 from "./RefreshSessionSimV2";
 import DegenModeSimV1 from "./DegenModeSimV1";
+import AASim from "./AASim";
 import RedditSimV1 from "./RedditSimV1";
 import RedditSimV2 from "./RedditSimV2";
 import VisualizationsChatSimV1 from "./VisualizationsChatSimV1";
@@ -128,12 +130,27 @@ export const explorations: Exploration[] = [
     ],
   },
   {
+    component: "AA",
+    variants: [
+      {
+        name: "v1",
+        description: "AA: value prop → bank select → OTP → consent → detail → success",
+        render: () => <AASim />,
+      },
+    ],
+  },
+  {
     component: "Onboarding",
     variants: [
       {
         name: "v1",
         description: "7-stage onboarding: entry → wrapped → quiz → Ryan → AA → chat",
         render: () => <OnboardingSim />,
+      },
+      {
+        name: "v2",
+        description: "Chat-led onboarding: pay-pill → Ryan chat → AA card → Wrapped story (4 guesses + 1 observation) → goals",
+        render: () => <OnboardingSimV2 />,
       },
     ],
   },

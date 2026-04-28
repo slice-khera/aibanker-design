@@ -9,7 +9,7 @@ import type { GoalIndicatorData } from "../components/GoalTracker";
 // ── Pill data ───────────────────────────────────────────────────
 
 const PILLS = [
-  { id: "ryan", icon: "/icons/ryan.svg", label: "Chat with Ryan" },
+  { id: "ryan", icon: "/icons/placeholder.svg", label: "Chat with Ryan" },
   { id: "sparks", icon: "/icons/spark.svg", label: "5 new sparks" },
   { id: "fires", icon: "/icons/fire.svg", label: "3 fires left" },
 ];
