@@ -6,6 +6,7 @@ import AppEntryPointSim from "./AppEntryPointSim";
 import DrawerExperienceSim from "../components/DrawerExperienceSim";
 import OnboardingSim from "./OnboardingSim";
 import OnboardingSimV2 from "./OnboardingSimV2";
+import OnboardingSimV3 from "./OnboardingSimV3";
 
 import RefreshSessionSimV1 from "./RefreshSessionSimV1";
 import RefreshSessionSimV2 from "./RefreshSessionSimV2";
@@ -144,13 +145,18 @@ export const explorations: Exploration[] = [
     variants: [
       {
         name: "v1",
-        description: "7-stage onboarding: entry → wrapped → quiz → Ryan → AA → chat",
+        description: "",
         render: () => <OnboardingSim />,
       },
       {
         name: "v2",
-        description: "Chat-led onboarding: pay-pill → Ryan chat → AA card → Wrapped story (4 guesses + 1 observation) → goals",
+        description: "",
         render: () => <OnboardingSimV2 />,
+      },
+      {
+        name: "v3",
+        description: "",
+        render: () => <OnboardingSimV3 />,
       },
     ],
   },

@@ -23,23 +23,22 @@ import QuestionnaireOverlay from "../components/QuestionnaireOverlay";
 import type { Question, QuestionOption } from "../components/QuestionnaireOverlay";
 import PlanCruncherV2 from "../components/PlanCruncherV2";
 
-import V2WrappedCard, { type V2WrappedCardState } from "./V2WrappedCard";
-import V2WrappedStory from "./V2WrappedStory";
+import V2WrappedCard, { type V2WrappedCardState } from "./V3WrappedCard";
+import V2WrappedStory from "./V3WrappedStory";
 import AASim from "./AASim";
 import {
   V2_PILLS,
   PRE_WRAPPED_BUBBLES,
   POST_WRAPPED_PRE_AA_BUBBLES,
-  V2_AA_CHIPS,
   V2_AA_LINKED_BUBBLE,
   V2_AA_POST_LINKED_CHIPS,
   V2_POST_AA_PREF_BUBBLES,
   V2_GOAL_PREFERENCE_QUESTIONS,
   V2_POST_PREF_BUBBLES,
-  V2_FILLER_BUBBLE,
-  V2_FILLER_CARDS,
-  V2_CRUNCHER_STATUS_TEXTS,
-  V2_READY_BUBBLES,
+  V2_CLARIFYING_QUESTIONS,
+  V2_CLARIFY_CRUNCHER_STATUSES,
+  V2_IDLE_CRUNCHER_TEXTS,
+  V2_VERBOSE_PLAN_TEXT,
 } from "./fixtures/onboardingV2Fixture";
 
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
@@ -200,73 +199,6 @@ function FloatingAppBar({ onClose }: { onClose: () => void }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-//  Notification banner (shown on PayScreen when Ryan is ready)
-// ══════════════════════════════════════════════════════════════════
-
-function NotificationBanner({ visible, onTap }: { visible: boolean; onTap: () => void }) {
-  return (
-    <div
-      className="absolute left-4 right-4 z-40"
-      style={{
-        top: 56,
-        transform: visible ? "translateY(0)" : "translateY(-120%)",
-        transition: `transform 400ms ${EASE}`,
-        backgroundColor: BG_CARD,
-        borderRadius: RADIUS_M,
-        padding: SPACE_M,
-        boxShadow: ELEVATION_CARD,
-        border: `1px solid ${OUTLINE_SUBTLE}`,
-        cursor: "pointer",
-      }}
-      onClick={onTap}
-    >
-      <p style={{ ...typography.buttonSmall, color: TEXT_PRIMARY, margin: 0 }}>
-        Ryan
-      </p>
-      <p style={{ ...typography.caption, color: TEXT_TERTIARY, margin: 0, marginTop: 2 }}>
-        {"I've finished analysing your accounts. Tap to see what I found."}
-      </p>
-    </div>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════
-//  Mosaic card (filler content) — from RefreshSession pattern
-// ══════════════════════════════════════════════════════════════════
-
-function MosaicCard({
-  action,
-  style: extraStyle,
-}: {
-  action: { category: string; title: string; bg: string };
-  style?: React.CSSProperties;
-}) {
-  return (
-    <button
-      type="button"
-      className="relative text-left overflow-hidden transition-transform active:scale-[0.97]"
-      style={{
-        background: action.bg,
-        border: "none",
-        borderRadius: RADIUS_M,
-        boxShadow: ELEVATION_CARD,
-        cursor: "pointer",
-        ...extraStyle,
-      }}
-    >
-      <div style={{ position: "absolute", top: SPACE_M, left: SPACE_M, right: SPACE_M, display: "flex", flexDirection: "column", gap: 4 }}>
-        <span style={{ ...typography.metadata, textTransform: "uppercase", color: TEXT_SECONDARY, whiteSpace: "nowrap" }}>
-          {action.category}
-        </span>
-        <span style={{ ...typography.headerH4, color: TEXT_PRIMARY }}>
-          {action.title}
-        </span>
-      </div>
-    </button>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════
 //  Pay screen + pill
 // ══════════════════════════════════════════════════════════════════
 
@@ -357,7 +289,8 @@ type Step =
   | { kind: "aa-linked-chips" }
   | { kind: "wrapped" }
   | { kind: "preferences" }
-  | { kind: "filler" }
+  | { kind: "clarify-chips"; questionIndex: number }
+  | { kind: "plan-crunching" }
   | { kind: "ready" };
 
 const STEPS: Step[] = [
@@ -370,20 +303,30 @@ const STEPS: Step[] = [
   ...V2_POST_AA_PREF_BUBBLES.map((text) => ({ kind: "ryan" as const, text })),
   { kind: "preferences" },
   ...V2_POST_PREF_BUBBLES.map((text) => ({ kind: "ryan" as const, text })),
-  { kind: "ryan" as const, text: V2_FILLER_BUBBLE },
-  { kind: "filler" },
-  // ── after cruncher completes ──
-  ...V2_READY_BUBBLES.map((text) => ({ kind: "ryan" as const, text })),
+  // ── PAUSE — user exits, 5s on purple, pill updates, user re-enters ──
+  // ── Clarifying questions (after re-entry) ──
+  { kind: "ryan" as const, text: V2_CLARIFYING_QUESTIONS[0].botText },
+  { kind: "clarify-chips", questionIndex: 0 },
+  { kind: "ryan" as const, text: V2_CLARIFYING_QUESTIONS[1].botText },
+  { kind: "clarify-chips", questionIndex: 1 },
+  { kind: "ryan" as const, text: V2_CLARIFYING_QUESTIONS[2].botText },
+  { kind: "clarify-chips", questionIndex: 2 },
+  { kind: "ryan" as const, text: "Thanks — give me a moment while I crunch the numbers." },
+  { kind: "plan-crunching" },
+  { kind: "ryan" as const, text: V2_VERBOSE_PLAN_TEXT },
   { kind: "ready" },
 ];
 
 const LAST_STEP_INDEX = STEPS.length - 1;
 
-// Index of the filler step — the flow pauses here until cruncher completes
-const FILLER_STEP_INDEX = STEPS.findIndex((s) => s.kind === "filler");
+// Pause point — last post-pref bubble; user must exit + re-enter
+const PAUSE_STEP_INDEX = STEPS.findIndex((s) => s.kind === "ryan" && (s as { text: string }).text === V2_POST_PREF_BUBBLES[V2_POST_PREF_BUBBLES.length - 1]);
 
-// Index of first post-AA pref bubble — "Maybe later" jumps here, skipping linked steps
-const POST_AA_PREF_START = STEPS.findIndex((s) => s.kind === "aa-linked-chips") + 1;
+// Plan-crunching step — idle text cycle controls advancement
+const CRUNCH_STEP_INDEX = STEPS.findIndex((s) => s.kind === "plan-crunching");
+
+// First step after wrapped — this is where we scroll to after story closes
+const POST_WRAPPED_STEP_INDEX = STEPS.findIndex((s) => s.kind === "wrapped") + 1;
 
 // Ryan's text line — plain text, typewriter on first reveal, full text afterwards
 function RyanLine({
@@ -410,7 +353,7 @@ function RyanLine({
 //  Main sim
 // ══════════════════════════════════════════════════════════════════
 
-export default function OnboardingSimV2() {
+export default function OnboardingSimV3() {
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [overlayMounted, setOverlayMounted] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -431,17 +374,57 @@ export default function OnboardingSimV2() {
 
   // Cruncher
   const [cruncherVisible, setCruncherVisible] = useState(false);
-  const [cruncherStatusIdx, setCruncherStatusIdx] = useState(0);
+  const [cruncherStatus, setCruncherStatus] = useState("Gathering your preferences");
   const [cruncherDone, setCruncherDone] = useState(false);
   const [goalLabel, setGoalLabel] = useState("Your goal");
+
+  // Clarifying questions
+  const [clarifyPicked, setClarifyPicked] = useState<Record<number, string>>({});
 
   // Ready signal
   const [ryanReady, setRyanReady] = useState(false);
   const [pillLabel, setPillLabel] = useState("Meet Ryan");
-  const [showNotification, setShowNotification] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const wrappedCardRef = useRef<HTMLDivElement>(null);
+  const postWrappedRef = useRef<HTMLDivElement>(null);
+  const userBubbleRef = useRef<HTMLDivElement>(null);
+
+  // Snap-scroll a target element to just below the fixed chrome (app bar + cruncher), eased 400ms
+  const snapScrollTo = useCallback((el: HTMLElement, delay = 300) => {
+    window.setTimeout(() => {
+      const scroller = scrollRef.current;
+      const content = contentRef.current;
+      if (!scroller || !content) return;
+
+      const scrollerRect = scroller.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const elTopInScroller = elRect.top - scrollerRect.top + scroller.scrollTop;
+      // Position element just below the fixed chrome zone (app bar + cruncher if visible)
+      const chromeHeight = cruncherVisible ? 180 : 108;
+      const target = Math.max(0, elTopInScroller - chromeHeight - 8);
+
+      const minHeight = target + scroller.clientHeight;
+      if (content.scrollHeight < minHeight) {
+        content.style.minHeight = `${minHeight}px`;
+      }
+
+      const start = scroller.scrollTop;
+      const distance = target - start;
+      if (Math.abs(distance) < 1) return;
+      const duration = 400;
+      const startTime = performance.now();
+      const ease = (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      const step = (now: number) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        scroller.scrollTop = start + distance * ease(progress);
+        if (progress < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }, delay);
+  }, [cruncherVisible]);
 
   // Map Question type for overlay
   const prefQuestions: Question[] = V2_GOAL_PREFERENCE_QUESTIONS.map((q) => ({
@@ -461,7 +444,6 @@ export default function OnboardingSimV2() {
 
   const closeOverlay = useCallback(() => {
     setOverlayOpen(false);
-    setShowNotification(false);
     window.setTimeout(() => {
       setOverlayMounted(false);
       // Only full-reset if AA hasn't completed yet
@@ -476,8 +458,9 @@ export default function OnboardingSimV2() {
         setPrefQuizIndex(0);
         setPrefAnswers({});
         setCruncherVisible(false);
-        setCruncherStatusIdx(0);
+        setCruncherStatus("Gathering your preferences");
         setCruncherDone(false);
+        setClarifyPicked({});
         setGoalLabel("Your goal");
         setRyanReady(false);
         setPillLabel("Meet Ryan");
@@ -494,59 +477,64 @@ export default function OnboardingSimV2() {
     return () => el.removeEventListener("scroll", onScroll);
   }, [overlayOpen]);
 
-  // Auto-scroll as content grows
+  // Auto-scroll as content grows (Ryan lines, cruncher, etc.)
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     requestAnimationFrame(() => {
       el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     });
-  }, [stepIndex, aaChipPicked, aaLinkedChipPicked, wrappedState, cruncherVisible, cruncherDone]);
+  }, [stepIndex, wrappedState, cruncherVisible, cruncherDone]);
 
-  // ── Cruncher timer ───────────────────────────────────────
-  // Cycle status texts every 2s, then mark done after all texts shown
+  // Snap-scroll user bubbles to top when a chip is picked or prefs complete
+  const hasUserBubble = aaChipPicked || aaLinkedChipPicked || cruncherVisible || Object.keys(clarifyPicked).length > 0;
+  useEffect(() => {
+    if (!hasUserBubble) return;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const el = userBubbleRef.current;
+      if (el) snapScrollTo(el);
+    }));
+  }, [hasUserBubble, snapScrollTo]);
+
+  // ── After user exits chat with cruncher running — 5s pill update ──
 
   useEffect(() => {
-    if (!cruncherVisible || cruncherDone) return;
-    const timer = window.setInterval(() => {
-      setCruncherStatusIdx((prev) => {
-        const next = prev + 1;
-        if (next >= V2_CRUNCHER_STATUS_TEXTS.length) {
-          clearInterval(timer);
-          // Small delay after last status before marking done
-          window.setTimeout(() => setCruncherDone(true), 1500);
-          return prev;
-        }
-        return next;
-      });
-    }, 2000);
-    return () => window.clearInterval(timer);
-  }, [cruncherVisible, cruncherDone]);
-
-  // ── When cruncher finishes — advance or signal ───────────
-
-  useEffect(() => {
-    if (!cruncherDone) return;
-    if (overlayOpen && stepIndex === FILLER_STEP_INDEX) {
-      // User is still in the chat — advance past filler
-      advanceStep();
-    } else if (!overlayOpen) {
-      // User has left — update pill and show notification
+    if (overlayOpen || !cruncherVisible || ryanReady) return;
+    const t = window.setTimeout(() => {
       setRyanReady(true);
       setPillLabel("Ryan is ready");
-      setShowNotification(true);
-      // Auto-dismiss notification after 4s
-      const t = window.setTimeout(() => setShowNotification(false), 4000);
-      return () => window.clearTimeout(t);
-    }
-  }, [cruncherDone, overlayOpen, stepIndex, advanceStep]);
+    }, 5000);
+    return () => window.clearTimeout(t);
+  }, [overlayOpen, cruncherVisible, ryanReady]);
 
-  // When user re-opens overlay after cruncher finished, advance from filler
+  // When user re-opens overlay after pill updated, start clarifying flow
   useEffect(() => {
-    if (overlayOpen && cruncherDone && stepIndex === FILLER_STEP_INDEX) {
+    if (overlayOpen && ryanReady && stepIndex === PAUSE_STEP_INDEX) {
+      setCruncherStatus(V2_CLARIFY_CRUNCHER_STATUSES[0]);
       advanceStep();
     }
-  }, [overlayOpen, cruncherDone, stepIndex, advanceStep]);
+  }, [overlayOpen, ryanReady, stepIndex, advanceStep]);
+
+  // Plan-crunching step — cycle idle texts then advance
+  useEffect(() => {
+    if (STEPS[stepIndex]?.kind !== "plan-crunching") return;
+    let idx = 0;
+    setCruncherStatus(V2_IDLE_CRUNCHER_TEXTS[0]);
+    const timer = window.setInterval(() => {
+      idx += 1;
+      if (idx >= V2_IDLE_CRUNCHER_TEXTS.length) {
+        clearInterval(timer);
+        window.setTimeout(() => {
+          setCruncherVisible(false);
+          setCruncherDone(true);
+          advanceStep();
+        }, 1500);
+        return;
+      }
+      setCruncherStatus(V2_IDLE_CRUNCHER_TEXTS[idx]);
+    }, 1400);
+    return () => window.clearInterval(timer);
+  }, [stepIndex, advanceStep]);
 
   // ── AA actions ────────────────────────────────────────
 
@@ -567,22 +555,10 @@ export default function OnboardingSimV2() {
   // ── Wrapped actions ───────────────────────────────────
 
   const openStory = useCallback((beatIndex?: number) => {
-    // Capture card position relative to the phone frame
-    const cardEl = wrappedCardRef.current;
-    const frameEl = cardEl?.closest("[data-phone-frame]") as HTMLElement | null;
-    if (cardEl) {
-      const cardRect = cardEl.getBoundingClientRect();
-      const frameRect = frameEl?.getBoundingClientRect() ?? { top: 0, left: 0 };
-      setStoryRect(new DOMRect(
-        cardRect.left - frameRect.left,
-        cardRect.top - frameRect.top,
-        cardRect.width,
-        cardRect.height,
-      ));
-    }
     setStoryStartBeat(beatIndex);
     setStoryOpen(true);
     setStoryPhase("expanding");
+    // Let the fade-in start on next frame
     requestAnimationFrame(() => requestAnimationFrame(() => {
       setStoryPhase("open");
     }));
@@ -593,34 +569,57 @@ export default function OnboardingSimV2() {
     window.setTimeout(() => {
       setStoryOpen(false);
       setStoryPhase("idle");
-      setStoryRect(null);
       setStoryStartBeat(undefined);
       if (wrappedState === "pending") {
         setWrappedState("viewed");
+        // Mount Ryan's post-wrapped line first, then snap-scroll it into focus
         advanceStep();
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          const el = postWrappedRef.current;
+          if (el) snapScrollTo(el);
+        }));
       }
-    }, OVERLAY_DURATION);
+    }, 300);
   }, [advanceStep, wrappedState]);
 
   // ── Preference quiz actions ───────────────────────────
 
+  const finishQuiz = useCallback((answers: Record<string, string>) => {
+    const goalType = V2_GOAL_PREFERENCE_QUESTIONS[0].options.find((o) => o.id === answers["goal-type"])?.label || "Your goal";
+    const dest = answers["destination"] || "";
+    setGoalLabel(dest ? `Trip to ${dest}` : goalType);
+    setPrefQuizOpen(false);
+    setCruncherVisible(true);
+    advanceStep();
+  }, [advanceStep]);
+
   const handlePrefSelect = useCallback((questionId: string, option: QuestionOption) => {
-    setPrefAnswers((prev) => ({ ...prev, [questionId]: option.id }));
-    // Save goal label from first question
-    if (questionId === "goal-type") {
-      setGoalLabel(option.label);
+    const next = { ...prefAnswers, [questionId]: option.id };
+    setPrefAnswers(next);
+    // Skip destination for non-trip goals
+    let nextIdx = prefQuizIndex + 1;
+    if (questionId === "goal-type" && option.id !== "trip") {
+      // destination is index 1 — skip it
+      const destIdx = prefQuestions.findIndex((q) => q.id === "destination");
+      if (destIdx === nextIdx) nextIdx += 1;
     }
-    // Auto-advance to next question or close
+    if (nextIdx < prefQuestions.length) {
+      setPrefQuizIndex(nextIdx);
+    } else {
+      finishQuiz(next);
+    }
+  }, [prefQuizIndex, prefQuestions, prefAnswers, finishQuiz]);
+
+  const handlePrefFreeText = useCallback((questionId: string, text: string) => {
+    const next = { ...prefAnswers, [questionId]: text };
+    setPrefAnswers(next);
     const nextIdx = prefQuizIndex + 1;
     if (nextIdx < prefQuestions.length) {
       setPrefQuizIndex(nextIdx);
     } else {
-      // All questions answered — close overlay, start cruncher, advance step
-      setPrefQuizOpen(false);
-      setCruncherVisible(true);
-      advanceStep();
+      finishQuiz(next);
     }
-  }, [prefQuizIndex, prefQuestions.length, advanceStep]);
+  }, [prefQuizIndex, prefQuestions, prefAnswers, finishQuiz]);
 
   const handlePrefNavigate = useCallback((direction: "prev" | "next") => {
     setPrefQuizIndex((prev) => {
@@ -651,7 +650,7 @@ export default function OnboardingSimV2() {
 
   const chatContent = (
     <div ref={scrollRef} className="absolute inset-0 w-full overflow-y-auto overscroll-contain scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-      <div className="flex flex-col" style={{ paddingLeft: SPACE_L, paddingRight: SPACE_L }}>
+      <div ref={contentRef} className="flex flex-col" style={{ paddingLeft: SPACE_L, paddingRight: SPACE_L }}>
         {/* Clearance for floating app bar + cruncher */}
         <div className="shrink-0" aria-hidden="true" style={{ height: topClearance, transition: "height 300ms ease" }} />
 
@@ -660,57 +659,50 @@ export default function OnboardingSimV2() {
 
           if (step.kind === "ryan") {
             // Don't auto-advance past filler — the cruncher controls that
-            const shouldAutoAdvance = isLast && (i + 1 !== FILLER_STEP_INDEX + 1);
+            const shouldAutoAdvance = isLast && (i + 1 !== PAUSE_STEP_INDEX + 1);
+            const isPostWrapped = i === POST_WRAPPED_STEP_INDEX;
             return (
-              <RyanLine
-                key={`ryan-${i}`}
-                text={step.text}
-                active={isLast}
-                onDone={shouldAutoAdvance ? advanceStep : undefined}
-              />
+              <div key={`ryan-${i}`} ref={isPostWrapped ? postWrappedRef : undefined}>
+                <RyanLine
+                  text={step.text}
+                  active={isLast}
+                  onDone={shouldAutoAdvance ? advanceStep : undefined}
+                />
+              </div>
             );
           }
 
           if (step.kind === "aa-chips") {
             if (aaChipPicked) {
-              // Show user bubble with their choice
-              const chip = V2_AA_CHIPS.find((c) => c.id === aaChipPicked);
               return (
-                <div key={`aa-chips-${i}`} className="flex justify-end animate-chat-message-in" style={{ marginTop: SPACE_L }}>
+                <div ref={userBubbleRef} key={`aa-chips-${i}`} className="flex justify-end animate-chat-message-in" style={{ marginTop: SPACE_L }}>
                   <div className="max-w-[75%] rounded-[16px] rounded-tr-lg" style={{ backgroundColor: "#FAE2FA", padding: "12px 16px" }}>
-                    <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>{chip?.label}</p>
+                    <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>Connect now</p>
                   </div>
                 </div>
               );
             }
             return (
               <div key={`aa-chips-${i}`} className="flex flex-wrap gap-3 animate-chat-message-in" style={{ marginTop: SPACE_L }}>
-                {V2_AA_CHIPS.map((chip) => (
-                  <button
-                    key={chip.id}
-                    type="button"
-                    onClick={() => {
-                      setAaChipPicked(chip.id);
-                      if (chip.id === "connect") {
-                        setAaFlowOpen(true);
-                      } else {
-                        setStepIndex(POST_AA_PREF_START);
-                      }
-                    }}
-                    className="transition-transform active:scale-[0.97]"
-                    style={{
-                      ...typography.buttonSmall,
-                      color: TEXT_PRIMARY,
-                      backgroundColor: BG_SECONDARY,
-                      border: `1px solid ${OUTLINE_SUBTLE}`,
-                      borderRadius: 100,
-                      padding: `${SPACE_XS}px ${SPACE_M}px`,
-                      cursor: "pointer",
-                    }}
-                  >
-                    {chip.label}
-                  </button>
-                ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAaChipPicked("connect");
+                    setAaFlowOpen(true);
+                  }}
+                  className="transition-transform active:scale-[0.97]"
+                  style={{
+                    ...typography.buttonSmall,
+                    color: TEXT_PRIMARY,
+                    backgroundColor: BG_SECONDARY,
+                    border: `1px solid ${OUTLINE_SUBTLE}`,
+                    borderRadius: 100,
+                    padding: `${SPACE_XS}px ${SPACE_M}px`,
+                    cursor: "pointer",
+                  }}
+                >
+                  Connect now
+                </button>
               </div>
             );
           }
@@ -719,7 +711,7 @@ export default function OnboardingSimV2() {
             if (aaLinkedChipPicked) {
               const chip = V2_AA_POST_LINKED_CHIPS.find((c) => c.id === aaLinkedChipPicked);
               return (
-                <div key={`aa-linked-${i}`} className="flex justify-end animate-chat-message-in" style={{ marginTop: SPACE_L }}>
+                <div ref={userBubbleRef} key={`aa-linked-${i}`} className="flex justify-end animate-chat-message-in" style={{ marginTop: SPACE_L }}>
                   <div className="max-w-[75%] rounded-[16px] rounded-tr-lg" style={{ backgroundColor: "#FAE2FA", padding: "12px 16px" }}>
                     <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>{chip?.label}</p>
                   </div>
@@ -767,14 +759,10 @@ export default function OnboardingSimV2() {
           }
 
           if (step.kind === "preferences") {
-            // Show a user bubble summarizing answers once quiz is done
-            if (Object.keys(prefAnswers).length === prefQuestions.length) {
-              const goalAnswer = V2_GOAL_PREFERENCE_QUESTIONS[0].options.find((o) => o.id === prefAnswers["goal-type"]);
-              const timelineAnswer = V2_GOAL_PREFERENCE_QUESTIONS[1].options.find((o) => o.id === prefAnswers.timeline);
-              const amountAnswer = V2_GOAL_PREFERENCE_QUESTIONS[2].options.find((o) => o.id === prefAnswers.amount);
-              const summary = [goalAnswer?.label, timelineAnswer?.label, amountAnswer?.label].filter(Boolean).join(" · ");
+            if (cruncherVisible) {
               return (
                 <div
+                  ref={userBubbleRef}
                   key={`pref-${i}`}
                   className="flex justify-end animate-chat-message-in"
                   style={{ marginTop: SPACE_L }}
@@ -783,7 +771,7 @@ export default function OnboardingSimV2() {
                     className="max-w-[75%] rounded-[16px] rounded-tr-lg"
                     style={{ backgroundColor: "#FAE2FA", padding: "12px 16px" }}
                   >
-                    <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>{summary}</p>
+                    <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>Shared preferences</p>
                   </div>
                 </div>
               );
@@ -791,16 +779,54 @@ export default function OnboardingSimV2() {
             return null;
           }
 
-          if (step.kind === "filler") {
-            return (
-              <div key={`filler-${i}`} style={{ marginTop: SPACE_L }} className="animate-chat-message-in">
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: SPACE_S }}>
-                  {V2_FILLER_CARDS.map((card) => (
-                    <MosaicCard key={card.title} action={card} style={{ height: 100 }} />
-                  ))}
+          if (step.kind === "clarify-chips") {
+            const qIdx = step.questionIndex;
+            const cq = V2_CLARIFYING_QUESTIONS[qIdx];
+            if (clarifyPicked[qIdx] != null) {
+              const chip = cq.chips.find((c) => c.id === clarifyPicked[qIdx]);
+              return (
+                <div ref={userBubbleRef} key={`clarify-${qIdx}-${i}`} className="flex justify-end animate-chat-message-in" style={{ marginTop: SPACE_L }}>
+                  <div className="max-w-[75%] rounded-[16px] rounded-tr-lg" style={{ backgroundColor: "#FAE2FA", padding: "12px 16px" }}>
+                    <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>{chip?.label}</p>
+                  </div>
                 </div>
+              );
+            }
+            return (
+              <div key={`clarify-${qIdx}-${i}`} className="flex flex-wrap gap-3 animate-chat-message-in" style={{ marginTop: SPACE_L }}>
+                {cq.chips.map((chip) => (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    onClick={() => {
+                      setClarifyPicked((prev) => ({ ...prev, [qIdx]: chip.id }));
+                      // Update cruncher status for the next question
+                      const nextQIdx = qIdx + 1;
+                      if (nextQIdx < V2_CLARIFY_CRUNCHER_STATUSES.length) {
+                        setCruncherStatus(V2_CLARIFY_CRUNCHER_STATUSES[nextQIdx]);
+                      }
+                      advanceStep();
+                    }}
+                    className="transition-transform active:scale-[0.97]"
+                    style={{
+                      ...typography.buttonSmall,
+                      color: TEXT_PRIMARY,
+                      backgroundColor: BG_SECONDARY,
+                      border: `1px solid ${OUTLINE_SUBTLE}`,
+                      borderRadius: 100,
+                      padding: `${SPACE_XS}px ${SPACE_M}px`,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {chip.label}
+                  </button>
+                ))}
               </div>
             );
+          }
+
+          if (step.kind === "plan-crunching") {
+            return null;
           }
 
           if (step.kind === "ready") {
@@ -829,14 +855,6 @@ export default function OnboardingSimV2() {
       {/* Layer 0: Pay screen */}
       <PayScreen onPillTap={openOverlay} pillLabel={pillLabel} ryanReady={ryanReady} />
 
-      {/* Notification banner — on top of pay screen */}
-      {showNotification && !overlayOpen && (
-        <NotificationBanner
-          visible
-          onTap={() => { setShowNotification(false); openOverlay(); }}
-        />
-      )}
-
       {/* Layer 1: Chat overlay */}
       <div
         className="absolute inset-0 z-20"
@@ -855,7 +873,7 @@ export default function OnboardingSimV2() {
             <PlanCruncherV2
               goalName={goalLabel}
               visible={cruncherVisible}
-              statusText={V2_CRUNCHER_STATUS_TEXTS[cruncherStatusIdx]}
+              statusText={cruncherStatus}
               completed={cruncherDone}
               completedSubtitle="Your spending snapshot is ready"
             />
@@ -887,7 +905,7 @@ export default function OnboardingSimV2() {
                   currentIndex={prefQuizIndex}
                   answers={prefAnswers}
                   onSelectOption={handlePrefSelect}
-                  onSubmitFreeText={() => {}}
+                  onSubmitFreeText={handlePrefFreeText}
                   onNavigate={handlePrefNavigate}
                   onClose={handlePrefClose}
                 />
@@ -901,41 +919,14 @@ export default function OnboardingSimV2() {
         </div>
       </div>
 
-      {/* Layer 2: Wrapped story — expand from card */}
+      {/* Layer 2: Wrapped story — fade crossfade */}
       {storyOpen && (
         <div
-          className="absolute z-30"
+          className="absolute inset-0 z-30"
           style={{
-            // Expanding: start at card rect, transition to full frame
-            // Open: full frame
-            // Collapsing: transition back to card rect
-            ...(storyPhase === "expanding" && storyRect
-              ? {
-                  top: storyRect.y,
-                  left: storyRect.x,
-                  width: storyRect.width,
-                  height: storyRect.height,
-                  borderRadius: 8,
-                }
-              : storyPhase === "collapsing" && storyRect
-              ? {
-                  top: storyRect.y,
-                  left: storyRect.x,
-                  width: storyRect.width,
-                  height: storyRect.height,
-                  borderRadius: 8,
-                  transition: `top ${OVERLAY_DURATION}ms ${EASE}, left ${OVERLAY_DURATION}ms ${EASE}, width ${OVERLAY_DURATION}ms ${EASE}, height ${OVERLAY_DURATION}ms ${EASE}, border-radius ${OVERLAY_DURATION}ms ${EASE}`,
-                }
-              : {
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                  borderRadius: 0,
-                  transition: `top ${OVERLAY_DURATION}ms ${EASE}, left ${OVERLAY_DURATION}ms ${EASE}, width ${OVERLAY_DURATION}ms ${EASE}, height ${OVERLAY_DURATION}ms ${EASE}, border-radius ${OVERLAY_DURATION}ms ${EASE}`,
-                }),
-            overflow: "hidden",
-            willChange: "top, left, width, height, border-radius",
+            opacity: storyPhase === "expanding" ? 0 : storyPhase === "collapsing" ? 0 : 1,
+            transform: storyPhase === "expanding" ? "scale(0.97)" : storyPhase === "collapsing" ? "scale(0.97)" : "scale(1)",
+            transition: "opacity 250ms ease, transform 250ms ease",
           }}
         >
           <V2WrappedStory onClose={closeStory} startAtBeat={storyStartBeat} />

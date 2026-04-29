@@ -150,15 +150,17 @@ function getSubline(beat: WrappedBeat): string {
   return beat.kind === "guess" ? beat.reveal.subline : beat.subline;
 }
 
-function BeatResultCard({ beat, index }: { beat: WrappedBeat; index: number }) {
+function BeatResultCard({ beat, index, onTap }: { beat: WrappedBeat; index: number; onTap?: () => void }) {
   const hero = getHero(beat);
   const subline = getSubline(beat);
   const category = BEAT_CATEGORIES[beat.id] ?? "";
   const heroSize = hero.length > 20 ? 20 : hero.length > 12 ? 24 : 28;
 
   return (
-    <div
-      className="shrink-0 flex flex-col"
+    <button
+      type="button"
+      onClick={onTap}
+      className="shrink-0 flex flex-col text-left transition-transform active:scale-[0.97]"
       style={{
         width: CARD_W,
         height: CARD_H,
@@ -212,13 +214,13 @@ function BeatResultCard({ beat, index }: { beat: WrappedBeat; index: number }) {
       >
         {subline}
       </p>
-    </div>
+    </button>
   );
 }
 
 // ── Viewed: horizontal carousel of result cards ─────────────────
 
-function ViewedCarousel() {
+function ViewedCarousel({ onTapBeat }: { onTapBeat?: (beatIndex: number) => void }) {
   return (
     <div>
       {/* Scrollable carousel */}
@@ -232,8 +234,9 @@ function ViewedCarousel() {
           paddingRight: SPACE_L,
         }}
       >
-        {/* TODO: restore full carousel — showing first card only for design review */}
-        <BeatResultCard beat={WRAPPED_BEATS[0]} index={0} />
+        {WRAPPED_BEATS.map((beat, i) => (
+          <BeatResultCard key={beat.id} beat={beat} index={i} onTap={onTapBeat ? () => onTapBeat(i) : undefined} />
+        ))}
       </div>
     </div>
   );
@@ -246,10 +249,12 @@ export type V2WrappedCardState = "pending" | "viewed";
 export default function V2WrappedCard({
   state,
   onOpen,
+  onTapBeat,
 }: {
   state: V2WrappedCardState;
   onOpen: () => void;
+  onTapBeat?: (beatIndex: number) => void;
 }) {
-  if (state === "viewed") return <ViewedCarousel />;
+  if (state === "viewed") return <ViewedCarousel onTapBeat={onTapBeat} />;
   return <PendingCard onOpen={onOpen} />;
 }

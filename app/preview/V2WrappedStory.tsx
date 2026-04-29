@@ -429,11 +429,18 @@ function HeroBeatScreen({
 
 // ── Main story component ───────────────────────────────────────
 
-export default function V2WrappedStory({ onClose }: { onClose: () => void }) {
+export default function V2WrappedStory({ onClose, startAtBeat }: { onClose: () => void; startAtBeat?: number }) {
   const screens = useMemo(() => buildScreens(WRAPPED_BEATS), []);
   const totalBeats = WRAPPED_BEATS.length;
 
-  const [index, setIndex] = useState(0);
+  // If startAtBeat is provided, find the reveal/observation screen for that beat
+  const initialIndex = useMemo(() => {
+    if (startAtBeat == null) return 0;
+    const idx = screens.findIndex((s) => s.beatIndex === startAtBeat && s.kind !== "guess-q");
+    return idx >= 0 ? idx : 0;
+  }, [startAtBeat, screens]);
+
+  const [index, setIndex] = useState(initialIndex);
 
   const advance = useCallback(() => {
     setIndex((i) => Math.min(i + 1, screens.length - 1));
