@@ -1,16 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { InitialPromptContent, type InitialSuggestion, type AlertScenario } from "./ChatInitialScreen";
 import ChatCard, { type ChatCardData } from "./ChatCards";
-import { AppBar, FooterInset, GestureNav, NavButton } from "./AppChrome";
+import { AppBar, StatusBar, FooterInset, GestureNav, NavButton } from "./AppChrome";
 import { typography } from "../lib/typography";
 import { ILLUST_AFFORD_IT, ILLUST_MY_SPENDS, ILLUST_FEEDBACK } from "../lib/illustrations";
 import {
   VALENTINO_500, VALENTINO_50, GREEN_500, GREEN_50, ORANGE_500, ORANGE_50,
-  BG_SURFACE, BG_SURFACE_2, BG_SECONDARY, BLUE_50, RED_50, OUTLINE_SUBTLE, TEXT_PRIMARY,
+  BG_PRIMARY, BG_SURFACE, BG_SURFACE_2, BG_SECONDARY, BLUE_50, RED_50,
+  OUTLINE_SUBTLE, TEXT_PRIMARY, TEXT_SECONDARY,
 } from "../lib/colors";
-import { RADIUS_PILL } from "../lib/radii";
+import { ELEVATION_CARD } from "../lib/elevation";
+import { RADIUS_PILL, RADIUS_CIRCLE } from "../lib/radii";
 import { SPACE_XS, SPACE_M } from "../lib/spacing";
 
 // ── Feedback row (inline SVGs with proper color tokens) ─────────
@@ -21,7 +23,12 @@ function FeedbackIcon({ children, viewBox = "0 0 20 20" }: { children: React.Rea
   return <svg width="16" height="16" viewBox={viewBox} fill="none">{children}</svg>;
 }
 
-function FeedbackRow() {
+const DISCLAIMERS: Record<Voice, string> = {
+  ryan: "Ryan is AI and can make mistakes.\nAlways double-check responses.",
+  byron: "Byron is AI with attitude.\nStill double-check everything.",
+};
+
+function FeedbackRow({ voice = "ryan" as Voice }: { voice?: Voice }) {
   const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   useEffect(() => {
@@ -49,7 +56,7 @@ function FeedbackRow() {
           opacity: showDisclaimer ? 1 : 0,
         }}
       >
-        {"Ryan is AI and can make mistakes.\nAlways double-check responses."}
+        {DISCLAIMERS[voice]}
       </p>
     </div>
   );
@@ -199,13 +206,16 @@ type ChatProps = {
   showInitialPrompt?: boolean;
   initialSuggestions?: InitialSuggestion[];
   onInitialSuggestionClick?: (id: string, title: string) => void;
-  initialScreenVariant?: "new5" | "review-ontrack" | "review-rent";
+  initialScreenVariant?: "new5" | "review-ontrack" | "review-completed" | "review-rent";
+  goalSnapshot?: { name: string; pct: number; saved: number; target: number; status: "ahead" | "behind" | "on-track"; daysLabel: string };
   thinkingLabel?: string | null;
   goalTrailingSlot?: React.ReactNode;
   goalPlanBuilder?: React.ReactNode;
   questionnaireOverlay?: React.ReactNode;
   hideStatusBar?: boolean;
   showFeedbackRow?: boolean;
+  voice?: Voice;
+  onVoiceChange?: (v: Voice) => void;
 };
 
 function VoiceIcon() {
@@ -216,6 +226,68 @@ function VoiceIcon() {
       <path d="M12 16.5v2.75" strokeLinecap="round" />
       <path d="M9 20.25h6" strokeLinecap="round" />
     </svg>
+  );
+}
+
+// ── Persona toggle (lifted from DegenModeSimV1) ──────────────────
+
+type Voice = "ryan" | "byron";
+
+const CHARACTER_ASSETS: Record<Voice, string> = {
+  ryan: "/characters/ryan.svg",
+  byron: "/characters/byron.svg",
+};
+
+const VOICE_NAMES: Record<Voice, string> = {
+  ryan: "Ryan",
+  byron: "Byron",
+};
+
+function PersonaToggle({ active, onToggle }: { active: Voice; onToggle: (v: Voice) => void }) {
+  const tabs: Voice[] = ["ryan", "byron"];
+
+  return (
+    <div
+      className="flex items-center"
+      style={{
+        borderRadius: RADIUS_CIRCLE,
+        border: `1px solid ${OUTLINE_SUBTLE}`,
+        boxShadow: ELEVATION_CARD,
+        padding: 3,
+        backgroundColor: BG_PRIMARY,
+        gap: 2,
+      }}
+    >
+      {tabs.map((v) => {
+        const isActive = active === v;
+        return (
+          <div
+            key={v}
+            onClick={() => onToggle(v)}
+            className="flex items-center transition-all duration-200 ease-out"
+            style={{
+              height: 44,
+              borderRadius: RADIUS_CIRCLE,
+              backgroundColor: isActive ? BG_SECONDARY : "transparent",
+              padding: isActive ? (v === "ryan" ? "0 12px 0 4px" : "0 4px 0 12px") : "0 14px",
+              gap: 6,
+              cursor: "pointer",
+              ...typography.buttonSmall,
+              color: isActive ? TEXT_PRIMARY : TEXT_SECONDARY,
+              opacity: isActive ? 1 : 0.6,
+            }}
+          >
+            {isActive && v === "ryan" && (
+              <img src={CHARACTER_ASSETS[v]} alt="" width={36} height={36} style={{ borderRadius: "50%", flexShrink: 0, animation: "fadeIn 0.3s ease-out" }} />
+            )}
+            {VOICE_NAMES[v]}
+            {isActive && v === "byron" && (
+              <img src={CHARACTER_ASSETS[v]} alt="" width={36} height={36} style={{ borderRadius: "50%", flexShrink: 0, animation: "fadeIn 0.3s ease-out" }} />
+            )}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -230,6 +302,8 @@ function ChatAppBar({
   floating = false,
   goalTrailingSlot,
   hideStatusBar = false,
+  voice = "ryan",
+  onVoiceChange,
 }: {
   dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
   onClose?: () => void;
@@ -241,6 +315,8 @@ function ChatAppBar({
   floating?: boolean;
   goalTrailingSlot?: React.ReactNode;
   hideStatusBar?: boolean;
+  voice?: Voice;
+  onVoiceChange?: (v: Voice) => void;
 }) {
   if (isSheetMinimized) {
     return (
@@ -274,38 +350,58 @@ function ChatAppBar({
 
   const closeIcon = (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path d="M18 6L6 18M6 6l12 12" stroke="rgba(0,0,0,0.7)" strokeWidth="2" strokeLinecap="round" />
+      <path d="M18 6L6 18M6 6l12 12" stroke={TEXT_PRIMARY} strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 
+  // ── Floating layout — matches DegenMode's FloatingAppBar exactly ──
+  if (floating) {
+    return (
+      <div className="w-full shrink-0">
+        <StatusBar backgroundColor="transparent" />
+        <div className="flex items-center" style={{ padding: "8px 12px 8px 8px" }}>
+          <div style={{ width: 48, height: 48, display: "flex", alignItems: "center" }}>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close chat"
+              className="flex items-center justify-center rounded-full bg-white"
+              style={{ width: 48, height: 48, border: `1px solid ${OUTLINE_SUBTLE}`, boxShadow: ELEVATION_CARD }}
+            >
+              {closeIcon}
+            </button>
+          </div>
+          <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+            <PersonaToggle active={voice} onToggle={(v) => onVoiceChange?.(v)} />
+          </div>
+          {goalTrailingSlot ? (
+            <div style={{ display: "flex", alignItems: "center" }}>
+              {goalTrailingSlot}
+            </div>
+          ) : (
+            <div style={{ width: 48, height: 48 }} />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Non-floating layout — standard AppBar ──
   return (
     <div className="w-full shrink-0">
       <AppBar
-        backgroundColor={floating ? "transparent" : "#fff"}
-        title={floating ? "Ryan" : undefined}
+        backgroundColor="#fff"
         leading={(
           <div onPointerDown={(e) => e.stopPropagation()}>
-            {floating ? (
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close chat"
-                className="flex items-center justify-center rounded-full bg-white"
-                style={{ width: 48, height: 48, border: "1px solid rgba(0,0,0,0.05)", boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)" }}
-              >
-                {closeIcon}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close chat"
-                className="flex items-center justify-center"
-                style={{ width: 48, height: 48, background: "transparent", border: "none", cursor: "pointer", padding: 12 }}
-              >
-                {closeIcon}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close chat"
+              className="flex items-center justify-center"
+              style={{ width: 48, height: 48, background: "transparent", border: "none", cursor: "pointer", padding: 12 }}
+            >
+              {closeIcon}
+            </button>
           </div>
         )}
         trailing={goalTrailingSlot}
@@ -315,7 +411,7 @@ function ChatAppBar({
   );
 }
 
-function TypeBox({
+export function TypeBox({
   value,
   onChange,
   onSubmit,
@@ -519,7 +615,11 @@ function OptionList({
 
 // ── New3 Alert Header — typed title + option list ──────────────
 // ── New5 — Text-only with affirmative/negative/neutral options ──
-const NEW5_TEXT = "Rajan, your Japan trip is veering off course \u2014 you\u2019ve overspent by \u20B915,000 against what we budgeted. Let\u2019s do some damage control while we still can.";
+const NEW5_TEXT_BY_VOICE: Record<Voice, string> = {
+  ryan: "Rajan, your Japan trip is veering off course \u2014 you\u2019ve overspent by \u20B915,000 against what we budgeted. Let\u2019s do some damage control while we still can.",
+  byron: "\u20B915,000 over budget on Japan. Dining out twice a day? Subscriptions you forgot existed? At this pace Japan is a 2027 problem.",
+};
+const NEW5_TEXT = NEW5_TEXT_BY_VOICE.ryan;
 
 const NEW5_OPTIONS = [
   "Add ₹5,000 to pot",
@@ -536,7 +636,17 @@ const MOCK_RESPONSES: Record<string, string> = {
 // ── Review Rent — rent-specific text-only variant ──
 const RENT_TEXT = "Rajan, your rent of ₹25,000 is due in 5 days but your balance is only ₹11,200.\n\nYour salary of ₹62,000 hits 2 days later — if you can defer rent briefly, you're covered.";
 
-const REVIEW_ONTRACK_TEXT = "Great going, Rajan \u2014 all your goals are **on track**. What do you want to explore today?";
+const REVIEW_ONTRACK_TEXT_BY_VOICE: Record<Voice, string> = {
+  ryan: "Great going, Rajan \u2014 all your goals are **on track**. What do you want to explore today?",
+  byron: "Goals on track. Don\u2019t let it go to your head. What do you want to dig into?",
+};
+const REVIEW_ONTRACK_TEXT = REVIEW_ONTRACK_TEXT_BY_VOICE.ryan;
+
+const REVIEW_COMPLETED_TEXT_BY_VOICE: Record<Voice, string> = {
+  ryan: "You did it, Rajan \u2014 your **Trip to Japan** goal is **100% funded**! Time to start planning what to pack. What do you want to explore next?",
+  byron: "Trip to Japan \u2014 done. Took you long enough. Now what?",
+};
+const REVIEW_COMPLETED_TEXT = REVIEW_COMPLETED_TEXT_BY_VOICE.ryan;
 
 // ── Quick action cards for On Track variant ──
 type QuickAction = { category: string; title: string; illustration?: string; bg: string };
@@ -606,16 +716,20 @@ function MosaicCard({
 }
 
 function ReviewOnTrackScreen({
+  text = REVIEW_ONTRACK_TEXT,
   onOptionSelect,
+  voice = "ryan" as Voice,
 }: {
+  text?: string;
   onOptionSelect: (label: string) => void;
+  voice?: Voice;
 }) {
   const [typingDone, setTypingDone] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
   const [replyDone, setReplyDone] = useState(false);
   const onComplete = useCallback(() => setTypingDone(true), []);
   const onReplyComplete = useCallback(() => setReplyDone(true), []);
-  const displayedText = useTypewriter(REVIEW_ONTRACK_TEXT, true, onComplete);
+  const displayedText = useTypewriter(text, true, onComplete);
   const mockReply = selectedLabel ? ONTRACK_MOCK_RESPONSES[selectedLabel] ?? "" : "";
   const displayedReply = useTypewriter(mockReply, !!selectedLabel, onReplyComplete);
 
@@ -673,7 +787,7 @@ function ReviewOnTrackScreen({
           <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>
             {highlightValues(displayedReply)}
           </p>
-          {replyDone && <FeedbackRow />}
+          {replyDone && <FeedbackRow voice={voice} />}
         </div>
       )}
     </div>
@@ -685,11 +799,13 @@ function New5TextOnly({
   options = NEW5_OPTIONS,
   mockResponses = MOCK_RESPONSES,
   onOptionSelect,
+  voice = "ryan" as Voice,
 }: {
   text?: string;
   options?: string[];
   mockResponses?: Record<string, string>;
   onOptionSelect: (label: string) => void;
+  voice?: Voice;
 }) {
   const [typingDone, setTypingDone] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
@@ -763,7 +879,7 @@ function New5TextOnly({
               <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>
                 {highlightValues(displayedReply)}
               </p>
-              {replyDone && <FeedbackRow />}
+              {replyDone && <FeedbackRow voice={voice} />}
             </div>
           )}
         </div>
@@ -795,14 +911,30 @@ export default function Chat({
   initialSuggestions = [],
   onInitialSuggestionClick,
   initialScreenVariant,
+  goalSnapshot,
   thinkingLabel,
   goalTrailingSlot,
   goalPlanBuilder,
   questionnaireOverlay,
   hideStatusBar = false,
   showFeedbackRow: showFeedbackRowProp = false,
+  voice = "ryan",
+  onVoiceChange,
 }: ChatProps) {
   const isNewVariant = true; // All remaining variants use the new layout
+  const [contentVisible, setContentVisible] = useState(true);
+
+  // Handle voice switching with fade-out → reset → fade-in (matches DegenMode)
+  const handleVoiceSwitch = useCallback((v: Voice) => {
+    if (v === voice) return;
+    setContentVisible(false);
+    setTimeout(() => {
+      onVoiceChange?.(v);
+      setHasInteracted(false);
+      setTimeout(() => setContentVisible(true), 50);
+    }, 200);
+  }, [voice, onVoiceChange]);
+
   const [draft, setDraft] = useState("");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [revealedCount, setRevealedCount] = useState(() => (showInitialPrompt && !isNewVariant ? 0 : messages.length));
@@ -815,11 +947,19 @@ export default function Chat({
   // Track which messages have already been typewritten so we never re-typewrite
   const typewrittenIdsRef = useRef<Set<string>>(new Set());
 
-  // Alert state — persists as conversation header
-  const [alert] = useState<AlertScenario | null>(() => {
+  // Alert state — derived from initialScreenVariant so it updates when controls change
+  const alert = useMemo<AlertScenario | null>(() => {
+    if (initialScreenVariant === "review-completed") {
+      return {
+        title: "Goal completed!",
+        subtitle: "Your savings target has been reached.",
+        icon: null,
+        iconBg: BLUE_50,
+      };
+    }
     if (initialScreenVariant === "review-ontrack") {
       return {
-        title: "All 3 goals are on track.",
+        title: "All goals are on track.",
         subtitle: "Nothing to worry about — I'll nudge you if anything shifts.",
         icon: null,
         iconBg: BLUE_50,
@@ -842,7 +982,7 @@ export default function Chat({
       };
     }
     return null;
-  });
+  }, [initialScreenVariant]);
 
   // Initial prompt overlay is not used in the new layout — always false
   const initialPromptVisible = false;
@@ -1153,6 +1293,8 @@ export default function Chat({
             hasUserMessages={messages.some((m) => m.role === "user")}
             goalTrailingSlot={goalTrailingSlot}
             hideStatusBar={hideStatusBar}
+            voice={voice}
+            onVoiceChange={handleVoiceSwitch}
           />
         </div>
       )}
@@ -1178,6 +1320,8 @@ export default function Chat({
                   hasScrolledContent={hasScrolledContent}
                   hasUserMessages={messages.some((m) => m.role === "user")}
                   floating={true}
+                  voice={voice}
+                  onVoiceChange={handleVoiceSwitch}
                   goalTrailingSlot={goalTrailingSlot}
                   hideStatusBar={hideStatusBar}
                 />
@@ -1204,8 +1348,8 @@ export default function Chat({
 
             <div
               ref={scrollContainerRef}
-              className="absolute inset-0 w-full overflow-y-auto overscroll-contain scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-              style={{ paddingTop: 8, overflowAnchor: "none" }}
+              className="absolute inset-0 w-full overflow-y-auto overscroll-contain scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] transition-opacity duration-200 ease-out"
+              style={{ paddingTop: 8, overflowAnchor: "none", opacity: contentVisible ? 1 : 0 }}
             >
               <div ref={contentRef} className="flex flex-col px-6">
                 {/* Top spacer so content clears the floating close button + plan builder */}
@@ -1214,14 +1358,35 @@ export default function Chat({
                 {/* New5 / Review Behind — typewriter text + plain options */}
                 {alert && initialScreenVariant === "new5" && (
                   <New5TextOnly
+                    text={NEW5_TEXT_BY_VOICE[voice]}
                     onOptionSelect={() => { setHasInteracted(true); }}
+                    voice={voice}
                   />
+                )}
+
+                {/* Review completed — celebration text + goal card */}
+                {alert && initialScreenVariant === "review-completed" && (
+                  <div className="shrink-0 mb-6">
+                    <New5TextOnly
+                      text={REVIEW_COMPLETED_TEXT_BY_VOICE[voice]}
+                      options={[]}
+                      onOptionSelect={() => {}}
+                      voice={voice}
+                    />
+                    {goalSnapshot && (
+                      <div className="mt-4">
+                        <ChatCard card={{ type: "goal-progress", variant: "card", name: goalSnapshot.name, pct: goalSnapshot.pct, saved: goalSnapshot.saved, target: goalSnapshot.target, status: goalSnapshot.status, daysLabel: goalSnapshot.daysLabel }} />
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {/* Review on-track — reassuring text + quick action cards */}
                 {alert && initialScreenVariant === "review-ontrack" && (
                   <ReviewOnTrackScreen
+                    text={REVIEW_ONTRACK_TEXT_BY_VOICE[voice]}
                     onOptionSelect={() => { setHasInteracted(true); }}
+                    voice={voice}
                   />
                 )}
 
@@ -1231,6 +1396,7 @@ export default function Chat({
                     text={RENT_TEXT}
                     options={[]}
                     onOptionSelect={() => {}}
+                    voice={voice}
                   />
                 )}
 
@@ -1279,7 +1445,7 @@ export default function Chat({
                         ) : (
                           <Bubble message={message} typewrite={shouldTypewrite} />
                         )}
-                        {isLastAssistant && !message.streaming && !thinkingLabel && (!hideStatusBar || showFeedbackRowProp) && <FeedbackRow />}
+                        {isLastAssistant && !message.streaming && !thinkingLabel && (!hideStatusBar || showFeedbackRowProp) && <FeedbackRow voice={voice} />}
                       </div>
                     );
                   })}
@@ -1333,7 +1499,7 @@ export default function Chat({
                       setDraft("");
                       onSubmit?.(text);
                     }}
-                    placeholder={inputPlaceholder ?? (renderedMessages.length > 0 || hasInteracted ? "Reply to Ryan..." : "Ask Ryan...")}
+                    placeholder={inputPlaceholder ?? (renderedMessages.length > 0 || hasInteracted ? `Reply to ${VOICE_NAMES[voice]}...` : `Ask ${VOICE_NAMES[voice]}...`)}
                     showElevation={hasContentBelow}
                     leftAction={undefined}
                   />

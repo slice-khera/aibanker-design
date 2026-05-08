@@ -32,6 +32,31 @@ export type ChatCardData =
   | { type: "spend-trend"; variant?: CardVariant; month: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number }
   | { type: "add-to-pot"; variant?: CardVariant; goalName: string; amount: number; fromAccount: string; activated?: boolean; onAdd?: () => void };
 
+// ─── Taxonomy aliases ─────────────────────────────────────
+// Visualizations: 10 data displays (flat on surface, no bounding box)
+export type VisualizationData = Extract<
+  ChatCardData,
+  | { type: "spend-overview" }
+  | { type: "category-breakdown" }
+  | { type: "goal-progress" }
+  | { type: "savings-plan" }
+  | { type: "merchant-concentration" }
+  | { type: "category-mom" }
+  | { type: "spending-heatmap" }
+  | { type: "payment-mode-donut-v2" }
+  | { type: "transaction-table" }
+  | { type: "spend-trend" }
+>;
+
+// Widgets: 4 actionable items (enclosed container)
+export type WidgetData = Extract<
+  ChatCardData,
+  | { type: "investment-product" }
+  | { type: "obligations-list-v2" }
+  | { type: "big-expenses" }
+  | { type: "add-to-pot" }
+>;
+
 // ─── Helpers ───────────────────────────────────────────────
 
 function formatINR(amount: number): string {
@@ -78,7 +103,7 @@ function smoothPath(points: { x: number; y: number }[]): string {
 // DLS 2.0 Tag: 6 intents × 2 emphasis. Pill, Metadata font, uppercase.
 // Ref: reference_tags.md
 
-const TAG_STYLES: Record<string, Record<string, { bg: string; text: string }>> = {
+export const TAG_STYLES: Record<string, Record<string, { bg: string; text: string }>> = {
   subtle: {
     positive: { bg: GREEN_50, text: GREEN_500 },
     warning:  { bg: ORANGE_50, text: ORANGE_600 },
@@ -97,7 +122,7 @@ const TAG_STYLES: Record<string, Record<string, { bg: string; text: string }>> =
   },
 };
 
-function DlsTag({
+export function DlsTag({
   intent = "neutral",
   emphasis = "subtle",
   children,
@@ -639,7 +664,7 @@ function CategoryBreakdownCard({ data }: { data: Extract<ChatCardData, { type: "
 // Matches Figma: Chatbot / node 16703:18825
 
 function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "investment-product" }> }) {
-  const { variant = "card", productType, amount, rate, tenure, accountLabel, activated, onContinue, onArrowTap } = data;
+  const { productType, amount, rate, tenure, accountLabel, activated, onContinue, onArrowTap } = data;
 
   const content = (
     <>
@@ -688,9 +713,7 @@ function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "
     </>
   );
 
-  const shell = variant === "surface"
-    ? { backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD }
-    : { backgroundColor: CARD_BG, borderRadius: CARD_RADIUS, padding: CARD_PAD };
+  const shell = { backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD };
 
   return (
     <div style={shell}>
@@ -703,12 +726,10 @@ function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "
 // ─── Add to Pot Card (simplified one-tap action) ──────────
 
 function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-pot" }> }) {
-  const { variant = "card", goalName, amount, fromAccount, activated, onAdd } = data;
+  const { goalName, amount, fromAccount, activated, onAdd } = data;
   const [done, setDone] = useState(activated ?? false);
 
-  const shell = variant === "surface"
-    ? { backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD }
-    : { backgroundColor: CARD_BG, borderRadius: CARD_RADIUS, padding: CARD_PAD };
+  const shell = { backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD };
 
   return (
     <div style={shell}>
@@ -1820,7 +1841,7 @@ function BigExpensesCard({ data }: { data: Extract<ChatCardData, { type: "big-ex
   }
 
   return (
-    <div style={{ backgroundColor: CARD_BG, borderRadius: CARD_RADIUS, padding: CARD_PAD }}>
+    <div style={{ backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD }}>
       <CardHeader label="Recent big payments" />
       {cardContent}
     </div>

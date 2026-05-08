@@ -63,10 +63,6 @@ export default function PotPage() {
 
       <div className="relative w-full max-w-[480px]">
         <div className="mx-auto max-w-[360px]">
-          <div className="mb-3 flex items-center px-1">
-            <div style={{ ...typography.caption, color: "#8e949d" }}>slice Banker</div>
-          </div>
-
           <div className="relative rounded-[32px] bg-[#1a1a1e] p-[6px] shadow-[0_28px_70px_rgba(0,0,0,0.16),0_6px_18px_rgba(0,0,0,0.05)] ring-1 ring-white/5">
             <div className="relative z-10 aspect-[360/780] w-full overflow-hidden rounded-[26px] bg-white">
               <PotDetail

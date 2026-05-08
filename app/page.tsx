@@ -1,8 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useRef, type ReactNode } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState, useRef, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
+import { getPreset, applySubstate, PERSONA_PRESETS } from "./data/userStatePresets";
+import type { PersonaPreset, SubstateGroup } from "./data/userStatePresets";
 import Chat, { type ChatChip, type ChatMessage } from "./components/Chat";
-import ChatCard, { type ChatCardData, CATEGORY_ICONS, CATEGORY_COLORS } from "./components/ChatCards";
+import ChatCard, { type ChatCardData, CATEGORY_ICONS, CATEGORY_COLORS, DlsTag } from "./components/ChatCards";
 import { getSuggestions } from "./components/ChatInitialScreen";
 import { AppBar, BOTTOM_INSET, NavButton } from "./components/AppChrome";
 import GoalTracker, { type GoalIndicatorData } from "./components/GoalTracker";
@@ -11,6 +14,14 @@ import PotDetail from "./components/PotDetail";
 import PlanMode, { type PlanStep } from "./components/PlanMode";
 import PayScreen from "./components/PayScreen";
 import QuestionnaireOverlay, { type Question, type QuestionOption } from "./components/QuestionnaireOverlay";
+import OnboardingSim from "./preview/OnboardingSim";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Button as ShadButton } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ChevronLeft, RotateCw, Lock } from "lucide-react";
 import {
   affordAmountChips,
   amountChips,
@@ -57,6 +68,15 @@ import type {
 import { getEffectiveBudget } from "./lib/budget-utils";
 import { useUserState } from "./hooks/useUserState";
 import { typography } from "./lib/typography";
+import {
+  DBG_SPEND_OVERVIEW, DBG_CATEGORY_BAR,
+  DBG_GOAL_AHEAD, DBG_GOAL_BEHIND, DBG_GOAL_ONTRACK,
+  DBG_FD_SETUP, DBG_FD_ACTIVATED, DBG_SAVINGS_PLAN,
+  DBG_MERCHANT_BAR, DBG_CATEGORY_MOM, DBG_SPEND_TREND,
+  DBG_HEATMAP, DBG_DONUT_V2, DBG_TXN_TABLE,
+  DBG_OBLIGATIONS_V2, DBG_BIG_EXPENSES,
+  DBG_GOAL_QUESTIONS,
+} from "./lib/debug-fixtures";
 
 type GoalProgressCardData = Extract<ChatCardData, { type: "goal-progress" }>;
 type GoalDetailSnapshot = {
@@ -126,337 +146,30 @@ for (const cat of lifestyleCategories.slice(0, 6)) {
   categorySpending[cat.name] = cat.monthlyAverage;
 }
 
-// ─── Debug panel: card fixtures ────────────────────────────────
-const DBG_SPEND_OVERVIEW: ChatCardData = {
-  type: "spend-overview",
-  month: "Feb",
-  amount: 78400,
-  comparisonText: "12% higher than your average",
-  chartData: [
-    { label: "Sep", value: 58000 },
-    { label: "Oct", value: 63200 },
-    { label: "Nov", value: 71000 },
-    { label: "Dec", value: 89500 },
-    { label: "Jan", value: 66800 },
-    { label: "Feb", value: 78400 },
-  ],
-  average: 67200,
-  highlightIndex: 5,
-};
+// Debug fixtures imported from ./lib/debug-fixtures
 
-const DBG_CATEGORY_BAR: ChatCardData = {
-  type: "category-breakdown",
-  month: "Feb",
-  amount: 78400,
-  subtext: "across 12 categories",
-  showAll: true,
-  categories: [
-    { name: "Food & Delivery", amount: 22400, pct: 29, color: "#ff9a17", icon: "🍔" },
-    { name: "Shopping", amount: 18600, pct: 24, color: "#d30ad7", icon: "🛍️" },
-    { name: "Transport", amount: 11200, pct: 14, color: "#2b6acf", icon: "🚗" },
-    { name: "Subscriptions", amount: 8400, pct: 11, color: "#00a63e", icon: "📱" },
-    { name: "Utilities", amount: 7800, pct: 10, color: "#ce1d26", icon: "💡" },
-    { name: "Other", amount: 10000, pct: 13, color: "#8e949d", icon: "📦" },
-  ],
-};
-
-// ─── Goal Tracker demo scenarios ──────────────────────────────
-type GoalTrackerScenario = "none" | "single" | "single-icon" | "single-alert" | "single-icon-alert" | "two" | "three";
-
-const GOAL_TRACKER_SCENARIOS: Record<GoalTrackerScenario, GoalIndicatorData[]> = {
-  none: [],
-  single: [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "✈️", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "✈️", heroScene: "japan" },
-  ],
-  "single-icon": [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "✈️", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "✈️", heroScene: "japan" },
-  ],
-  "single-alert": [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "behind", icon: "✈️", daysLabel: "15 days behind", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "✈️", heroScene: "japan" },
-  ],
-  "single-icon-alert": [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "behind", icon: "✈️", daysLabel: "15 days behind", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "✈️", heroScene: "japan" },
-  ],
-  two: [
-    { id: "1", name: "Trip to Japan", pct: 62, status: "ahead", icon: "✈️", daysLabel: "11 days ahead", saved: 124000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "✈️", heroScene: "japan" },
-    { id: "2", name: "Emergency Fund", pct: 35, status: "on-track", icon: "🛡️", daysLabel: "On track", saved: 175000, target: 500000, ringColor: "#ff9a17", endDate: "Mar 2027", monthlyAmount: 15000, gradient: "linear-gradient(135deg, #fff3e3 0%, #ff9a17 100%)", heroEmoji: "🛡️" },
-  ],
-  three: [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "✈️", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "✈️", heroScene: "japan" },
-    { id: "2", name: "Emergency Fund", pct: 78, status: "ahead", icon: "🛡️", daysLabel: "12 days ahead", saved: 390000, target: 500000, ringColor: "#ff9a17", endDate: "Mar 2027", monthlyAmount: 15000, gradient: "linear-gradient(135deg, #fff3e3 0%, #ff9a17 100%)", heroEmoji: "🛡️" },
-    { id: "3", name: "New Laptop", pct: 65, status: "on-track", icon: "💻", daysLabel: "On track", saved: 48750, target: 75000, ringColor: "#00a63e", endDate: "Sep 2026", monthlyAmount: 5000, gradient: "linear-gradient(135deg, #e0f4e8 0%, #00a63e 100%)", heroEmoji: "💻" },
-  ],
-};
-
-const DBG_GOAL_AHEAD: ChatCardData = {
-  type: "goal-progress",
-  name: "Trip to Japan",
-  pct: 62,
-  saved: 93000,
-  target: 150000,
-  daysLabel: "11 days ahead",
-  status: "ahead",
-};
-
-const DBG_GOAL_BEHIND: ChatCardData = {
-  type: "goal-progress",
-  name: "Trip to Japan",
-  pct: 38,
-  saved: 57000,
-  target: 150000,
-  daysLabel: "14 days behind",
-  status: "behind",
-};
-
-const DBG_GOAL_ONTRACK: ChatCardData = {
-  type: "goal-progress",
-  name: "Trip to Japan",
-  pct: 50,
-  saved: 75000,
-  target: 150000,
-  daysLabel: "On track",
-  status: "on-track",
-};
-
-const DBG_FD_SETUP: ChatCardData = {
-  type: "investment-product",
-  productType: "Fixed Deposit",
-  amount: 15000,
-  rate: "7.25% p.a.",
-  tenure: "1 year",
-  amountOptions: [
-    { label: "₹10k", value: 10000 },
-    { label: "₹15k", value: 15000 },
-    { label: "₹18k", value: 18000 },
-  ],
-  accountLabel: "Savings xx1234",
-  activated: false,
-};
-
-const DBG_FD_ACTIVATED: ChatCardData = {
-  type: "investment-product",
-  productType: "Fixed Deposit",
-  amount: 15000,
-  rate: "7.25% p.a.",
-  tenure: "1 year",
-  amountOptions: [
-    { label: "₹10k", value: 10000 },
-    { label: "₹15k", value: 15000 },
-    { label: "₹18k", value: 18000 },
-  ],
-  accountLabel: "Savings xx1234",
-  activated: true,
-};
-
-const DBG_SAVINGS_PLAN: ChatCardData = {
-  type: "savings-plan",
-  name: "Trip to Japan",
-  target: 150000,
-  timeline: "Dec 2025",
-  existingSavings: 30000,
-  monthlyAmount: 8500,
-  productType: "RD",
-  productLabel: "Recurring Deposit",
-  rate: "6.5% p.a.",
-  pct: 20,
-  timelineLabel: "11 months · Dec 2025",
-};
-
-const DBG_MERCHANT_BAR: ChatCardData = {
-  type: "merchant-concentration",
-  month: "Feb",
-  totalSpend: 78400,
-  totalMerchants: 23,
-  merchants: [
-    { name: "Swiggy", amount: 14200, pct: 18, color: "#ff9a17" },
-    { name: "Amazon", amount: 12800, pct: 16, color: "#d30ad7" },
-    { name: "Uber", amount: 8400, pct: 11, color: "#2b6acf" },
-    { name: "BigBasket", amount: 6200, pct: 8, color: "#00a63e" },
-    { name: "Zomato", amount: 5800, pct: 7, color: "#ce1d26" },
-  ],
-};
-
-const DBG_CATEGORY_MOM: ChatCardData = {
-  type: "category-mom",
-  thisMonth: "Feb",
-  lastMonth: "Jan",
-  categories: [
-    { name: "Food", thisValue: 22400, lastValue: 18000, color: "#ff9a17" },
-    { name: "Shopping", thisValue: 18600, lastValue: 21000, color: "#d30ad7" },
-    { name: "Transport", thisValue: 11200, lastValue: 9800, color: "#2b6acf" },
-    { name: "Utilities", thisValue: 7800, lastValue: 7200, color: "#00a63e" },
-    { name: "Fun", thisValue: 6000, lastValue: 8400, color: "#ce1d26" },
-  ],
-};
-
-const DBG_SPEND_TREND: ChatCardData = {
-  type: "spend-trend",
-  month: "Feb",
-  chartData: [
-    { label: "Sep", value: 58000 },
-    { label: "Oct", value: 63200 },
-    { label: "Nov", value: 71000 },
-    { label: "Dec", value: 89500 },
-    { label: "Jan", value: 66800 },
-    { label: "Feb", value: 78400 },
-  ],
-  average: 67200,
-  highlightIndex: 5,
-};
-
-const DBG_HEATMAP: ChatCardData = {
-  type: "spending-heatmap",
-  month: "Feb",
-  year: 2025,
-  startDay: 5, // Feb 1 2025 = Saturday → index 5 (Mon=0)
-  dailySpend: [
-    3200, 0, 1800, 4500, 2200, 6800, 1200,
-    900, 3400, 5100, 2800, 0, 7200, 1500,
-    2100, 4200, 3800, 1100, 8500, 2400, 600,
-    3900, 5600, 2000, 1400, 4800, 3100, 7800,
-  ],
-  maxSpend: 8500,
-};
-
-const DBG_DONUT_V2: ChatCardData = {
-  type: "payment-mode-donut-v2",
-  month: "Feb",
-  totalSpend: 78400,
-  modes: [
-    { name: "UPI", amount: 41200, pct: 53, color: "#d30ad7" },
-    { name: "Credit Card", amount: 22100, pct: 28, color: "#2b6acf" },
-    { name: "Debit Card", amount: 9400, pct: 12, color: "#ff9a17" },
-    { name: "NEFT/IMPS", amount: 3800, pct: 5, color: "#00a63e" },
-    { name: "Cash", amount: 1900, pct: 2, color: "#8e949d" },
-  ],
-};
-
-const DBG_TXN_TABLE: ChatCardData = {
-  type: "transaction-table",
-  title: "Recent transactions",
-  transactions: [
-    { date: "28 Feb", merchant: "Swiggy", amount: 486, category: "Food" },
-    { date: "27 Feb", merchant: "Amazon", amount: 2499, category: "Shopping" },
-    { date: "27 Feb", merchant: "Uber", amount: 342, category: "Transport" },
-    { date: "26 Feb", merchant: "BigBasket", amount: 1850, category: "Groceries" },
-    { date: "25 Feb", merchant: "Zomato", amount: 720, category: "Food" },
-  ],
-};
-
-const DBG_OBLIGATIONS_V2: ChatCardData = {
-  type: "obligations-list-v2",
-  items: [
-    { id: "v2-1", payee: "Satya Prak", amount: 21700, type: "Rent/EMI", seenMonths: "3/4 months" },
-    { id: "v2-2", payee: "Satishk019", amount: 4000, type: "P2P", seenMonths: "3/4 months" },
-    { id: "v2-3", payee: "Vinod Kumar", amount: 3000, type: "P2P", seenMonths: "3/4 months" },
-    { id: "v2-4", payee: "Mukesh Kumar", amount: 2500, type: "P2P", seenMonths: "4/4 months" },
-    { id: "v2-5", payee: "Delhi Metro", amount: 1500, type: "Utility", seenMonths: "3/4 months" },
-  ],
-  monthlyIncome: 27000,
-};
-
-const DBG_BIG_EXPENSES: ChatCardData = {
-  type: "big-expenses",
-  transactions: [
-    { id: "big-1", payee: "Jasvinder", date: "26 Feb 2026", type: "P2P", amount: 99000 },
-    { id: "big-2", payee: "Avigayen55", date: "25 Dec 2025", type: "P2P", amount: 35000 },
-    { id: "big-3", payee: "Transfer", date: "06 Nov 2025", type: "P2P", amount: 30000 },
-    { id: "big-4", payee: "Jayram Pra", date: "12 Nov 2025", type: "P2P", amount: 30000 },
-  ],
-  periodLabel: "in last 5 months",
-  total: 194000,
-};
-
-// ─── Debug: Goal questionnaire fixture ─────────────────────────
-const DBG_GOAL_QUESTIONS: Question[] = [
-  {
-    id: "choice",
-    text: "What are you saving toward?",
-    options: [
-      { id: "trip", label: "Trip" },
-      { id: "big-purchase", label: "Big purchase" },
-      { id: "emergency", label: "Emergency fund" },
-      { id: "increase-savings", label: "Increase monthly savings" },
-    ],
-  },
-  {
-    id: "destination",
-    text: "Where are you headed?",
-    options: [],
-  },
-  {
-    id: "timeline",
-    text: "By when?",
-    options: [
-      { id: "3m", label: "3 months" },
-      { id: "6m", label: "6 months" },
-      { id: "1y", label: "1 year" },
-    ],
-  },
-  {
-    id: "amount",
-    text: "How much do you need?",
-    options: [
-      { id: "50k", label: "\u20B950k" },
-      { id: "1l", label: "\u20B91L" },
-      { id: "5l", label: "\u20B95L" },
-      { id: "10l", label: "\u20B910L" },
-    ],
-  },
-];
 
 // ─── Debug panel: UI helpers ────────────────────────────────────
-function DbgBtn({
-  children,
-  onClick,
-  active,
-  destructive,
-}: {
-  children: ReactNode;
-  onClick: () => void;
-  active?: boolean;
-  destructive?: boolean;
-}) {
+
+export default function HomePage() {
   return (
-    <button
-      onClick={onClick}
-      className={`rounded-full border px-3 py-1 text-xs transition-all active:scale-95 whitespace-nowrap ${
-        destructive
-          ? "border-red-200 bg-white text-red-500"
-          : active
-          ? "border-[#3dbb6c] bg-[#e0f4e8] text-[#00a63e]"
-          : "border-[rgba(0,0,0,0.2)] bg-white text-[#8e949d]"
-      }`}
-    >
-      {children}
-    </button>
+    <Suspense fallback={null}>
+      <Home />
+    </Suspense>
   );
 }
 
-function DbgRow({
-  label,
-  children,
-  wrap,
-}: {
-  label: string;
-  children: ReactNode;
-  wrap?: boolean;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="w-16 shrink-0 pt-0.5">
-        <span style={{ ...typography.metadata, textTransform: "uppercase", color: "#8e949d" }}>
-          {label}
-        </span>
-      </div>
-      <div className={`flex ${wrap ? "flex-wrap" : ""} gap-1.5`}>{children}</div>
-    </div>
-  );
-}
+function Home() {
+  // ============ PERSONA PREVIEW (?persona=<id>) =====================
+  const searchParams = useSearchParams();
+  const personaId = searchParams.get("persona");
+  const personaPreset = personaId ? getPreset(personaId) : undefined;
 
-export default function Home() {
   // ============ PERSISTENT STATE (single source of truth) ============
-  const { state: userState, mutate, resetState, resetUser, isHydrated } = useUserState(profile);
+  const { state: userState, mutate, replaceState, resetState, resetUser, isHydrated } = useUserState(
+    profile,
+    personaPreset?.state ?? undefined,
+  );
 
   // Derived from userState — variable names stay backward-compatible
   const step = userState?.currentStep ?? "wrapped";
@@ -466,6 +179,26 @@ export default function Home() {
   const bufferRemaining = userState?.bufferRemaining ?? (parseInt(profile.suggested_budgets.buffer_bucket.replace(/[₹,k]/g, "")) * 1000);
   const spendRatings = userState?.spendRatings ?? [];
   const userId = userState?.userId ?? "";
+
+  // ── Substate control panel ──
+  const hasControls = !!(personaPreset?.controls?.length);
+  const [activeSubstates, setActiveSubstates] = useState<Record<string, number>>({});
+
+  const handleSubstateChange = useCallback((groupLabel: string, substateIndex: number) => {
+    if (!personaPreset) return;
+    setActiveSubstates((prev) => {
+      const nextMap = { ...prev, [groupLabel]: substateIndex };
+      // Rebuild full state: base + all active substate patches
+      let merged = { ...personaPreset.state };
+      for (const group of personaPreset.controls ?? []) {
+        const idx = nextMap[group.label] ?? 0;
+        const patch = group.substates[idx]?.patch;
+        if (patch) merged = applySubstate(merged, patch);
+      }
+      replaceState(merged);
+      return nextMap;
+    });
+  }, [personaPreset, replaceState]);
 
   // Goal-related: local state during onboarding, derived from userState after
   const [localGoalDraft, setLocalGoalDraft] = useState<{ name?: string; timeline?: string; amount?: string }>({});
@@ -616,15 +349,12 @@ export default function Home() {
   // UI state
   const [receiptsOpen, setReceiptsOpen] = useState(false);
   const [isAgentProcessingGlow, setIsAgentProcessingGlow] = useState(false);
-  const [debugPanelOpen, setDebugPanelOpen] = useState(true);
   const [chatVisible, setChatVisible] = useState(false);
   const [chatScreenPhase, setChatScreenPhase] = useState<"closed" | "entering" | "open" | "exiting">("closed");
   const [reviewMessages, setReviewMessages] = useState<ChatMessage[] | null>(null);
   const [goalDetail, setGoalDetail] = useState<GoalDetailSnapshot | null>(null);
   const [showInitialScreen, setShowInitialScreen] = useState(true);
-  const [initialScreenVariant, setInitialScreenVariant] = useState<"new5" | "review-ontrack" | "review-rent">("new5");
   const [rdDetailVisible, setRdDetailVisible] = useState(false);
-  const [goalTrackerScenario, setGoalTrackerScenario] = useState<GoalTrackerScenario>("single");
   const [goalListOpen, setGoalListOpen] = useState(false);
   const [goalListPhase, setGoalListPhase] = useState<"closed" | "open" | "exiting">("closed");
   const goalCardVariant = "v4" as const;
@@ -1498,6 +1228,72 @@ Be insightful, not just descriptive.`;
         status,
       },
     };
+  }, [userState?.goal, getGoalContributionSummary]);
+
+  // ── Derive GoalTracker data from live userState ──
+  const goalTrackerGoals: GoalIndicatorData[] = useMemo(() => {
+    const goal = userState?.goal;
+    if (!goal) return [];
+
+    const monthsElapsed = Math.max(1, Math.round((Date.now() - new Date(goal.createdAt).getTime()) / (30 * 24 * 60 * 60 * 1000)));
+    const { contributionAmount } = getGoalContributionSummary();
+    const totalSaved = goal.savingsAllocated + (contributionAmount * monthsElapsed);
+    const pct = goal.amountNum > 0 ? Math.min(100, Math.round((totalSaved / goal.amountNum) * 100)) : 0;
+    const monthsLeft = Math.max(0, goal.timelineMonths - monthsElapsed);
+
+    const status: "ahead" | "behind" | "on-track" =
+      pct >= 100 ? "ahead"
+      : pct >= ((monthsElapsed / goal.timelineMonths) * 100) + 5 ? "ahead"
+      : pct <= ((monthsElapsed / goal.timelineMonths) * 100) - 5 ? "behind"
+      : "on-track";
+
+    const daysLabel = pct >= 100 ? "Completed"
+      : status === "ahead" ? "Ahead of schedule"
+      : status === "behind" ? "Behind schedule"
+      : `${monthsLeft} months left`;
+
+    const primary: GoalIndicatorData = {
+      id: "1",
+      name: goal.name ?? "Goal",
+      pct,
+      status,
+      icon: "✈️",
+      daysLabel,
+      saved: totalSaved,
+      target: goal.amountNum,
+      ringColor: "#d30ad7",
+      endDate: goal.timeline,
+      monthlyAmount: contributionAmount,
+      gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)",
+      heroEmoji: "✈️",
+      heroScene: "japan",
+    };
+
+    // If multiple goals active, add fixture secondary goals
+    const isMultipleGoals = (userState?.products?.length ?? 0) >= 3;
+    if (isMultipleGoals) {
+      return [
+        primary,
+        { id: "2", name: "Emergency Fund", pct: 35, status: "on-track" as const, icon: "🛡️", daysLabel: "On track", saved: 175000, target: 500000, ringColor: "#ff9a17", endDate: "Mar 2027", monthlyAmount: 15000, gradient: "linear-gradient(135deg, #fff3e3 0%, #ff9a17 100%)", heroEmoji: "🛡️" },
+        { id: "3", name: "New Laptop", pct: 65, status: "on-track" as const, icon: "💻", daysLabel: "On track", saved: 48750, target: 75000, ringColor: "#00a63e", endDate: "Sep 2026", monthlyAmount: 5000, gradient: "linear-gradient(135deg, #e0f4e8 0%, #00a63e 100%)", heroEmoji: "💻" },
+      ];
+    }
+
+    return [primary];
+  }, [userState?.goal, userState?.products, getGoalContributionSummary]);
+
+  // ── Derive initial screen variant from goal status ──
+  const initialScreenVariant = useMemo<"new5" | "review-ontrack" | "review-completed" | "review-rent">(() => {
+    const goal = userState?.goal;
+    if (!goal) return "new5";
+    const monthsElapsed = Math.max(1, Math.round((Date.now() - new Date(goal.createdAt).getTime()) / (30 * 24 * 60 * 60 * 1000)));
+    const { contributionAmount } = getGoalContributionSummary();
+    const totalSaved = goal.savingsAllocated + (contributionAmount * monthsElapsed);
+    const pct = goal.amountNum > 0 ? Math.min(100, Math.round((totalSaved / goal.amountNum) * 100)) : 0;
+    if (pct >= 100) return "review-completed"; // goal fully funded
+    const expectedPct = (monthsElapsed / goal.timelineMonths) * 100;
+    if (pct <= expectedPct - 5) return "new5"; // behind → overspend alert
+    return "review-ontrack"; // on-track or ahead
   }, [userState?.goal, getGoalContributionSummary]);
 
   const openGoalDetail = useCallback((card: GoalProgressCardData) => {
@@ -3695,8 +3491,10 @@ Be insightful, not just descriptive.`;
     setSwipeQueue([]);
     setIsAgentProcessingGlow(false);
 
-    // Load directly into chat.
-    mutate({ currentStep: "home" });
+    // Only force home for non-preset users — presets define their own currentStep
+    if (!personaPreset) {
+      mutate({ currentStep: "home" });
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHydrated]);
@@ -3838,26 +3636,109 @@ Be insightful, not just descriptive.`;
   }, [isStreaming, homeSubflow, step]);
 
   // ============ RENDER ============
+
+  // ── Persona Picker (shown when no persona selected) ──
+  if (!personaId) {
+    const STAGE_TAG: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
+      "new-user":       { label: "onboarding",    variant: "default" },
+      "returning":      { label: "goal tracking", variant: "secondary" },
+      "inactive":       { label: "re-engagement", variant: "outline" },
+    };
+
+    return (
+      <div className="min-h-screen bg-muted/50">
+        <div className="mx-auto max-w-5xl px-12 py-20">
+          <h1 className="text-3xl font-semibold tracking-tight">AI Banker</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            Choose a user state to get started
+          </p>
+
+          <div className="mt-12 grid grid-cols-3 gap-5">
+            {PERSONA_PRESETS.map((p) => {
+              const tag = STAGE_TAG[p.id];
+              const disabled = p.id === "inactive";
+              const Wrapper = disabled ? "div" : "a";
+              const wrapperProps = disabled
+                ? { className: "cursor-not-allowed" }
+                : { href: `/?persona=${p.id}`, className: "no-underline" };
+              return (
+                <Wrapper key={p.id} {...(wrapperProps as any)}>
+                  <Card className={`flex h-full flex-col justify-between transition-colors ${disabled ? "opacity-45" : "hover:border-ring"}`}>
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        {p.label}
+                        {disabled && <Lock className="size-3.5 text-muted-foreground" />}
+                      </CardTitle>
+                      <CardDescription>{p.description}</CardDescription>
+                    </CardHeader>
+                    {tag && (
+                      <CardContent>
+                        <Badge variant={tag.variant}>{tag.label}</Badge>
+                      </CardContent>
+                    )}
+                  </Card>
+                </Wrapper>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isLocked = chatVisible;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f0f4f7] px-6 py-6" style={{ color: "rgba(0,0,0,0.9)" }}>
-      {/* Background decorations */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-white/70 blur-3xl" />
-        <div className="absolute bottom-8 left-1/2 h-48 w-72 -translate-x-1/2 rounded-full bg-white/50 blur-3xl" />
+    <div className="flex min-h-screen flex-col bg-muted/50">
+      {/* ── Top bar ── */}
+      <div className="flex items-center justify-between border-b px-4 py-2">
+        <ShadButton variant="ghost" size="sm" asChild>
+          <a href="/" className="no-underline">
+            <ChevronLeft className="size-4" />
+            Back
+          </a>
+        </ShadButton>
+        <ShadButton
+          variant="ghost"
+          size="sm"
+          onClick={() => window.location.reload()}
+        >
+          <RotateCw className="size-3.5" />
+          Reload
+        </ShadButton>
       </div>
 
-      <div className="relative w-full max-w-[480px]">
-        <div className="mx-auto max-w-[360px]">
-          <div className="mb-3 flex items-center px-1">
-            <div style={{ ...typography.caption, color: "#8e949d" }}>slice Banker</div>
-          </div>
-
+      {/* ── Main area ── */}
+      <div className="flex flex-1 items-center justify-center px-6 pb-6">
+        <div className="relative flex items-center justify-center gap-10" style={{ width: "100%", maxWidth: hasControls ? 720 : 480 }}>
+          {/* ── Device column ── */}
+          <div style={{ width: 360, flexShrink: 0 }}>
           <div className="relative rounded-[32px] bg-[#1a1a1e] p-[6px] shadow-[0_28px_70px_rgba(0,0,0,0.16),0_6px_18px_rgba(0,0,0,0.05)] ring-1 ring-white/5">
           <div ref={frameRef} className="relative z-10 aspect-[360/780] w-full overflow-hidden rounded-[26px] bg-white">
+            {/* ── V3 Onboarding (pre-onboarding users) ── */}
+            {!userState?.onboardingComplete && (step === "wrapped" || step === "goal") ? (
+              <OnboardingSim onComplete={() => {
+                mutate({
+                  onboardingComplete: true,
+                  currentStep: "home",
+                  goalStage: "pinned",
+                  goal: {
+                    name: "Trip to Japan",
+                    timeline: "Dec 2026",
+                    timelineMonths: 8,
+                    amount: "\u20b92,00,000",
+                    amountNum: 200000,
+                    savingsAllocated: 0,
+                    paceId: "balanced",
+                    createdAt: new Date().toISOString(),
+                  },
+                });
+              }} />
+            ) : (
             <>
               {/* ── Pay screen (default landing layer) ── */}
               <div className="absolute inset-0">
-                <PayScreen onChatOpen={openChatOverlay} onProfileOpen={openWrappedStories} />
+                <PayScreen onPillTap={openChatOverlay} pillLabel={userState?.goal ? `Chat with ${userState.voice === "byron" ? "Byron" : "Ryan"}` : undefined} />
               </div>
 
               {/* ── Chat (full-screen overlay) ── */}
@@ -3890,6 +3771,15 @@ Be insightful, not just descriptive.`;
                   onChipSelect={handleChipSelect}
                   showInitialPrompt={showInitialScreen}
                   initialScreenVariant={initialScreenVariant}
+                  goalSnapshot={goalTrackerGoals[0] ? { name: goalTrackerGoals[0].name, pct: goalTrackerGoals[0].pct, saved: goalTrackerGoals[0].saved, target: goalTrackerGoals[0].target, status: goalTrackerGoals[0].status, daysLabel: goalTrackerGoals[0].daysLabel } : undefined}
+                  voice={userState?.voice ?? "ryan"}
+                  onVoiceChange={(v) => {
+                    mutate({ voice: v });
+                    // Reset conversation when voice changes
+                    setMessages([]);
+                    setReviewMessages(null);
+                    setShowInitialScreen(true);
+                  }}
                   initialSuggestions={getSuggestions(!!userState?.goal)}
                   onInitialSuggestionClick={(id, title) => {
                     if (id === "review-goal") {
@@ -3930,10 +3820,10 @@ Be insightful, not just descriptive.`;
                   onSheetExpand={() => {}}
                   appBarDragHandleProps={{}}
                   goalTrailingSlot={
-                    GOAL_TRACKER_SCENARIOS[goalTrackerScenario].length > 0 ? (
+                    goalTrackerGoals.length > 0 ? (
                       <GoalTracker
-                        goals={GOAL_TRACKER_SCENARIOS[goalTrackerScenario]}
-                        singleVariant={goalTrackerScenario.includes("-icon") ? "icon" : "pct"}
+                        goals={goalTrackerGoals}
+                        singleVariant="pct"
                         onGoalTap={(goal) => {
                           openGoalDetail({
                             type: "goal-progress",
@@ -4333,7 +4223,7 @@ Be insightful, not just descriptive.`;
                   }}
                 >
                   <GoalListScreen
-                    goals={GOAL_TRACKER_SCENARIOS[goalTrackerScenario]}
+                    goals={goalTrackerGoals}
                     cardVariant={goalCardVariant}
                     onGoalTap={(goal) => {
                       setPotDetail({
@@ -4557,102 +4447,73 @@ Be insightful, not just descriptive.`;
                 </div>
               )}
             </>
+            )}
           </div>
           </div>
-        </div>{/* /mx-auto max-w-[360px] */}
+        </div>{/* /device column */}
 
-        {/* ── Debug Panel ── */}
-        <div className="mt-3">
-          <button
-            onClick={() => setDebugPanelOpen((o) => !o)}
-            className="flex w-full items-center justify-between rounded-xl border border-[rgba(0,0,0,0.2)] bg-white/70 px-4 py-2 backdrop-blur-sm transition-colors hover:bg-white/90"
-          >
-            <span style={{ ...typography.metadata, textTransform: "uppercase", color: "#8e949d" }}>
-              Debug
-            </span>
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              fill="none"
-              style={{
-                transform: debugPanelOpen ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 200ms ease",
-              }}
-            >
-              <path
-                d="M2 4L6 8L10 4"
-                stroke="rgba(0,0,0,0.3)"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+        {/* ── Control panel (right side) ── */}
+        {hasControls && (
+          <div className="w-[280px] shrink-0">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">{personaPreset?.label}</CardTitle>
+                <CardDescription>{personaPreset?.description}</CardDescription>
+              </CardHeader>
 
-          {debugPanelOpen && (
-            <div className="mt-1 rounded-xl border border-[rgba(0,0,0,0.2)] bg-white/80 p-4 backdrop-blur-sm space-y-3">
+              <CardContent className="flex flex-col gap-5">
+                {personaPreset?.controls?.map((group, gi) => {
+                  const activeIdx = activeSubstates[group.label] ?? 0;
+                  const activeId = group.substates[activeIdx]?.id ?? group.substates[0]?.id;
+                  return (
+                    <div key={group.label}>
+                      {gi > 0 && <Separator className="mb-5" />}
+                      <div className="flex flex-col gap-2.5">
+                        <div className="flex items-center gap-2">
+                          <Label className="text-xs">{group.label}</Label>
+                          {isLocked && <Lock className="size-3 text-muted-foreground" />}
+                        </div>
+                        <ToggleGroup
+                          type="single"
+                          value={activeId}
+                          disabled={isLocked}
+                          onValueChange={(val) => {
+                            if (!val || isLocked) return;
+                            const idx = group.substates.findIndex((s) => s.id === val);
+                            if (idx >= 0) handleSubstateChange(group.label, idx);
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="justify-start flex-wrap"
+                        >
+                          {group.substates.map((s) => (
+                            <ToggleGroupItem
+                              key={s.id}
+                              value={s.id}
+                              className="text-xs"
+                            >
+                              {s.label}
+                            </ToggleGroupItem>
+                          ))}
+                        </ToggleGroup>
+                      </div>
+                    </div>
+                  );
+                })}
 
-              <DbgRow label="Initial State">
-                <DbgBtn onClick={() => { setGoalTrackerScenario("single"); setInitialScreenVariant("new5"); showChatOverlay(true); }}>Behind</DbgBtn>
-                <DbgBtn onClick={() => { setGoalTrackerScenario("three"); setInitialScreenVariant("review-ontrack"); showChatOverlay(true); }}>On track</DbgBtn>
-                <DbgBtn onClick={() => { setGoalTrackerScenario("single"); setInitialScreenVariant("review-rent"); showChatOverlay(true); }}>Rent</DbgBtn>
-              </DbgRow>
+                {isLocked && (
+                  <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
+                    <Lock className="size-3 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">
+                      Hit reload to change state
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-              <div className="h-px bg-[#f0f4f7]" />
-
-              <DbgRow label="Goal Quiz">
-                <DbgBtn onClick={launchGoalQuiz}>Vacation</DbgBtn>
-              </DbgRow>
-
-              <div className="h-px bg-[#f0f4f7]" />
-
-              <DbgRow label="Spend">
-                <DbgBtn onClick={() => injectCardPreview(DBG_SPEND_OVERVIEW, "How much did I spend last month?")}>Overview</DbgBtn>
-
-                <DbgBtn onClick={() => injectCardPreview(DBG_CATEGORY_BAR, "Where did it all go?")}>Categories</DbgBtn>
-              </DbgRow>
-              <DbgRow label="Goal">
-                <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_AHEAD, "How's my Japan goal?")}>Ahead</DbgBtn>
-                <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_BEHIND, "How's my Japan goal?")}>Behind</DbgBtn>
-                <DbgBtn onClick={() => injectCardPreview(DBG_GOAL_ONTRACK, "How's my Japan goal?")}>On track</DbgBtn>
-              </DbgRow>
-              <DbgRow label="Goal Rings">
-                <DbgBtn onClick={() => setGoalTrackerScenario("single")}>1</DbgBtn>
-                <DbgBtn onClick={() => setGoalTrackerScenario("three")}>3</DbgBtn>
-              </DbgRow>
-              <DbgRow label="FD">
-                <DbgBtn onClick={() => injectCardPreview(DBG_FD_SETUP, "Can I park some savings?")}>Setup</DbgBtn>
-                <DbgBtn onClick={() => injectCardPreview(DBG_FD_ACTIVATED, "Can I park some savings?")}>Activated</DbgBtn>
-              </DbgRow>
-              <DbgRow label="Savings">
-                <DbgBtn onClick={() => injectCardPreview(DBG_SAVINGS_PLAN, "Build me a savings plan.")}>Plan</DbgBtn>
-              </DbgRow>
-
-              <div className="h-px bg-[#f0f4f7]" />
-
-              <DbgRow label="Merchants">
-                <DbgBtn onClick={() => injectCardPreview(DBG_MERCHANT_BAR, "Which merchants do I spend most at?")}>V1</DbgBtn>
-              </DbgRow>
-              <DbgRow label="MoM">
-                <DbgBtn onClick={() => injectCardPreview(DBG_CATEGORY_MOM, "How does this month compare to last?")}>V1</DbgBtn>
-                <DbgBtn onClick={() => injectCardPreview(DBG_SPEND_TREND, "Show me my spending trend.")}>Trend</DbgBtn>
-              </DbgRow>
-              <DbgRow label="Heatmap">
-                <DbgBtn onClick={() => injectCardPreview(DBG_HEATMAP, "Show me my spending pattern.")}>V1</DbgBtn>
-              </DbgRow>
-              <DbgRow label="Donut">
-                <DbgBtn onClick={() => injectCardPreview(DBG_DONUT_V2, "How do I pay for things?")}>Donut</DbgBtn>
-              </DbgRow>
-              <DbgRow label="Txn List">
-                <DbgBtn onClick={() => injectCardPreview(DBG_TXN_TABLE, "Show me recent transactions.")}>V1</DbgBtn>
-              </DbgRow>
-              <DbgRow label="Onboard">
-                <DbgBtn onClick={() => injectCardPreview(DBG_OBLIGATIONS_V2, "Let's set up your budget.")}>Oblig</DbgBtn>
-                <DbgBtn onClick={() => injectCardPreview(DBG_BIG_EXPENSES, "Any big payments coming up?")}>Big Exp</DbgBtn>
-              </DbgRow>
-            </div>
-          )}
         </div>
       </div>
     </div>

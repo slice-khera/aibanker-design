@@ -290,6 +290,8 @@ export type UserState = {
     subflowData: Record<string, string>;
   } | null;
 
+  voice: "ryan" | "byron";
+
   lastActiveAt: string;
   createdAt: string;
 };

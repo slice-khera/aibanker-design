@@ -48,6 +48,19 @@ export default function QuestionnaireOverlay({
   const inputRef = useRef<HTMLInputElement>(null);
   const question = questions[currentIndex];
 
+  // Track direction for slide animation
+  const prevIndexRef = useRef(currentIndex);
+  const [animClass, setAnimClass] = useState("");
+
+  useEffect(() => {
+    if (prevIndexRef.current === currentIndex) return;
+    const direction = currentIndex > prevIndexRef.current ? "next" : "prev";
+    prevIndexRef.current = currentIndex;
+    setAnimClass(direction === "next" ? "q-slide-in-right" : "q-slide-in-left");
+    const t = window.setTimeout(() => setAnimClass(""), 280);
+    return () => window.clearTimeout(t);
+  }, [currentIndex]);
+
   useEffect(() => {
     if (!question) return;
     const hasOptions = question.options.length > 0;
@@ -166,6 +179,8 @@ export default function QuestionnaireOverlay({
           </button>
         </div>
 
+        {/* ── Question content (animated) ── */}
+        <div key={question.id} className={animClass} style={{ overflow: "hidden" }}>
         {/* ── Question text ── */}
         <div style={{ padding: "0 24px 16px" }}>
           <h3 style={{ ...typography.headerH3, color: TEXT_PRIMARY, margin: 0 }}>
@@ -278,6 +293,7 @@ export default function QuestionnaireOverlay({
             }}
           />
         </div>
+        </div>{/* end animated question content */}
       </div>
     </div>
   );

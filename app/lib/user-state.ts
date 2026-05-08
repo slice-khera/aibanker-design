@@ -45,6 +45,7 @@ export function createDefaultUserState(userId: string, bufferAmount: number): Us
     preferences: [],
     spendRatings: [],
     nudges: [],
+    voice: "ryan",
     activeFlow: null,
     lastActiveAt: now,
     createdAt: now,

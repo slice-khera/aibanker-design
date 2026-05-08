@@ -22,18 +22,26 @@ function createDefaultUserState(userId: string, bufferAmount: number): UserState
     preferences: [],
     spendRatings: [],
     nudges: [],
+    voice: "ryan",
     activeFlow: null,
     lastActiveAt: new Date().toISOString(),
     createdAt: new Date().toISOString(),
   };
 }
 
-export function useUserState(profile: DerivedProfile) {
-  const [state, setState] = useState<UserState | null>(null);
-  const [isHydrated, setIsHydrated] = useState(false);
+/**
+ * @param profile  Derived financial profile
+ * @param presetOverride  If provided, skip API/localStorage and use this state directly.
+ *                        Used by the ?persona= system for read-only previews.
+ */
+export function useUserState(profile: DerivedProfile, presetOverride?: UserState | null) {
+  const [state, setState] = useState<UserState | null>(presetOverride ?? null);
+  const [isHydrated, setIsHydrated] = useState(!!presetOverride);
 
-  // Load userId from localStorage + fetch persisted state
+  // Load userId from localStorage + fetch persisted state (skipped when preset is active)
   useEffect(() => {
+    if (presetOverride) return;
+
     let id = localStorage.getItem("aibanker-user-id");
     if (!id) {
       id = crypto.randomUUID();
@@ -60,7 +68,7 @@ export function useUserState(profile: DerivedProfile) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Mutate: merge patch into state + auto-persist
+  // Mutate: merge patch into state + auto-persist (local-only when preset is active)
   const mutate = useCallback((patch: Partial<UserState>) => {
     setState((prev) => {
       if (!prev) return prev;
@@ -70,15 +78,17 @@ export function useUserState(profile: DerivedProfile) {
         next.budgetOverrides = { ...prev.budgetOverrides, ...patch.budgetOverrides };
       }
       next.lastActiveAt = new Date().toISOString();
-      // Fire-and-forget persist
-      fetch("/api/state", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: next.userId, state: next }),
-      }).catch(() => {});
+      // Skip persistence when running a persona preview
+      if (!presetOverride) {
+        fetch("/api/state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: next.userId, state: next }),
+        }).catch(() => {});
+      }
       return next;
     });
-  }, []);
+  }, [presetOverride]);
 
   // Reset state to defaults
   const resetState = useCallback(() => {
@@ -104,5 +114,10 @@ export function useUserState(profile: DerivedProfile) {
     window.location.reload();
   }, []);
 
-  return { state, mutate, resetState, resetUser, isHydrated };
+  // Full state replacement (used by substate toggling in persona previews)
+  const replaceState = useCallback((next: UserState) => {
+    setState(next);
+  }, []);
+
+  return { state, mutate, replaceState, resetState, resetUser, isHydrated };
 }
