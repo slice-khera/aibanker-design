@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 const NAV_LINKS = [
   { href: "/app/new-user", label: "App", prefix: "/app" },
   { href: "/playground/dls", label: "Playground", prefix: "/playground" },
+  { href: "/skills", label: "Skills", prefix: "/skills" },
 ];
 
 export default function TopNav() {

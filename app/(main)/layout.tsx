@@ -38,6 +38,10 @@ const PLAYGROUND_ITEMS = [
   { href: "/playground/flows", label: "Flows" },
 ];
 
+const SKILLS_ITEMS = [
+  { href: "/skills", label: "All skills" },
+];
+
 // ── Breadcrumb labels ────────────────────────────────────────
 const BREADCRUMB_LABELS: Record<string, string> = {
   "new-user": "New user",
@@ -52,10 +56,10 @@ const BREADCRUMB_LABELS: Record<string, string> = {
 
 function getBreadcrumb(pathname: string): { section: string; page: string } {
   const segments = pathname.split("/").filter(Boolean);
-  const section = segments[0] === "app" ? "App" : "Playground";
+  const section = segments[0] === "app" ? "App" : segments[0] === "skills" ? "Skills" : "Playground";
   const lastSegment = segments[segments.length - 1];
   const page =
-    lastSegment === "app" || lastSegment === "playground"
+    lastSegment === "app" || lastSegment === "playground" || lastSegment === "skills"
       ? "Overview"
       : BREADCRUMB_LABELS[lastSegment] ?? lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1);
   return { section, page };
@@ -65,7 +69,8 @@ export default function MainLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const breadcrumb = getBreadcrumb(pathname);
   const isApp = pathname.startsWith("/app");
-  const sidebarItems = isApp ? APP_ITEMS : PLAYGROUND_ITEMS;
+  const isSkills = pathname.startsWith("/skills");
+  const sidebarItems = isApp ? APP_ITEMS : isSkills ? SKILLS_ITEMS : PLAYGROUND_ITEMS;
 
   return (
     <div className="flex h-screen flex-col">
