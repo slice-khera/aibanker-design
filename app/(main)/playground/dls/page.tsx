@@ -1,11 +1,10 @@
 "use client";
 
-import { typography } from "../../lib/typography";
-import * as colors from "../../lib/colors";
-import { DlsTag } from "../../components/ChatCards";
-import { StatusBar, NavButton, AppBar, FooterInset, GestureNav } from "../../components/AppChrome";
-import type { ReactNode } from "react";
-import { SLATE_50, SLATE_300, SLATE_800, OUTLINE_SUBTLE } from "../../lib/colors";
+import { typography } from "@/app/lib/typography";
+import * as colors from "@/app/lib/colors";
+import { DlsTag } from "@/app/components/ChatCards";
+import { StatusBar, NavButton, AppBar, FooterInset, GestureNav } from "@/app/components/AppChrome";
+import { Separator } from "@/components/ui/separator";
 
 // ── Color swatch grid ─────────────────────────────────────────
 type Swatch = { name: string; value: string };
@@ -135,152 +134,159 @@ const ELEVATIONS = [
 const TAG_INTENTS = ["positive", "warning", "negative", "brand", "info", "neutral"] as const;
 const TAG_EMPHASES = ["subtle", "bold"] as const;
 
-// ── Section wrapper ───────────────────────────────────────────
-function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
-  return (
-    <section id={id} style={{ paddingBottom: 40, marginBottom: 40, borderBottom: `1px solid ${OUTLINE_SUBTLE}` }}>
-      <h2 style={{ ...typography.headerH3, color: SLATE_800, marginBottom: 16 }}>{title}</h2>
-      {children}
-    </section>
-  );
-}
-
-
+// ── Swatch component ─────────────────────────────────────────
 function SwatchBlock({ name, value }: Swatch) {
-  const isDark = value.startsWith("rgba(0") || value.startsWith("#0") || value.startsWith("#1") || value.startsWith("#2") || value.startsWith("#3");
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <div style={{
-        width: 64,
-        height: 48,
-        borderRadius: 8,
-        backgroundColor: value,
-        border: `1px solid ${OUTLINE_SUBTLE}`,
-      }} />
-      <span style={{ ...typography.metadata, color: SLATE_800 }}>{name.replace(/_/g, " ")}</span>
-      <span style={{ ...typography.metadata, color: SLATE_300 }}>{value}</span>
+    <div className="flex flex-col gap-1">
+      <div
+        className="h-12 w-16 rounded-lg border"
+        style={{ backgroundColor: value }}
+      />
+      <span className="text-xs font-medium text-foreground">{name.replace(/_/g, " ")}</span>
+      <span className="text-xs text-muted-foreground">{value}</span>
     </div>
   );
 }
 
 export default function DlsPage() {
   return (
-    <div style={{ padding: "32px 40px", maxWidth: 1200 }}>
-      <h1 style={{ ...typography.headerH1, color: SLATE_800, marginBottom: 32 }}>DLS</h1>
+    <div className="max-w-5xl px-8 py-8">
+      {/* Page header */}
+      <div className="mb-10">
+        <h1 className="text-2xl font-semibold tracking-tight">DLS</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Design language system tokens and primitives
+        </p>
+      </div>
 
-      {/* 1. Colors */}
-      <Section id="colors" title="Colors">
-        {COLOR_GROUPS.map((group) => (
-          <div key={group.title} style={{ marginBottom: 24 }}>
-            <h3 style={{ ...typography.headerH4, color: SLATE_300, marginBottom: 12 }}>{group.title}</h3>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
-              {group.swatches.map((s) => <SwatchBlock key={s.name} {...s} />)}
+      {/* ── Colors ── */}
+      <section id="colors" className="mb-10">
+        <h2 className="text-lg font-semibold mb-6">Colors</h2>
+        <div className="flex flex-col gap-8">
+          {COLOR_GROUPS.map((group) => (
+            <div key={group.title}>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">{group.title}</h3>
+              <div className="flex flex-wrap gap-4">
+                {group.swatches.map((s) => <SwatchBlock key={s.name} {...s} />)}
+              </div>
             </div>
-          </div>
-        ))}
-      </Section>
+          ))}
+        </div>
+      </section>
 
-      {/* 2. Typography */}
-      <Section id="typography" title="Typography">
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <Separator className="mb-10" />
+
+      {/* ── Typography ── */}
+      <section id="typography" className="mb-10">
+        <h2 className="text-lg font-semibold mb-6">Typography</h2>
+        <div className="flex flex-col gap-0">
           {TYPO_ENTRIES.map(([name, style]) => (
-            <div key={name} style={{ display: "flex", alignItems: "baseline", gap: 24, borderBottom: `1px solid ${OUTLINE_SUBTLE}`, paddingBottom: 16 }}>
-              <span style={{ ...typography.metadata, color: SLATE_300, width: 120, flexShrink: 0, textTransform: "uppercase" }}>{name}</span>
-              <span style={{ ...style, color: SLATE_800 }}>The quick brown fox</span>
-              <span style={{ ...typography.caption, color: SLATE_300, marginLeft: "auto", whiteSpace: "nowrap" }}>
+            <div key={name} className="flex items-baseline gap-6 border-b py-4">
+              <span className="w-28 shrink-0 text-xs font-medium uppercase text-muted-foreground">{name}</span>
+              <span style={{ ...style }} className="text-foreground">The quick brown fox</span>
+              <span className="ml-auto whitespace-nowrap text-xs text-muted-foreground">
                 {style.fontSize}px / {style.lineHeight} / w{style.fontWeight}
               </span>
             </div>
           ))}
         </div>
-      </Section>
+      </section>
 
-      {/* 3. Spacing */}
-      <Section id="spacing" title="Spacing">
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <Separator className="mb-10" />
+
+      {/* ── Spacing ── */}
+      <section id="spacing" className="mb-10">
+        <h2 className="text-lg font-semibold mb-6">Spacing</h2>
+        <div className="flex flex-col gap-3">
           {SPACING_VALUES.map((px) => (
-            <div key={px} style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <span style={{ ...typography.metadata, color: SLATE_300, width: 40, textAlign: "right" }}>{px}px</span>
-              <div style={{
-                width: px,
-                height: 24,
-                borderRadius: 4,
-                background: colors.VALENTINO_400,
-                opacity: 0.7,
-              }} />
+            <div key={px} className="flex items-center gap-4">
+              <span className="w-10 text-right text-xs text-muted-foreground">{px}px</span>
+              <div
+                className="h-6 rounded"
+                style={{
+                  width: px,
+                  backgroundColor: colors.VALENTINO_400,
+                  opacity: 0.7,
+                }}
+              />
             </div>
           ))}
         </div>
-      </Section>
+      </section>
 
-      {/* 4. Radii */}
-      <Section id="radii" title="Corner Radius">
-        <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+      <Separator className="mb-10" />
+
+      {/* ── Corner Radius ── */}
+      <section id="radii" className="mb-10">
+        <h2 className="text-lg font-semibold mb-6">Corner radius</h2>
+        <div className="flex flex-wrap gap-6">
           {RADII.map(({ label, value }) => (
-            <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-              <div style={{
-                width: 80,
-                height: 80,
-                borderRadius: value,
-                border: `2px solid ${colors.VALENTINO_500}`,
-                background: colors.VALENTINO_50,
-              }} />
-              <span style={{ ...typography.caption, color: SLATE_800 }}>{label}</span>
-              <span style={{ ...typography.metadata, color: SLATE_300 }}>{value}px</span>
+            <div key={label} className="flex flex-col items-center gap-2">
+              <div
+                className="h-20 w-20"
+                style={{
+                  borderRadius: value,
+                  border: `2px solid ${colors.VALENTINO_500}`,
+                  backgroundColor: colors.VALENTINO_50,
+                }}
+              />
+              <span className="text-xs font-medium text-foreground">{label}</span>
+              <span className="text-xs text-muted-foreground">{value}px</span>
             </div>
           ))}
         </div>
-      </Section>
+      </section>
 
-      {/* 5. Elevation */}
-      <Section id="elevation" title="Elevation">
-        <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+      <Separator className="mb-10" />
+
+      {/* ── Elevation ── */}
+      <section id="elevation" className="mb-10">
+        <h2 className="text-lg font-semibold mb-6">Elevation</h2>
+        <div className="flex flex-wrap gap-6">
           {ELEVATIONS.map(({ label, shadow }) => (
-            <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-              <div style={{
-                width: 160,
-                height: 100,
-                borderRadius: 16,
-                background: "#fff",
-                boxShadow: shadow,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}>
-                <span style={{ ...typography.bodySmall, color: SLATE_300 }}>{label}</span>
+            <div key={label} className="flex flex-col items-center gap-2">
+              <div
+                className="flex h-24 w-40 items-center justify-center rounded-2xl bg-background"
+                style={{ boxShadow: shadow }}
+              >
+                <span className="text-sm text-muted-foreground">{label}</span>
               </div>
             </div>
           ))}
         </div>
-      </Section>
+      </section>
 
-      {/* 6. Primitives */}
-      <Section id="primitives" title="Primitives">
-        {/* Status Bar */}
-        <h3 style={{ ...typography.headerH4, color: SLATE_300, marginBottom: 12 }}>StatusBar</h3>
-        <div style={{ width: 360, marginBottom: 24, border: `1px solid ${OUTLINE_SUBTLE}`, borderRadius: 8, overflow: "hidden" }}>
+      <Separator className="mb-10" />
+
+      {/* ── Primitives ── */}
+      <section id="primitives">
+        <h2 className="text-lg font-semibold mb-6">Primitives</h2>
+
+        {/* StatusBar */}
+        <h3 className="text-sm font-medium text-muted-foreground mb-3">StatusBar</h3>
+        <div className="mb-6 w-[360px] overflow-hidden rounded-lg border border-dashed border-muted-foreground/25">
           <StatusBar />
         </div>
 
-        {/* App Bar */}
-        <h3 style={{ ...typography.headerH4, color: SLATE_300, marginBottom: 12 }}>AppBar</h3>
-        <div style={{ width: 360, marginBottom: 24, border: `1px solid ${OUTLINE_SUBTLE}`, borderRadius: 8, overflow: "hidden" }}>
+        {/* AppBar */}
+        <h3 className="text-sm font-medium text-muted-foreground mb-3">AppBar</h3>
+        <div className="mb-6 w-[360px] overflow-hidden rounded-lg border border-dashed border-muted-foreground/25">
           <AppBar title="Page Title" leading={<NavButton kind="back" />} trailing={<NavButton kind="close" />} />
         </div>
 
         {/* Footer & GestureNav */}
-        <h3 style={{ ...typography.headerH4, color: SLATE_300, marginBottom: 12 }}>FooterInset + GestureNav</h3>
-        <div style={{ width: 360, marginBottom: 24, border: `1px solid ${OUTLINE_SUBTLE}`, borderRadius: 8, overflow: "hidden" }}>
+        <h3 className="text-sm font-medium text-muted-foreground mb-3">FooterInset + GestureNav</h3>
+        <div className="mb-6 w-[360px] overflow-hidden rounded-lg border border-dashed border-muted-foreground/25">
           <FooterInset />
           <GestureNav />
         </div>
 
-        {/* Tags — 12 variants */}
-        <h3 style={{ ...typography.headerH4, color: SLATE_300, marginBottom: 12 }}>Tag (6 intents × 2 emphasis)</h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+        {/* Tags */}
+        <h3 className="text-sm font-medium text-muted-foreground mb-3">Tag (6 intents × 2 emphasis)</h3>
+        <div className="flex flex-col gap-3 mb-6">
           {TAG_EMPHASES.map((emp) => (
-            <div key={emp} style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-              <span style={{ ...typography.metadata, color: SLATE_300, width: 48, textTransform: "uppercase" }}>{emp}</span>
+            <div key={emp} className="flex flex-wrap items-center gap-2">
+              <span className="w-12 text-xs font-medium uppercase text-muted-foreground">{emp}</span>
               {TAG_INTENTS.map((intent) => (
                 <DlsTag key={`${emp}-${intent}`} intent={intent} emphasis={emp}>
                   {intent}
@@ -289,7 +295,7 @@ export default function DlsPage() {
             </div>
           ))}
         </div>
-      </Section>
+      </section>
     </div>
   );
 }

@@ -135,20 +135,6 @@ export const DBG_FD_ACTIVATED: ChatCardData = {
   activated: true,
 };
 
-export const DBG_SAVINGS_PLAN: ChatCardData = {
-  type: "savings-plan",
-  name: "Trip to Japan",
-  target: 150000,
-  timeline: "Dec 2025",
-  existingSavings: 30000,
-  monthlyAmount: 8500,
-  productType: "RD",
-  productLabel: "Recurring Deposit",
-  rate: "6.5% p.a.",
-  pct: 20,
-  timelineLabel: "11 months \u00b7 Dec 2025",
-};
-
 // ─── Visualization fixtures ───────────────────────────────────
 
 export const DBG_MERCHANT_BAR: ChatCardData = {

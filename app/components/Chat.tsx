@@ -1375,7 +1375,7 @@ export default function Chat({
                     />
                     {goalSnapshot && (
                       <div className="mt-4">
-                        <ChatCard card={{ type: "goal-progress", variant: "card", name: goalSnapshot.name, pct: goalSnapshot.pct, saved: goalSnapshot.saved, target: goalSnapshot.target, status: goalSnapshot.status, daysLabel: goalSnapshot.daysLabel }} />
+                        <ChatCard card={{ type: "goal-progress", name: goalSnapshot.name, pct: goalSnapshot.pct, saved: goalSnapshot.saved, target: goalSnapshot.target, status: goalSnapshot.status, daysLabel: goalSnapshot.daysLabel }} />
                       </div>
                     )}
                   </div>

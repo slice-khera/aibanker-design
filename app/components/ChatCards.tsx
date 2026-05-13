@@ -9,37 +9,32 @@ import {
   ORANGE_50, ORANGE_400, ORANGE_500, ORANGE_600,
   BLUE_50, BLUE_500,
   SLATE_10, SLATE_30, SLATE_50, SLATE_300, SLATE_500, SLATE_800,
-  BG_SURFACE,
 } from "../lib/colors";
 
 // ─── Shared types ──────────────────────────────────────────
 
-export type CardVariant = "card" | "surface";
-
 export type ChatCardData =
-  | { type: "spend-overview"; variant?: CardVariant; month: string; amount: number; comparisonText: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number }
-  | { type: "category-breakdown"; variant?: CardVariant; month: string; amount: number; subtext: string; showAll?: boolean; categories: { name: string; amount: number; pct: number; color: string; icon: ReactNode }[] }
-  | { type: "investment-product"; variant?: CardVariant; productType: string; amount: number; rate: string; tenure: string; amountOptions: { label: string; value: number }[]; accountLabel: string; activated?: boolean; onContinue?: () => void; onInvest?: (amount: number) => void; onAmountSelect?: (amount: number) => void; onArrowTap?: () => void }
-  | { type: "goal-progress"; variant?: CardVariant; name: string; pct: number; saved: number; target: number; daysLabel: string; status: "ahead" | "behind" | "on-track"; onArrowTap?: () => void }
-  | { type: "savings-plan"; variant?: CardVariant; name: string; target: number; timeline: string; existingSavings: number; monthlyAmount: number; productType: string; productLabel: string; rate: string; pct: number; timelineLabel: string }
-  | { type: "merchant-concentration"; variant?: CardVariant; month: string; totalSpend: number; totalMerchants?: number; merchants: { name: string; amount: number; pct: number; color: string }[] }
-  | { type: "category-mom"; variant?: CardVariant; thisMonth: string; lastMonth: string; categories: { name: string; thisValue: number; lastValue: number; color: string }[] }
-  | { type: "spending-heatmap"; variant?: CardVariant; month: string; year: number; startDay: number; dailySpend: (number | null)[]; maxSpend: number }
-  | { type: "payment-mode-donut-v2"; variant?: CardVariant; month: string; totalSpend: number; modes: { name: string; amount: number; pct: number; color: string }[] }
-  | { type: "transaction-table"; variant?: CardVariant; title: string; transactions: { date: string; merchant: string; amount: number; category: string }[] }
-  | { type: "obligations-list-v2"; variant?: CardVariant; items: { id: string; payee: string; amount: number; type: string; seenMonths: string }[]; monthlyIncome: number; onSubmit?: (selected: { id: string; amount: number; type: string }[]) => void; submitted?: boolean; onArrowTap?: () => void }
-  | { type: "big-expenses"; variant?: CardVariant; transactions: { id: string; payee: string; date: string; type: string; amount: number }[]; periodLabel: string; total: number; onRowTap?: (id: string) => void }
-  | { type: "spend-trend"; variant?: CardVariant; month: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number }
-  | { type: "add-to-pot"; variant?: CardVariant; goalName: string; amount: number; fromAccount: string; activated?: boolean; onAdd?: () => void };
+  | { type: "spend-overview"; month: string; amount: number; comparisonText: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number }
+  | { type: "category-breakdown"; month: string; amount: number; subtext: string; showAll?: boolean; categories: { name: string; amount: number; pct: number; color: string; icon: ReactNode }[] }
+  | { type: "investment-product"; productType: string; amount: number; rate: string; tenure: string; amountOptions: { label: string; value: number }[]; accountLabel: string; activated?: boolean; onContinue?: () => void; onInvest?: (amount: number) => void; onAmountSelect?: (amount: number) => void; onArrowTap?: () => void }
+  | { type: "goal-progress"; name: string; pct: number; saved: number; target: number; daysLabel: string; status: "ahead" | "behind" | "on-track"; onArrowTap?: () => void }
+  | { type: "savings-plan"; name: string; target: number; timeline: string; existingSavings: number; monthlyAmount: number; productType: string; productLabel: string; rate: string; pct: number; timelineLabel: string }
+  | { type: "merchant-concentration"; month: string; totalSpend: number; totalMerchants?: number; merchants: { name: string; amount: number; pct: number; color: string }[] }
+  | { type: "category-mom"; thisMonth: string; lastMonth: string; categories: { name: string; thisValue: number; lastValue: number; color: string }[] }
+  | { type: "spending-heatmap"; month: string; year: number; startDay: number; dailySpend: (number | null)[]; maxSpend: number }
+  | { type: "payment-mode-donut-v2"; month: string; totalSpend: number; modes: { name: string; amount: number; pct: number; color: string }[] }
+  | { type: "transaction-table"; title: string; transactions: { date: string; merchant: string; amount: number; category: string }[] }
+  | { type: "obligations-list-v2"; items: { id: string; payee: string; amount: number; type: string; seenMonths: string }[]; monthlyIncome: number; onSubmit?: (selected: { id: string; amount: number; type: string }[]) => void; submitted?: boolean; onArrowTap?: () => void }
+  | { type: "big-expenses"; transactions: { id: string; payee: string; date: string; type: string; amount: number }[]; periodLabel: string; total: number; onRowTap?: (id: string) => void }
+  | { type: "spend-trend"; month: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number }
+  | { type: "add-to-pot"; goalName: string; amount: number; fromAccount: string; activated?: boolean; onAdd?: () => void };
 
 // ─── Taxonomy aliases ─────────────────────────────────────
-// Visualizations: 10 data displays (flat on surface, no bounding box)
+// Visualizations: 8 data displays (flat on surface, no bounding box)
 export type VisualizationData = Extract<
   ChatCardData,
   | { type: "spend-overview" }
   | { type: "category-breakdown" }
-  | { type: "goal-progress" }
-  | { type: "savings-plan" }
   | { type: "merchant-concentration" }
   | { type: "category-mom" }
   | { type: "spending-heatmap" }
@@ -48,13 +43,15 @@ export type VisualizationData = Extract<
   | { type: "spend-trend" }
 >;
 
-// Widgets: 4 actionable items (enclosed container)
+// Widgets: 6 actionable items (enclosed container)
 export type WidgetData = Extract<
   ChatCardData,
   | { type: "investment-product" }
   | { type: "obligations-list-v2" }
   | { type: "big-expenses" }
   | { type: "add-to-pot" }
+  | { type: "goal-progress" }
+  | { type: "savings-plan" }
 >;
 
 // ─── Helpers ───────────────────────────────────────────────
@@ -153,7 +150,6 @@ export function DlsTag({
 
 // ─── Shared card shell ─────────────────────────────────────
 
-const CARD_BG = BG_SURFACE;
 const CARD_RADIUS = 16;
 const CARD_PAD = "16px";
 
@@ -254,7 +250,7 @@ function ConfirmedRow({ label, onArrowTap }: { label: string; onArrowTap?: () =>
 // ─── 1. Spend Overview Card ────────────────────────────────
 
 function SpendOverviewCard({ data }: { data: Extract<ChatCardData, { type: "spend-overview" }> }) {
-  const { month, chartData, average, highlightIndex, variant = "card" } = data;
+  const { month, chartData, average, highlightIndex } = data;
   const [activeIndex, setActiveIndex] = useState(highlightIndex);
   const svgRef = useRef<SVGSVGElement>(null);
   const isDragging = useRef(false);
@@ -378,30 +374,15 @@ function SpendOverviewCard({ data }: { data: Extract<ChatCardData, { type: "spen
   const displayMonth = activeIndex === highlightIndex ? month : activeMonthLabel;
   const displayAmount = activeMonthValue;
 
-  if (variant === "surface") {
-    return (
-      <div style={{ padding: "4px 0 8px" }}>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
-          {displayMonth} spends
-        </p>
-        <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
-          {formatINRFull(displayAmount)}
-        </p>
-        <p style={{ ...typography.caption, color: comparisonColor, marginBottom: 12 }}>
-          {comparisonLabel}
-        </p>
-        {chart}
-      </div>
-    );
-  }
-
   return (
-    <div style={{ backgroundColor: CARD_BG, borderRadius: CARD_RADIUS, padding: CARD_PAD }}>
-      <CardHeader label={`${displayMonth} spends`} />
+    <div style={{ padding: "4px 0 8px" }}>
+      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+        {displayMonth} spends
+      </p>
       <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
         {formatINRFull(displayAmount)}
       </p>
-      <p style={{ ...typography.caption, color: "#ff9a17", marginBottom: 12 }}>
+      <p style={{ ...typography.caption, color: comparisonColor, marginBottom: 12 }}>
         {comparisonLabel}
       </p>
       {chart}
@@ -546,7 +527,7 @@ function trackColor(fill: string): string {
 }
 
 function CategoryBreakdownCard({ data }: { data: Extract<ChatCardData, { type: "category-breakdown" }> }) {
-  const { variant, month, amount, subtext, showAll, categories } = data;
+  const { month, amount, subtext, showAll, categories } = data;
 
   // Enforce max 5 items: if >5, show top 4 + "Other" rollup
   const capped = (() => {
@@ -624,37 +605,17 @@ function CategoryBreakdownCard({ data }: { data: Extract<ChatCardData, { type: "
     </div>
   );
 
-  if (variant === "surface") {
-    return (
-      <div style={{ padding: "4px 0 8px" }}>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
-          {month} spends
-        </p>
-        <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
-          {formatINRFull(amount)}
-        </p>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 16 }}>
-          {subtext}
-        </p>
-        {categoryRows}
-      </div>
-    );
-  }
-
   return (
-    <div style={{ backgroundColor: CARD_BG, borderRadius: CARD_RADIUS, padding: CARD_PAD }}>
-      <CardHeader label={`${month} spends`} />
-
+    <div style={{ padding: "4px 0 8px" }}>
+      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+        {month} spends
+      </p>
       <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
         {formatINRFull(amount)}
       </p>
       <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 16 }}>
         {subtext}
       </p>
-
-      {/* Hairline divider */}
-      <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginBottom: 16 }} />
-
       {categoryRows}
     </div>
   );
@@ -780,7 +741,7 @@ function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-po
 // ─── 4. Goal Progress Card ─────────────────────────────────
 
 function GoalProgressCard({ data }: { data: Extract<ChatCardData, { type: "goal-progress" }> }) {
-  const { variant = "card", name, pct, saved, target, daysLabel, status, onArrowTap } = data;
+  const { name, pct, saved, target, daysLabel, status } = data;
   const statusColor = status === "ahead" ? "#00a63e" : status === "behind" ? "#ce1d26" : "#ff9a17";
   const statusBg = status === "ahead" ? "#e0f4e8" : status === "behind" ? "#f9e4e5" : "#fff3e3";
   const clampedPct = Math.min(pct, 100);
@@ -832,12 +793,10 @@ function GoalProgressCard({ data }: { data: Extract<ChatCardData, { type: "goal-
     </>
   );
 
-  const shell = variant === "surface"
-    ? { backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD }
-    : { backgroundColor: CARD_BG, borderRadius: CARD_RADIUS, padding: CARD_PAD };
+  const cardShell = { backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD } as const;
 
-  return (
-    <div style={shell}>
+  const inner = (
+    <>
       {/* Header row: label left, status pill right */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <span style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.5)" }}>
@@ -846,66 +805,22 @@ function GoalProgressCard({ data }: { data: Extract<ChatCardData, { type: "goal-
         {statusPill}
       </div>
       {content}
-    </div>
+    </>
   );
+
+  return <div style={cardShell}>{inner}</div>;
 }
 
 // ─── 5. Savings Plan Card ─────────────────────────────────
 
 function SavingsPlanCard({ data }: { data: Extract<ChatCardData, { type: "savings-plan" }> }) {
-  const { variant = "card", name, target, timeline, existingSavings, monthlyAmount, productType, rate, pct, timelineLabel } = data;
+  const { name, target, timeline, existingSavings, monthlyAmount, productType, rate, pct, timelineLabel } = data;
   const clampedPct = Math.min(pct, 100);
 
-  if (variant === "surface") {
-    return (
-      <div style={{ backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD }}>
-        <CardHeader label="Savings plan" />
-
-        <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
-          {name}
-        </p>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 16 }}>
-          {formatINRFull(target)} by {timeline}
-        </p>
-
-        {/* Progress bar */}
-        <div style={{ height: 8, backgroundColor: "#fae2fa", borderRadius: 100, overflow: "hidden", marginBottom: 16 }}>
-          <div style={{ width: `${clampedPct}%`, height: "100%", backgroundColor: "#d30ad7", borderRadius: 100 }} />
-        </div>
-
-        {/* Detail rows */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-          {existingSavings > 0 && (
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ ...typography.caption, color: "rgba(0,0,0,0.5)" }}>Existing savings applied</span>
-              <span style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.9)" }}>{formatINRFull(existingSavings)}</span>
-            </div>
-          )}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ ...typography.caption, color: "rgba(0,0,0,0.5)" }}>Monthly via {productType}</span>
-            <span style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.9)" }}>{formatINRFull(monthlyAmount)}</span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ ...typography.caption, color: "rgba(0,0,0,0.5)" }}>Rate</span>
-            <span style={{ ...typography.buttonSmall, color: "#00a63e" }}>{rate}</span>
-          </div>
-        </div>
-
-        {/* Hairline */}
-        <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginBottom: 12 }} />
-
-        {/* Timeline label */}
-        <div style={{ display: "inline-flex", alignItems: "center", padding: "4px 8px", borderRadius: 100, backgroundColor: "#e6edf9" }}>
-          <span style={{ ...typography.metadata, textTransform: "uppercase", color: "#2b6acf" }}>
-            {timelineLabel}
-          </span>
-        </div>
-      </div>
-    );
-  }
+  const shell = { backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD } as const;
 
   return (
-    <div style={{ backgroundColor: CARD_BG, borderRadius: CARD_RADIUS, padding: CARD_PAD }}>
+    <div style={shell}>
       <CardHeader label="Savings plan" />
 
       <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
@@ -971,7 +886,7 @@ function SavingsPlanCard({ data }: { data: Extract<ChatCardData, { type: "saving
 const PALETTE = ["#d30ad7", "#2b6acf", "#ff9a17", "#00a63e", "#ce1d26", "#87068a", "#5e8edb", "#ffb24f", "#3dbb6c", "#4e5866"];
 
 function MerchantConcentrationCard({ data }: { data: Extract<ChatCardData, { type: "merchant-concentration" }> }) {
-  const { variant = "card", month, totalSpend, totalMerchants, merchants } = data;
+  const { month, totalSpend, totalMerchants, merchants } = data;
   const merchantCount = totalMerchants ?? merchants.length;
 
   // Enforce max 5 items: if >5, show top 4 + "Other" rollup
@@ -1027,34 +942,17 @@ function MerchantConcentrationCard({ data }: { data: Extract<ChatCardData, { typ
     </div>
   );
 
-  if (variant === "surface") {
-    return (
-      <div style={{ padding: "4px 0 8px" }}>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
-          {month} spends
-        </p>
-        <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
-          {formatINRFull(totalSpend)}
-        </p>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 16 }}>
-          across {merchantCount} merchants
-        </p>
-        {rows}
-      </div>
-    );
-  }
-
   return (
-    <div style={{ backgroundColor: CARD_BG, borderRadius: CARD_RADIUS, padding: CARD_PAD }}>
-      <CardHeader label={`${month} spends`} />
+    <div style={{ padding: "4px 0 8px" }}>
+      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+        {month} spends
+      </p>
       <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
         {formatINRFull(totalSpend)}
       </p>
       <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 16 }}>
         across {merchantCount} merchants
       </p>
-      {/* Divider */}
-      <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginBottom: 16 }} />
       {rows}
     </div>
   );
@@ -1063,7 +961,7 @@ function MerchantConcentrationCard({ data }: { data: Extract<ChatCardData, { typ
 // ─── 7. Category Month-over-Month Comparison ──────────────
 
 function CategoryMomCard({ data }: { data: Extract<ChatCardData, { type: "category-mom" }> }) {
-  const { variant = "card", thisMonth, lastMonth, categories: rawCategories } = data;
+  const { thisMonth, lastMonth, categories: rawCategories } = data;
 
   // Enforce max 5 items: if >5, show top 4 + "Other" rollup
   const categories = (() => {
@@ -1190,33 +1088,17 @@ function CategoryMomCard({ data }: { data: Extract<ChatCardData, { type: "catego
     </div>
   );
 
-  if (variant === "surface") {
-    return (
-      <div style={{ padding: "4px 0 8px" }} onClick={() => setSelectedCat(null)}>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
-          {displayTitle}
-        </p>
-        <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
-          {formatINRFull(displayThisValue)}
-        </p>
-        <p style={{ ...typography.caption, color: displayDiffColor, marginBottom: 16 }}>
-          {displayDiffLabel}
-        </p>
-        {chart}
-      </div>
-    );
-  }
-
   return (
-    <div style={{ backgroundColor: CARD_BG, borderRadius: CARD_RADIUS, padding: CARD_PAD }} onClick={() => setSelectedCat(null)}>
-      <CardHeader label={displayTitle} />
+    <div style={{ padding: "4px 0 8px" }} onClick={() => setSelectedCat(null)}>
+      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+        {displayTitle}
+      </p>
       <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
         {formatINRFull(displayThisValue)}
       </p>
       <p style={{ ...typography.caption, color: displayDiffColor, marginBottom: 16 }}>
         {displayDiffLabel}
       </p>
-      <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginBottom: 16 }} />
       {chart}
     </div>
   );
@@ -1225,7 +1107,7 @@ function CategoryMomCard({ data }: { data: Extract<ChatCardData, { type: "catego
 // ─── 7b. Spend Trend (bar chart version of spend overview) ─
 
 function SpendTrendCard({ data }: { data: Extract<ChatCardData, { type: "spend-trend" }> }) {
-  const { month, chartData, average, highlightIndex, variant = "card" } = data;
+  const { month, chartData, average, highlightIndex } = data;
   const [activeIndex, setActiveIndex] = useState(highlightIndex);
 
   const maxVal = Math.max(...chartData.map((d) => d.value), average) * 1.15;
@@ -1329,33 +1211,17 @@ function SpendTrendCard({ data }: { data: Extract<ChatCardData, { type: "spend-t
     </div>
   );
 
-  if (variant === "surface") {
-    return (
-      <div style={{ padding: "4px 0 8px" }} onClick={() => setActiveIndex(highlightIndex)}>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
-          {displayMonth} spends
-        </p>
-        <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
-          {formatINRFull(activeMonthValue)}
-        </p>
-        <p style={{ ...typography.caption, color: comparisonColor, marginBottom: 16 }}>
-          {comparisonLabel}
-        </p>
-        {chart}
-      </div>
-    );
-  }
-
   return (
-    <div style={{ backgroundColor: CARD_BG, borderRadius: CARD_RADIUS, padding: CARD_PAD }} onClick={() => setActiveIndex(highlightIndex)}>
-      <CardHeader label={`${displayMonth} spends`} />
+    <div style={{ padding: "4px 0 8px" }} onClick={() => setActiveIndex(highlightIndex)}>
+      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+        {displayMonth} spends
+      </p>
       <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
         {formatINRFull(activeMonthValue)}
       </p>
       <p style={{ ...typography.caption, color: comparisonColor, marginBottom: 16 }}>
         {comparisonLabel}
       </p>
-      <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginBottom: 16 }} />
       {chart}
     </div>
   );
@@ -1364,7 +1230,7 @@ function SpendTrendCard({ data }: { data: Extract<ChatCardData, { type: "spend-t
 // ─── 8. Spending Heatmap ──────────────────────────────────
 
 function SpendingHeatmapCard({ data }: { data: Extract<ChatCardData, { type: "spending-heatmap" }> }) {
-  const { variant = "card", month, startDay, dailySpend, maxSpend } = data;
+  const { month, startDay, dailySpend, maxSpend } = data;
   const totalSpend = dailySpend.reduce<number>((s, v) => s + (v ?? 0), 0);
 
   // Find day-of-week with highest total spend
@@ -1443,35 +1309,17 @@ function SpendingHeatmapCard({ data }: { data: Extract<ChatCardData, { type: "sp
     </div>
   );
 
-  if (variant === "surface") {
-    return (
-      <div style={{ padding: "4px 0 8px" }}>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
-          {month} spending pattern
-        </p>
-        <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
-          {formatINRFull(totalSpend)}
-        </p>
-        <p style={{ ...typography.caption, color: "#d30ad7", marginBottom: 16 }}>
-          highest spends on {peakDay}
-        </p>
-        {chart}
-      </div>
-    );
-  }
-
   return (
-    <div style={{ backgroundColor: CARD_BG, borderRadius: CARD_RADIUS, padding: CARD_PAD }}>
+    <div style={{ padding: "4px 0 8px" }}>
       <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
         {month} spending pattern
       </p>
       <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
         {formatINRFull(totalSpend)}
       </p>
-      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 16 }}>
+      <p style={{ ...typography.caption, color: "#d30ad7", marginBottom: 16 }}>
         highest spends on {peakDay}
       </p>
-      <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginBottom: 16 }} />
       {chart}
     </div>
   );
@@ -1480,7 +1328,7 @@ function SpendingHeatmapCard({ data }: { data: Extract<ChatCardData, { type: "sp
 // ─── 9. Payment Mode Donut ────────────────────────────────
 
 function PaymentModeDonutCardV2({ data }: { data: Extract<ChatCardData, { type: "payment-mode-donut-v2" }> }) {
-  const { variant = "card", month, totalSpend, modes: rawModes } = data;
+  const { month, totalSpend, modes: rawModes } = data;
 
   // Enforce max 5 items: if >5, show top 4 + "Other" rollup
   const modes = (() => {
@@ -1572,25 +1420,8 @@ function PaymentModeDonutCardV2({ data }: { data: Extract<ChatCardData, { type: 
     </div>
   );
 
-  if (variant === "surface") {
-    return (
-      <div style={{ padding: "4px 0 8px" }}>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
-          {month} spends
-        </p>
-        <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
-          {formatINRFull(totalSpend)}
-        </p>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
-          across {modes.length} payment modes
-        </p>
-        {donutAndLegend}
-      </div>
-    );
-  }
-
   return (
-    <div style={{ backgroundColor: CARD_BG, borderRadius: CARD_RADIUS, padding: CARD_PAD }}>
+    <div style={{ padding: "4px 0 8px" }}>
       <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
         {month} spends
       </p>
@@ -1600,7 +1431,6 @@ function PaymentModeDonutCardV2({ data }: { data: Extract<ChatCardData, { type: 
       <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
         across {modes.length} payment modes
       </p>
-      <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginBottom: 8 }} />
       {donutAndLegend}
     </div>
   );
@@ -1609,7 +1439,7 @@ function PaymentModeDonutCardV2({ data }: { data: Extract<ChatCardData, { type: 
 // ─── 10. Transaction Table ────────────────────────────────
 
 function TransactionTableCard({ data }: { data: Extract<ChatCardData, { type: "transaction-table" }> }) {
-  const { variant = "card", title, transactions } = data;
+  const { title, transactions } = data;
   const MAX_ROWS = 5;
   const displayTx = transactions.slice(0, MAX_ROWS);
   const overflow = transactions.length - MAX_ROWS;
@@ -1698,33 +1528,17 @@ function TransactionTableCard({ data }: { data: Extract<ChatCardData, { type: "t
     </div>
   );
 
-  if (variant === "surface") {
-    return (
-      <div style={{ padding: "4px 0 8px" }}>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
-          {title}
-        </p>
-        <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
-          {formatINRFull(totalAmount)}
-        </p>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 16 }}>
-          {dateRange}
-        </p>
-        {txList}
-      </div>
-    );
-  }
-
   return (
-    <div style={{ backgroundColor: CARD_BG, borderRadius: CARD_RADIUS, padding: CARD_PAD }}>
-      <CardHeader label={title} />
+    <div style={{ padding: "4px 0 8px" }}>
+      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+        {title}
+      </p>
       <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
         {formatINRFull(totalAmount)}
       </p>
       <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 16 }}>
         {dateRange}
       </p>
-      <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginBottom: 16 }} />
       {txList}
     </div>
   );
@@ -1747,7 +1561,7 @@ const TAG_INTENT: Record<string, { bg: string; text: string }> = {
 // ─── Big Expenses Card ────────────────────────────────────
 
 function BigExpensesCard({ data }: { data: Extract<ChatCardData, { type: "big-expenses" }> }) {
-  const { variant = "card", transactions, periodLabel, total, onRowTap } = data;
+  const { transactions, periodLabel, total, onRowTap } = data;
   const MAX_ROWS = 5;
   const displayTx = transactions.slice(0, MAX_ROWS);
   const overflow = transactions.length - MAX_ROWS;
@@ -1828,17 +1642,6 @@ function BigExpensesCard({ data }: { data: Extract<ChatCardData, { type: "big-ex
       {txList}
     </>
   );
-
-  if (variant === "surface") {
-    return (
-      <div style={{ padding: "4px 0 8px" }}>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
-          Recent big payments
-        </p>
-        {cardContent}
-      </div>
-    );
-  }
 
   return (
     <div style={{ backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD }}>

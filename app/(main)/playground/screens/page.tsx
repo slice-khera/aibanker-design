@@ -1,19 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { typography } from "../../lib/typography";
-import { SLATE_300, SLATE_800 } from "../../lib/colors";
-import { SCREEN_STATUS, STATUSES } from "../_shared/status-registry";
-import type { ItemStatus } from "../_shared/status-registry";
-import PlaygroundCard from "../_shared/PlaygroundCard";
+import { SCREEN_STATUS, STATUSES } from "@/app/preview/_shared/status-registry";
+import type { ItemStatus } from "@/app/preview/_shared/status-registry";
+import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 
 // Screen components
-import GoalListScreen from "../../components/GoalListScreen";
-import PotDetail from "../../components/PotDetail";
-import ChatInitialScreen, { getSuggestions } from "../../components/ChatInitialScreen";
-import QuestionnaireOverlay from "../../components/QuestionnaireOverlay";
+import GoalListScreen from "@/app/components/GoalListScreen";
+import PotDetail from "@/app/components/PotDetail";
+import ChatInitialScreen, { getSuggestions } from "@/app/components/ChatInitialScreen";
+import QuestionnaireOverlay from "@/app/components/QuestionnaireOverlay";
+import FeaturePDP from "@/app/components/FeaturePDP";
 
-import { GOAL_TRACKER_SCENARIOS, DBG_GOAL_QUESTIONS } from "../../lib/debug-fixtures";
+import { GOAL_TRACKER_SCENARIOS, DBG_GOAL_QUESTIONS } from "@/app/lib/debug-fixtures";
 
 // ── Screen definitions ────────────────────────────────────────
 type ScreenDef = {
@@ -32,10 +31,33 @@ const goalAhead = goalsTwo[0];
 const goalBehind = GOAL_TRACKER_SCENARIOS["single-alert"][0];
 const goalOnTrack = goalSingle[0];
 
+const PDP_FEATURES = [
+  { title: "Spending, decoded", subtitle: "See where your money actually goes" },
+  { title: "Goals on autopilot", subtitle: "Set a target, get a plan, stay on track" },
+];
+
 const SCREENS: ScreenDef[] = [
   {
+    id: "feature-pdp",
+    label: "Feature page",
+    variants: [
+      {
+        name: "default",
+        render: () => (
+          <FeaturePDP
+            productName="Meet Ryan"
+            subtitle={"Keeps track of your money,\nso you don't have to"}
+            features={PDP_FEATURES}
+            onClose={noop}
+            onAction={noop}
+          />
+        ),
+      },
+    ],
+  },
+  {
     id: "goal-list",
-    label: "Goal List",
+    label: "Goal list",
     variants: [
       { name: "1 goal", render: () => <GoalListScreen goals={goalSingle} onGoalTap={noop} onClose={noop} cardVariant="v1" /> },
       { name: "2 goals", render: () => <GoalListScreen goals={goalsTwo} onGoalTap={noop} onClose={noop} cardVariant="v2" /> },
@@ -44,7 +66,7 @@ const SCREENS: ScreenDef[] = [
   },
   {
     id: "pot-detail",
-    label: "Pot Detail",
+    label: "Pot detail",
     variants: [
       { name: "ahead", render: () => <PotDetail name={goalAhead.name} saved={goalAhead.saved} target={goalAhead.target} pct={goalAhead.pct} status={goalAhead.status} daysLabel={goalAhead.daysLabel} icon={goalAhead.heroEmoji ?? "✈️"} heroScene={goalAhead.heroScene} onBack={noop} /> },
       { name: "behind", render: () => <PotDetail name={goalBehind.name} saved={goalBehind.saved} target={goalBehind.target} pct={goalBehind.pct} status={goalBehind.status} daysLabel={goalBehind.daysLabel} icon={goalBehind.heroEmoji ?? "✈️"} heroScene={goalBehind.heroScene} onBack={noop} /> },
@@ -53,7 +75,7 @@ const SCREENS: ScreenDef[] = [
   },
   {
     id: "chat-initial",
-    label: "Chat Initial",
+    label: "Chat initial",
     variants: [
       { name: "new5", render: () => <ChatInitialScreen suggestions={getSuggestions(false)} onSuggestionClick={noop} onSubmit={noop} variant="new5" /> },
       { name: "review-ontrack", render: () => <ChatInitialScreen suggestions={getSuggestions(true)} onSuggestionClick={noop} onSubmit={noop} variant="review-ontrack" /> },
@@ -101,13 +123,15 @@ export default function ScreensPage() {
   };
 
   return (
-    <div style={{ padding: "32px 40px" }}>
-      <h1 style={{ ...typography.headerH1, color: SLATE_800, marginBottom: 4 }}>Screens</h1>
-      <p style={{ ...typography.bodySmall, color: SLATE_300, marginBottom: 32 }}>
-        Standalone screen components in device frames.
-      </p>
+    <div className="px-8 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">Screens</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Individual screens in device frames
+        </p>
+      </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <div className="flex flex-col gap-6">
         {SCREENS.map((screen) => (
           <ScreenEntry
             key={screen.id}

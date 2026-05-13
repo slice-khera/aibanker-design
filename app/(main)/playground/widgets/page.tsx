@@ -1,17 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { typography } from "../../lib/typography";
-import { SLATE_300, SLATE_800 } from "../../lib/colors";
-import ChatCard from "../../components/ChatCards";
-import type { ChatCardData } from "../../components/ChatCards";
-import { WIDGET_STATUS, STATUSES } from "../_shared/status-registry";
-import type { ItemStatus } from "../_shared/status-registry";
-import PlaygroundCard from "../_shared/PlaygroundCard";
+import ChatCard from "@/app/components/ChatCards";
+import type { ChatCardData } from "@/app/components/ChatCards";
+import { WIDGET_STATUS, STATUSES } from "@/app/preview/_shared/status-registry";
+import type { ItemStatus } from "@/app/preview/_shared/status-registry";
+import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 import {
   DBG_FD_SETUP, DBG_FD_ACTIVATED,
-  DBG_OBLIGATIONS_V2, DBG_BIG_EXPENSES,
-} from "../../lib/debug-fixtures";
+  DBG_OBLIGATIONS_V2,
+  DBG_BIG_EXPENSES,
+} from "@/app/lib/debug-fixtures";
 
 // ── Widget items with state variants ──────────────────────────
 type WidgetItem = {
@@ -23,34 +22,33 @@ type WidgetItem = {
 const WIDGET_ITEMS: WidgetItem[] = [
   {
     type: "investment-product",
-    label: "Investment Product (FD)",
+    label: "Investment product",
     fixtures: [
-      { name: "setup", data: { ...DBG_FD_SETUP, variant: "card" } },
-      { name: "activated", data: { ...DBG_FD_ACTIVATED, variant: "card" } },
+      { name: "setup", data: { ...DBG_FD_SETUP } },
+      { name: "activated", data: { ...DBG_FD_ACTIVATED } },
     ],
   },
   {
     type: "obligations-list-v2",
-    label: "Obligations List",
+    label: "Obligations list",
     fixtures: [
-      { name: "unsubmitted", data: { ...DBG_OBLIGATIONS_V2, variant: "card" } },
-      { name: "submitted", data: { ...DBG_OBLIGATIONS_V2, variant: "card", submitted: true } as ChatCardData },
+      { name: "unsubmitted", data: { ...DBG_OBLIGATIONS_V2 } },
+      { name: "submitted", data: { ...DBG_OBLIGATIONS_V2, submitted: true } as ChatCardData },
     ],
   },
   {
     type: "big-expenses",
-    label: "Big Expenses",
-    fixtures: [{ name: "default", data: { ...DBG_BIG_EXPENSES, variant: "card" } }],
+    label: "Big expenses",
+    fixtures: [{ name: "default", data: { ...DBG_BIG_EXPENSES } }],
   },
   {
     type: "add-to-pot",
-    label: "Add to Pot",
+    label: "Add to pot",
     fixtures: [
       {
         name: "default",
         data: {
           type: "add-to-pot",
-          variant: "card",
           goalName: "Trip to Japan",
           amount: 5000,
           fromAccount: "Savings xx1234",
@@ -60,7 +58,6 @@ const WIDGET_ITEMS: WidgetItem[] = [
         name: "activated",
         data: {
           type: "add-to-pot",
-          variant: "card",
           goalName: "Trip to Japan",
           amount: 5000,
           fromAccount: "Savings xx1234",
@@ -100,13 +97,15 @@ export default function WidgetsPage() {
   };
 
   return (
-    <div style={{ padding: "32px 40px" }}>
-      <h1 style={{ ...typography.headerH1, color: SLATE_800, marginBottom: 4 }}>Widgets</h1>
-      <p style={{ ...typography.bodySmall, color: SLATE_300, marginBottom: 32 }}>
-        4 actionable items — enclosed containers with interactive controls.
-      </p>
+    <div className="px-8 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">Widgets</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Interactive cards for goals, investments, and savings
+        </p>
+      </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <div className="flex flex-col gap-6">
         {WIDGET_ITEMS.map((item) => (
           <WidgetEntry
             key={item.type}

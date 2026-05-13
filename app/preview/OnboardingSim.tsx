@@ -29,6 +29,7 @@ import WrappedCard from "./WrappedCard";
 import WrappedStory from "./WrappedStory";
 import AASim from "./AASim";
 import SharedPayScreen from "../components/PayScreen";
+import FeaturePDP from "../components/FeaturePDP";
 import {
   WRAPPED_BEATS,
   PRE_WRAPPED_BUBBLES,
@@ -179,11 +180,13 @@ function FeedbackRow() {
 
 function FloatingAppBar({
   onClose,
+  navKind = "close",
   mode = "simple",
   activeVoice = "ryan",
   onVoiceToggle,
 }: {
   onClose: () => void;
+  navKind?: "close" | "back";
   mode?: "simple" | "toggle";
   activeVoice?: Voice;
   onVoiceToggle?: (v: Voice) => void;
@@ -197,7 +200,7 @@ function FloatingAppBar({
             <button
               type="button"
               onClick={onClose}
-              aria-label="Close"
+              aria-label={navKind === "back" ? "Back" : "Close"}
               className="flex items-center justify-center rounded-full bg-white"
               style={{
                 width: 48,
@@ -207,9 +210,15 @@ function FloatingAppBar({
                 cursor: "pointer",
               }}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M18 6L6 18M6 6l12 12" stroke={TEXT_PRIMARY} strokeWidth="2" strokeLinecap="round" />
-              </svg>
+              {navKind === "back" ? (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M15 6L9 12L15 18" stroke={TEXT_PRIMARY} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              ) : (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 6L6 18M6 6l12 12" stroke={TEXT_PRIMARY} strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              )}
             </button>
           </div>
           {mode === "toggle" && onVoiceToggle ? (
@@ -344,7 +353,15 @@ function PlaygroundTraitsList({ traits }: { traits: NonNullable<PlaygroundReveal
 //  Main sim
 // ══════════════════════════════════════════════════════════════════
 
+const PDP_FEATURES = [
+  { title: "Spending, decoded", subtitle: "See where your money actually goes" },
+  { title: "Goals on autopilot", subtitle: "Set a target, get a plan, stay on track" },
+];
+
 export default function OnboardingSim({ onComplete }: { onComplete?: () => void } = {}) {
+  // Single overlay — content swaps between "pdp" and "chat" inside it
+  const [overlayScreen, setOverlayScreen] = useState<"pdp" | "chat">("pdp");
+  const [pdpSeen, setPdpSeen] = useState(false); // once true, pill tap goes straight to chat
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [overlayMounted, setOverlayMounted] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -470,16 +487,19 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
   }, []);
 
   const openOverlay = useCallback(() => {
+    // First time → show PDP; returning → straight to chat
+    setOverlayScreen(pdpSeen ? "chat" : "pdp");
     setOverlayMounted(true);
     overlayAnimatingRef.current = true;
     window.setTimeout(() => { overlayAnimatingRef.current = false; }, OVERLAY_DURATION + 50);
     requestAnimationFrame(() => requestAnimationFrame(() => setOverlayOpen(true)));
-  }, []);
+  }, [pdpSeen]);
 
   const closeOverlay = useCallback(() => {
     setOverlayOpen(false);
     window.setTimeout(() => {
       setOverlayMounted(false);
+      setOverlayScreen(pdpSeen ? "chat" : "pdp");
       // Only full-reset if AA hasn't completed yet
       if (!aaChipPicked) {
         setStepIndex(0);
@@ -511,7 +531,18 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
         setPillLabel("Meet Ryan");
       }
     }, OVERLAY_DURATION);
-  }, [aaChipPicked]);
+  }, [aaChipPicked, pdpSeen]);
+
+  // PDP → FAB tap: advance from PDP to chat within the overlay
+  const handlePdpAction = useCallback(() => {
+    setPdpSeen(true);
+    setOverlayScreen("chat");
+  }, []);
+
+  // Chat → back to PDP (only during first-time onboarding, before "Ryan is ready")
+  const handleChatBack = useCallback(() => {
+    setOverlayScreen("pdp");
+  }, []);
 
   // Track scroll for top fade gradient + scroll-to-bottom pill
   useEffect(() => {
@@ -1264,7 +1295,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
       {/* Layer 0: Pay screen */}
       <SharedPayScreen onPillTap={openOverlay} pillLabel={pillLabel} animate={ryanReady} />
 
-      {/* Layer 1: Chat overlay */}
+      {/* Layer 1: Single overlay — content swaps between PDP and chat */}
       <div
         className="absolute inset-0 z-20"
         style={{
@@ -1274,128 +1305,145 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
           willChange: "transform",
         }}
       >
-        <FloatingAppBar
-          onClose={closeOverlay}
-          mode={appBarMode}
-          activeVoice={voice}
-          onVoiceToggle={(v) => {
-            if (v === voice) return;
-            setContentVisible(false);
-            window.setTimeout(() => {
-              setVoice(v);
-              window.setTimeout(() => setContentVisible(true), 50);
-            }, 200);
-          }}
-        />
-
-        {/* PlanCruncherV2 — below app bar */}
-        {overlayMounted && cruncherVisible && (
-          <div className="absolute left-4 right-4 z-10" style={{ top: 108 }}>
-            <PlanCruncherV2
-              goalName={goalLabel}
-              visible={cruncherVisible}
-              statusText={cruncherStatus}
-              completed={cruncherDone}
-              completedSubtitle="Your spending snapshot is ready"
-            />
-          </div>
+        {/* ── PDP screen ── */}
+        {overlayScreen === "pdp" && overlayMounted && (
+          <FeaturePDP
+            productName="Meet Ryan"
+            subtitle={"Keeps track of your money,\nso you don't have to"}
+            features={PDP_FEATURES}
+            onClose={closeOverlay}
+            onAction={handlePdpAction}
+          />
         )}
 
-        {overlayMounted && (
+        {/* ── Chat screen ── */}
+        {overlayScreen === "chat" && (
           <>
-            {/* Top fade gradient — visible on scroll */}
-            <div
-              className="absolute left-0 right-0 z-[9]"
-              style={{
-                top: 0,
-                height: 120,
-                pointerEvents: "none",
-                background: "linear-gradient(to bottom, white 60%, transparent 100%)",
-                opacity: hasScrolled ? 1 : 0,
-                transition: "opacity 200ms ease",
+            <FloatingAppBar
+              onClose={ryanReady ? closeOverlay : handleChatBack}
+              navKind={ryanReady ? "close" : "back"}
+              mode={appBarMode}
+              activeVoice={voice}
+              onVoiceToggle={(v) => {
+                if (v === voice) return;
+                setContentVisible(false);
+                window.setTimeout(() => {
+                  setVoice(v);
+                  window.setTimeout(() => setContentVisible(true), 50);
+                }, 200);
               }}
             />
 
-            {chatContent}
-
-            {/* Scroll-to-bottom pill */}
-            <button
-              onClick={() => {
-                const scroller = scrollRef.current;
-                if (scroller) scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
-              }}
-              className="absolute z-[11] flex items-center justify-center rounded-full bg-white active:scale-95 transition-all duration-200 ease-out"
-              style={{
-                bottom: prefQuizOpen ? 340 : 80,
-                right: SPACE_L,
-                width: 36,
-                height: 36,
-                border: `1px solid ${OUTLINE_SUBTLE}`,
-                boxShadow: ELEVATION_CARD,
-                opacity: hasContentBelow ? 1 : 0,
-                pointerEvents: hasContentBelow ? "auto" : "none",
-                transition: `opacity 200ms ease, bottom 300ms ease`,
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M8 3v10M4 9l4 4 4-4" stroke={TEXT_TERTIARY} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-
-            {/* QuestionnaireOverlay */}
-            {prefQuizOpen && (
-              <div className="absolute bottom-0 left-0 right-0 z-20">
-                <QuestionnaireOverlay
-                  questions={prefQuestions}
-                  currentIndex={prefQuizIndex}
-                  answers={prefAnswers}
-                  onSelectOption={handlePrefSelect}
-                  onSubmitFreeText={handlePrefFreeText}
-                  onNavigate={handlePrefNavigate}
-                  onClose={handlePrefClose}
+            {/* PlanCruncherV2 — below app bar */}
+            {overlayMounted && cruncherVisible && (
+              <div className="absolute left-4 right-4 z-10" style={{ top: 108 }}>
+                <PlanCruncherV2
+                  goalName={goalLabel}
+                  visible={cruncherVisible}
+                  statusText={cruncherStatus}
+                  completed={cruncherDone}
+                  completedSubtitle="Your spending snapshot is ready"
                 />
               </div>
             )}
 
-            {/* Input bar — appears after verbose plan */}
-            {STEPS[stepIndex]?.kind === "input-bar" && (
-              <div className="absolute bottom-0 left-0 right-0 z-20 animate-chat-message-in">
-                <div className="flex flex-wrap gap-3 px-4 pb-2">
-                  {POST_PLAN_CHIPS.map((chip) => (
-                    <button
-                      key={chip.id}
-                      type="button"
-                      className="transition-transform active:scale-[0.97]"
-                      style={{
-                        ...typography.buttonSmall,
-                        color: TEXT_PRIMARY,
-                        backgroundColor: BG_SECONDARY,
-                        border: `1px solid ${OUTLINE_SUBTLE}`,
-                        borderRadius: 100,
-                        padding: `${SPACE_XS}px ${SPACE_M}px`,
-                        cursor: "pointer",
-                      }}
-                    >
-                      {chip.label}
-                    </button>
-                  ))}
-                </div>
-                <TypeBox
-                  value=""
-                  onChange={() => {}}
-                  onSubmit={() => {}}
-                  placeholder={`Reply to ${voice === "byron" ? "Byron" : "Ryan"}...`}
+            {overlayMounted && (
+              <>
+                {/* Top fade gradient — visible on scroll */}
+                <div
+                  className="absolute left-0 right-0 z-[9]"
+                  style={{
+                    top: 0,
+                    height: 120,
+                    pointerEvents: "none",
+                    background: "linear-gradient(to bottom, white 60%, transparent 100%)",
+                    opacity: hasScrolled ? 1 : 0,
+                    transition: "opacity 200ms ease",
+                  }}
                 />
+
+                {chatContent}
+
+                {/* Scroll-to-bottom pill */}
+                <button
+                  onClick={() => {
+                    const scroller = scrollRef.current;
+                    if (scroller) scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
+                  }}
+                  className="absolute z-[11] flex items-center justify-center rounded-full bg-white active:scale-95 transition-all duration-200 ease-out"
+                  style={{
+                    bottom: prefQuizOpen ? 340 : 80,
+                    right: SPACE_L,
+                    width: 36,
+                    height: 36,
+                    border: `1px solid ${OUTLINE_SUBTLE}`,
+                    boxShadow: ELEVATION_CARD,
+                    opacity: hasContentBelow ? 1 : 0,
+                    pointerEvents: hasContentBelow ? "auto" : "none",
+                    transition: `opacity 200ms ease, bottom 300ms ease`,
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 3v10M4 9l4 4 4-4" stroke={TEXT_TERTIARY} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+
+                {/* QuestionnaireOverlay */}
+                {prefQuizOpen && (
+                  <div className="absolute bottom-0 left-0 right-0 z-20">
+                    <QuestionnaireOverlay
+                      questions={prefQuestions}
+                      currentIndex={prefQuizIndex}
+                      answers={prefAnswers}
+                      onSelectOption={handlePrefSelect}
+                      onSubmitFreeText={handlePrefFreeText}
+                      onNavigate={handlePrefNavigate}
+                      onClose={handlePrefClose}
+                    />
+                  </div>
+                )}
+
+                {/* Input bar — appears after verbose plan */}
+                {STEPS[stepIndex]?.kind === "input-bar" && (
+                  <div className="absolute bottom-0 left-0 right-0 z-20 animate-chat-message-in">
+                    <div className="flex flex-wrap gap-3 px-4 pb-2">
+                      {POST_PLAN_CHIPS.map((chip) => (
+                        <button
+                          key={chip.id}
+                          type="button"
+                          className="transition-transform active:scale-[0.97]"
+                          style={{
+                            ...typography.buttonSmall,
+                            color: TEXT_PRIMARY,
+                            backgroundColor: BG_SECONDARY,
+                            border: `1px solid ${OUTLINE_SUBTLE}`,
+                            borderRadius: 100,
+                            padding: `${SPACE_XS}px ${SPACE_M}px`,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {chip.label}
+                        </button>
+                      ))}
+                    </div>
+                    <TypeBox
+                      value=""
+                      onChange={() => {}}
+                      onSubmit={() => {}}
+                      placeholder={`Reply to ${voice === "byron" ? "Byron" : "Ryan"}...`}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Gesture nav — hidden when input bar is showing */}
+            {STEPS[stepIndex]?.kind !== "input-bar" && (
+              <div className="absolute bottom-0 left-0 right-0">
+                <GestureNav backgroundColor="transparent" />
               </div>
             )}
           </>
-        )}
-
-        {/* Gesture nav — hidden when input bar is showing */}
-        {STEPS[stepIndex]?.kind !== "input-bar" && (
-          <div className="absolute bottom-0 left-0 right-0">
-            <GestureNav backgroundColor="transparent" />
-          </div>
         )}
       </div>
 

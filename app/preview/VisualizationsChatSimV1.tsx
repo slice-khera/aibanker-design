@@ -35,7 +35,6 @@ const MESSAGES: SimMessage[] = [
     text: "You\u2019re slightly behind on your Japan trip goal. Here\u2019s where you stand.",
     card: {
       type: "goal-progress",
-      variant: "surface",
       name: "Trip to Japan",
       pct: 42,
       saved: 84000,
@@ -52,7 +51,6 @@ const MESSAGES: SimMessage[] = [
     text: "A short-term FD could help. Here\u2019s a good option at 7.1% for 6 months.",
     card: {
       type: "investment-product",
-      variant: "surface",
       productType: "Fixed Deposit",
       amount: 25000,
       rate: "7.1%",
@@ -73,7 +71,6 @@ const MESSAGES: SimMessage[] = [
     text: "Or we could set up a structured savings plan for the Japan trip.",
     card: {
       type: "savings-plan",
-      variant: "surface",
       name: "Trip to Japan",
       target: 200000,
       timeline: "4 months",
@@ -94,7 +91,6 @@ const MESSAGES: SimMessage[] = [
     text: "Here are the obligations I\u2019ve tracked. Review and confirm what\u2019s still active.",
     card: {
       type: "obligations-list-v2",
-      variant: "surface",
       monthlyIncome: 120000,
       items: [
         { id: "1", payee: "House Rent", amount: 25000, type: "Rent", seenMonths: "Every month" },

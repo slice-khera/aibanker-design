@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import PotDetail from "../components/PotDetail";
-import QuestionnaireOverlay from "../components/QuestionnaireOverlay";
-import { typography } from "../lib/typography";
+import PotDetail from "@/app/components/PotDetail";
+import QuestionnaireOverlay from "@/app/components/QuestionnaireOverlay";
+import { typography } from "@/app/lib/typography";
 
 const DEMO_QUESTIONS = [
   {

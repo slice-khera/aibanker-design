@@ -22,14 +22,13 @@ export const STATUS_TAG_PROPS: Record<ItemStatus, { intent: "brand" | "positive"
 export const VIZ_STATUS: Record<string, ItemStatus> = {
   "spend-overview":         "confirmed",
   "category-breakdown":     "confirmed",
-  "goal-progress":          "confirmed",
-  "savings-plan":           "confirmed",
   "merchant-concentration": "exploring",
   "category-mom":           "exploring",
   "spending-heatmap":       "exploring",
   "payment-mode-donut-v2":  "exploring",
   "transaction-table":      "exploring",
   "spend-trend":            "exploring",
+  "goal-progress":          "confirmed",
 };
 
 // ── Widgets ───────────────────────────────────────────────────
@@ -42,6 +41,7 @@ export const WIDGET_STATUS: Record<string, ItemStatus> = {
 
 // ── Screens ───────────────────────────────────────────────────
 export const SCREEN_STATUS: Record<string, ItemStatus> = {
+  "feature-pdp":    "exploring",
   "goal-list":      "confirmed",
   "pot-detail":     "confirmed",
   "chat-initial":   "confirmed",

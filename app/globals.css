@@ -21,8 +21,8 @@
   --accent-foreground: #87068A;
   --destructive: #CE1D26;
   --destructive-foreground: #FFFFFF;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: rgba(0, 0, 0, 0.1);
+  --border: hsl(220 13% 91%);
+  --input: hsl(220 13% 91%);
   --ring: #D30AD7;
   --radius: 0.5rem;
 
@@ -81,6 +81,15 @@
 
 * {
   box-sizing: border-box;
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop {
+    border-color: var(--color-border, currentColor);
+  }
 }
 
 html,

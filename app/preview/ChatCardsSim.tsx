@@ -278,7 +278,7 @@ export default function ChatCardsSim() {
             <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.4)", margin: 0, marginBottom: 6 }}>
               {c.label}
             </p>
-            <ChatCard card={{ ...c.data, variant: "surface" }} />
+            <ChatCard card={{ ...c.data }} />
           </div>
         ))}
         <div style={{ height: 24 }} />

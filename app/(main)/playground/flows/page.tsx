@@ -1,26 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { typography } from "../../lib/typography";
-import { SLATE_300, SLATE_800 } from "../../lib/colors";
-import { FLOW_STATUS, STATUSES } from "../_shared/status-registry";
-import type { ItemStatus } from "../_shared/status-registry";
-import PlaygroundCard from "../_shared/PlaygroundCard";
+import { FLOW_STATUS, STATUSES } from "@/app/preview/_shared/status-registry";
+import type { ItemStatus } from "@/app/preview/_shared/status-registry";
+import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 
 // Sim imports — reused as-is
-import OnboardingSim from "../OnboardingSim";
-import AASim from "../AASim";
-import SavingsFlowSim from "../SavingsFlowSim";
-import SavingsFlowSimBottom from "../SavingsFlowSimBottom";
-import VisualizationsChatSimV1 from "../VisualizationsChatSimV1";
-import VisualizationsChatSimV2 from "../VisualizationsChatSimV2";
-import AppEntryPointSim from "../AppEntryPointSim";
-import DegenModeSimV1 from "../DegenModeSimV1";
-import RedditSimV1 from "../RedditSimV1";
-import RedditSimV2 from "../RedditSimV2";
-import RefreshSessionSimV1 from "../RefreshSessionSimV1";
-import RefreshSessionSimV2 from "../RefreshSessionSimV2";
-import DrawerExperienceSim from "../../components/DrawerExperienceSim";
+import OnboardingSim from "@/app/preview/OnboardingSim";
+import AASim from "@/app/preview/AASim";
+import SavingsFlowSim from "@/app/preview/SavingsFlowSim";
+import SavingsFlowSimBottom from "@/app/preview/SavingsFlowSimBottom";
+import VisualizationsChatSimV1 from "@/app/preview/VisualizationsChatSimV1";
+import VisualizationsChatSimV2 from "@/app/preview/VisualizationsChatSimV2";
+import AppEntryPointSim from "@/app/preview/AppEntryPointSim";
+import DegenModeSimV1 from "@/app/preview/DegenModeSimV1";
+import RedditSimV1 from "@/app/preview/RedditSimV1";
+import RedditSimV2 from "@/app/preview/RedditSimV2";
+import RefreshSessionSimV1 from "@/app/preview/RefreshSessionSimV1";
+import RefreshSessionSimV2 from "@/app/preview/RefreshSessionSimV2";
+import DrawerExperienceSim from "@/app/components/DrawerExperienceSim";
 
 // ── Flow definitions ──────────────────────────────────────────
 type FlowDef = {
@@ -35,23 +33,23 @@ const FLOWS: FlowDef[] = [
   {
     id: "onboarding",
     label: "Onboarding",
-    description: "First-time user journey — quiz, chat-led, and PlanMode variants",
+    description: "First-time user journey — quiz, chat, and plan mode",
     variants: [
       { name: "v1", render: () => <OnboardingSim /> },
     ],
   },
   {
     id: "aa",
-    label: "AA",
-    description: "Account Aggregator — value prop → bank select → OTP → consent → success",
+    label: "Account aggregation",
+    description: "Value prop, bank select, OTP, consent, and success",
     variants: [
       { name: "v1", render: () => <AASim /> },
     ],
   },
   {
     id: "planmode-savings",
-    label: "PlanMode Savings",
-    description: "Savings goal flow with spinner cruncher and interactive conversation",
+    label: "Plan mode savings",
+    description: "Savings goal flow with cruncher and interactive conversation",
     variants: [
       { name: "top", render: () => <SavingsFlowSim /> },
       { name: "bottom", render: () => <SavingsFlowSimBottom /> },
@@ -59,8 +57,8 @@ const FLOWS: FlowDef[] = [
   },
   {
     id: "visualizations",
-    label: "Visualizations Chat",
-    description: "Staged chat showing all card types interspersed with messages",
+    label: "Visualizations chat",
+    description: "Chat showing all card types with messages",
     variants: [
       { name: "v1", render: () => <VisualizationsChatSimV1 /> },
       { name: "v2", render: () => <VisualizationsChatSimV2 /> },
@@ -68,16 +66,16 @@ const FLOWS: FlowDef[] = [
   },
   {
     id: "app-entry-point",
-    label: "AppEntryPoint",
-    description: "Purple home screen with scrollable pills",
+    label: "App entry point",
+    description: "Home screen with scrollable pills",
     variants: [
       { name: "full-sim", render: () => <AppEntryPointSim /> },
     ],
   },
   {
     id: "degen-mode",
-    label: "DegenMode",
-    description: "Degen Mode exploration — baseline",
+    label: "Degen mode",
+    description: "Degen mode exploration — baseline",
     variants: [
       { name: "v1", render: () => <DegenModeSimV1 /> },
     ],
@@ -94,8 +92,8 @@ const FLOWS: FlowDef[] = [
   },
   {
     id: "refresh-session",
-    label: "RefreshSession",
-    description: "Refresh session variants",
+    label: "Refresh session",
+    description: "Re-engagement after inactivity",
     variants: [
       { name: "v1", render: () => <RefreshSessionSimV1 /> },
       { name: "v2", render: () => <RefreshSessionSimV2 /> },
@@ -103,8 +101,8 @@ const FLOWS: FlowDef[] = [
   },
   {
     id: "drawer-experience",
-    label: "DrawerExperience",
-    description: "Drawer push up/down — My Money back layer + Chat sheet",
+    label: "Drawer experience",
+    description: "Drawer push up/down with back layer and chat sheet",
     variants: [
       { name: "v1", render: () => <DrawerExperienceSim /> },
     ],
@@ -145,13 +143,15 @@ export default function FlowsPage() {
   };
 
   return (
-    <div style={{ padding: "32px 40px" }}>
-      <h1 style={{ ...typography.headerH1, color: SLATE_800, marginBottom: 4 }}>Flows</h1>
-      <p style={{ ...typography.bodySmall, color: SLATE_300, marginBottom: 32 }}>
-        End-to-end journeys in device frames. Reuses existing sim files as-is.
-      </p>
+    <div className="px-8 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">Flows</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Complete user journeys from onboarding to daily use
+        </p>
+      </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <div className="flex flex-col gap-6">
         {FLOWS.map((flow) => (
           <FlowEntry
             key={flow.id}
