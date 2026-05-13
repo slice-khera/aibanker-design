@@ -14,7 +14,7 @@ import RedditSimV1 from "@/app/preview/RedditSimV1";
 import RedditSimV2 from "@/app/preview/RedditSimV2";
 import RefreshSessionSimV1 from "@/app/preview/RefreshSessionSimV1";
 import RefreshSessionSimV2 from "@/app/preview/RefreshSessionSimV2";
-import DrawerExperienceSim from "@/app/components/DrawerExperienceSim";
+import DrawerExperienceSim from "@/app/preview/DrawerExperienceSim";
 
 // ── Flow definitions ──────────────────────────────────────────
 type FlowDef = {

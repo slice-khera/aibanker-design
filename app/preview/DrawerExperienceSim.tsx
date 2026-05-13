@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { StatusBar } from "./AppChrome";
-import Chat from "./Chat";
+import { StatusBar } from "../components/AppChrome";
+import Chat from "../components/Chat";
 import { typography } from "../lib/typography";
 import {
   TEXT_PRIMARY,
