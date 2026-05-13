@@ -67,7 +67,13 @@ import type {
 import { getEffectiveBudget } from "@/app/lib/budget-utils";
 import { useUserState } from "@/app/hooks/useUserState";
 import { typography } from "@/app/lib/typography";
-import { VALENTINO_500, BG_PRIMARY } from "@/app/lib/colors";
+import {
+  VALENTINO_500, BG_PRIMARY,
+  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_TERTIARY,
+  ALPHA_BLACK_20, ALPHA_BLACK_30, ALPHA_BLACK_40,
+  OUTLINE_SUBTLE,
+} from "@/app/lib/colors";
+import { RADIUS_L, RADIUS_PILL, RADIUS_CIRCLE } from "@/app/lib/radii";
 import {
   DBG_SPEND_OVERVIEW, DBG_CATEGORY_BAR,
   DBG_GOAL_AHEAD, DBG_GOAL_BEHIND, DBG_GOAL_ONTRACK,
@@ -3484,9 +3490,9 @@ Be insightful, not just descriptive.`;
   // ============ DRAWER CONTENT ============
   const receiptsDrawer = receiptsOpen ? (
     <div className="space-y-2">
-      <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)" }}>Recent transactions</p>
+      <p style={{ ...typography.headerH4, color: TEXT_PRIMARY }}>Recent transactions</p>
       {profile.receipts.map((r) => (
-        <p key={r.id} style={{ ...typography.caption, color: "rgba(0,0,0,0.5)" }}>
+        <p key={r.id} style={{ ...typography.caption, color: TEXT_TERTIARY }}>
           {r.time} · {r.category} · {r.amount} {r.merchant && `· ${r.merchant}`}
         </p>
       ))}
@@ -3670,7 +3676,7 @@ Be insightful, not just descriptive.`;
                 {/* Processing glow */}
                 <div
                   className={`pointer-events-none absolute inset-0 z-30 phone-screen-processing-band ${isAgentProcessingGlow ? "is-active" : ""}`}
-                  style={{ borderRadius: 24 }}
+                  style={{ borderRadius: RADIUS_L }}
                   aria-hidden="true"
                 />
                 <Chat
@@ -3791,7 +3797,7 @@ Be insightful, not just descriptive.`;
                 <div
                   className="absolute inset-0 z-30"
                   style={{
-                    backgroundColor: fdSheetPhase === "open" ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0)",
+                    backgroundColor: fdSheetPhase === "open" ? ALPHA_BLACK_40 : "rgba(0,0,0,0)",
                     transition: "background-color 300ms ease",
                   }}
                   onClick={() => {
@@ -3814,24 +3820,24 @@ Be insightful, not just descriptive.`;
                     onClick={(e) => e.stopPropagation()}
                   >
                     {/* Handle */}
-                    <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(0,0,0,0.2)", margin: "0 auto 24px" }} />
+                    <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: ALPHA_BLACK_20, margin: "0 auto 24px" }} />
 
                     {/* Header */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-                      <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)" }}>
+                      <p style={{ ...typography.headerH4, color: TEXT_PRIMARY }}>
                         Set up {fdSheetData.productType}
                       </p>
                       <button
                         type="button"
                         onClick={() => { setFdSheetPhase("entering"); setTimeout(() => setFdSheetPhase("closed"), 360); }}
-                        style={{ border: "none", background: "transparent", padding: "4px", cursor: "pointer", color: "rgba(0,0,0,0.3)", ...typography.buttonSmall }}
+                        style={{ border: "none", background: "transparent", padding: "4px", cursor: "pointer", color: ALPHA_BLACK_30, ...typography.buttonSmall }}
                       >
                         ✕
                       </button>
                     </div>
 
                     {/* Amount label */}
-                    <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 8 }}>
+                    <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 8 }}>
                       AMOUNT
                     </p>
 
@@ -3845,9 +3851,9 @@ Be insightful, not just descriptive.`;
                           style={{
                             ...typography.bodySmall,
                             padding: "8px 16px",
-                            borderRadius: 64,
-                            border: fdSelectedAmount === opt.value ? "1px solid #d30ad7" : "1px solid rgba(0,0,0,0.2)",
-                            color: "rgba(0,0,0,0.9)",
+                            borderRadius: RADIUS_PILL,
+                            border: fdSelectedAmount === opt.value ? "1px solid #d30ad7" : `1px solid ${ALPHA_BLACK_20}`,
+                            color: TEXT_PRIMARY,
                             backgroundColor: fdSelectedAmount === opt.value ? "#fae2fa" : BG_PRIMARY,
                             cursor: "pointer",
                             transition: "all 150ms ease",
@@ -3861,20 +3867,20 @@ Be insightful, not just descriptive.`;
                     {/* Rate + Tenure */}
                     <div style={{ display: "flex", gap: 24, marginBottom: 24 }}>
                       <div>
-                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4 }}>RATE</p>
+                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4 }}>RATE</p>
                         <p style={{ ...typography.buttonSmall, color: "#00a63e" }}>{fdSheetData.rate}</p>
                       </div>
                       <div>
-                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4 }}>TENURE</p>
-                        <p style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.9)" }}>{fdSheetData.tenure}</p>
+                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4 }}>TENURE</p>
+                        <p style={{ ...typography.buttonSmall, color: TEXT_PRIMARY }}>{fdSheetData.tenure}</p>
                       </div>
                     </div>
 
                     {/* Paying from */}
-                    <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4 }}>
+                    <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4 }}>
                       PAYING FROM
                     </p>
-                    <p style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.7)", marginBottom: 24 }}>
+                    <p style={{ ...typography.buttonSmall, color: TEXT_SECONDARY, marginBottom: 24 }}>
                       {fdSheetData.accountLabel}
                     </p>
 
@@ -3886,7 +3892,7 @@ Be insightful, not just descriptive.`;
                         ...typography.buttonNormal,
                         width: "100%",
                         padding: "12px 24px",
-                        borderRadius: 100,
+                        borderRadius: RADIUS_CIRCLE,
                         backgroundColor: VALENTINO_500,
                         color: BG_PRIMARY,
                         border: "none",
@@ -3904,7 +3910,7 @@ Be insightful, not just descriptive.`;
                 <div
                   className="absolute inset-0 z-30"
                   style={{
-                    backgroundColor: obligSheetPhase === "open" ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0)",
+                    backgroundColor: obligSheetPhase === "open" ? ALPHA_BLACK_40 : "rgba(0,0,0,0)",
                     transition: "background-color 300ms ease",
                   }}
                   onClick={closeObligSheet}
@@ -3924,17 +3930,17 @@ Be insightful, not just descriptive.`;
                     onClick={(e) => e.stopPropagation()}
                   >
                     {/* Handle */}
-                    <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(0,0,0,0.2)", margin: "0 auto 24px" }} />
+                    <div style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: ALPHA_BLACK_20, margin: "0 auto 24px" }} />
 
                     {/* Header */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-                      <p style={{ ...typography.headerH3, color: "rgba(0,0,0,0.9)", margin: 0 }}>
+                      <p style={{ ...typography.headerH3, color: TEXT_PRIMARY, margin: 0 }}>
                         {obligSheetItem.payee}
                       </p>
                       <button
                         type="button"
                         onClick={closeObligSheet}
-                        style={{ border: "none", background: "transparent", padding: "4px", cursor: "pointer", color: "rgba(0,0,0,0.3)", ...typography.buttonSmall }}
+                        style={{ border: "none", background: "transparent", padding: "4px", cursor: "pointer", color: ALPHA_BLACK_30, ...typography.buttonSmall }}
                       >
                         ✕
                       </button>
@@ -3946,7 +3952,7 @@ Be insightful, not just descriptive.`;
                         style={{
                           display: "inline-block",
                           padding: "4px 8px",
-                          borderRadius: 100,
+                          borderRadius: RADIUS_CIRCLE,
                           backgroundColor: obligSheetItem.type === "Rent/EMI" ? "#F6F9FC" : obligSheetItem.type === "Subscription" ? "#E6EDF9" : obligSheetItem.type === "Utility" ? "#E6EDF9" : "#FAE2FA",
                           color: obligSheetItem.type === "Rent/EMI" ? "#252A31" : obligSheetItem.type === "Subscription" ? "#2B6ACF" : obligSheetItem.type === "Utility" ? "#2B6ACF" : VALENTINO_500,
                           ...typography.metadata,
@@ -3960,32 +3966,32 @@ Be insightful, not just descriptive.`;
                     {/* Details grid */}
                     <div style={{ display: "flex", gap: 24, marginBottom: 24 }}>
                       <div>
-                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4, margin: 0 }}>AVERAGE</p>
-                        <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)", margin: 0 }}>{formatINR(obligSheetItem.amount)}</p>
+                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4, margin: 0 }}>AVERAGE</p>
+                        <p style={{ ...typography.headerH4, color: TEXT_PRIMARY, margin: 0 }}>{formatINR(obligSheetItem.amount)}</p>
                       </div>
                       <div>
-                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4, margin: 0 }}>FREQUENCY</p>
-                        <p style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)", margin: 0 }}>{obligSheetItem.seenMonths}</p>
+                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4, margin: 0 }}>FREQUENCY</p>
+                        <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY, margin: 0 }}>{obligSheetItem.seenMonths}</p>
                       </div>
                       <div>
-                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4, margin: 0 }}>LAST PAID</p>
-                        <p style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)", margin: 0 }}>{obligSheetItem.lastPaid}</p>
+                        <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4, margin: 0 }}>LAST PAID</p>
+                        <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY, margin: 0 }}>{obligSheetItem.lastPaid}</p>
                       </div>
                     </div>
 
                     {/* Editable amount */}
-                    <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 8, margin: "0 0 8px" }}>
+                    <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 8, margin: "0 0 8px" }}>
                       USE AMOUNT
                     </p>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32, borderBottom: "2px solid #d30ad7", height: 48 }}>
-                      <span style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)" }}>₹</span>
+                      <span style={{ ...typography.headerH4, color: TEXT_PRIMARY }}>₹</span>
                       <input
                         type="number"
                         value={obligEditAmount || ""}
                         onChange={(e) => setObligEditAmount(Number(e.target.value) || 0)}
                         style={{
                           ...typography.headerH4,
-                          color: "rgba(0,0,0,0.9)",
+                          color: TEXT_PRIMARY,
                           border: "none",
                           outline: "none",
                           background: "transparent",
@@ -4006,7 +4012,7 @@ Be insightful, not just descriptive.`;
                           flex: 1,
                           height: 48,
                           padding: "0 24px",
-                          borderRadius: 100,
+                          borderRadius: RADIUS_CIRCLE,
                           backgroundColor: VALENTINO_500,
                           color: BG_PRIMARY,
                           border: "none",
@@ -4023,9 +4029,9 @@ Be insightful, not just descriptive.`;
                           flex: 1,
                           height: 48,
                           padding: "0 24px",
-                          borderRadius: 100,
+                          borderRadius: RADIUS_CIRCLE,
                           backgroundColor: "#F0F4F7",
-                          color: "rgba(0,0,0,0.9)",
+                          color: TEXT_PRIMARY,
                           border: "none",
                           cursor: "pointer",
                         }}
@@ -4144,7 +4150,7 @@ Be insightful, not just descriptive.`;
                   >
                     {/* ── Name + target ── */}
                     <div>
-                      <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
+                      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 4 }}>
                         {goalDetail.name}
                       </p>
                     </div>
@@ -4152,20 +4158,20 @@ Be insightful, not just descriptive.`;
                     {/* ── Progress ── */}
                     <div>
                       {/* Bar */}
-                      <div style={{ height: 12, backgroundColor: "rgba(0,0,0,0.05)", borderRadius: 100, overflow: "hidden", marginBottom: 16 }}>
+                      <div style={{ height: 12, backgroundColor: OUTLINE_SUBTLE, borderRadius: RADIUS_CIRCLE, overflow: "hidden", marginBottom: 16 }}>
                         <div
                           style={{
                             width: `${Math.min(goalDetail.pct, 100)}%`,
                             height: "100%",
                             backgroundColor: VALENTINO_500,
-                            borderRadius: 100,
+                            borderRadius: RADIUS_CIRCLE,
                           }}
                         />
                       </div>
 
                       {/* Progress summary */}
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
-                        <span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>
+                        <span style={{ ...typography.bodySmall, color: TEXT_TERTIARY }}>
                           {formatINR(goalDetail.saved)} / {formatINR(goalDetail.target)}
                         </span>
                         <span style={{ ...typography.headerH2, color: "rgba(0,0,0,0.88)" }}>
@@ -4179,7 +4185,7 @@ Be insightful, not just descriptive.`;
                           display: "inline-flex",
                           alignItems: "center",
                           padding: "4px 8px",
-                          borderRadius: 100,
+                          borderRadius: RADIUS_CIRCLE,
                           backgroundColor: goalDetail.status === "ahead"
                             ? "#e0f4e8"
                             : goalDetail.status === "behind"
@@ -4248,29 +4254,29 @@ Be insightful, not just descriptive.`;
                     }}
                   >
                     <div>
-                      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", textTransform: "uppercase", marginBottom: 8 }}>Monthly amount</p>
-                      <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)" }}>
+                      <p style={{ ...typography.caption, color: TEXT_TERTIARY, textTransform: "uppercase", marginBottom: 8 }}>Monthly amount</p>
+                      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY }}>
                         {userState?.products?.find((p) => p.type === "rd")
                           ? formatINR(userState.products.find((p) => p.type === "rd")!.amount)
                           : "—"}/month
                       </p>
                     </div>
-                    <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)" }} />
+                    <div style={{ height: 1, backgroundColor: OUTLINE_SUBTLE }} />
                     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                       <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>Rate</span>
+                        <span style={{ ...typography.bodySmall, color: TEXT_TERTIARY }}>Rate</span>
                         <span style={{ ...typography.buttonSmall, color: "#00a63e" }}>7.25% p.a.</span>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>Tenure</span>
-                        <span style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.9)" }}>{userState?.goal?.timeline ?? "—"}</span>
+                        <span style={{ ...typography.bodySmall, color: TEXT_TERTIARY }}>Tenure</span>
+                        <span style={{ ...typography.buttonSmall, color: TEXT_PRIMARY }}>{userState?.goal?.timeline ?? "—"}</span>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>Paying from</span>
-                        <span style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.9)" }}>Savings xx1234</span>
+                        <span style={{ ...typography.bodySmall, color: TEXT_TERTIARY }}>Paying from</span>
+                        <span style={{ ...typography.buttonSmall, color: TEXT_PRIMARY }}>Savings xx1234</span>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>Status</span>
+                        <span style={{ ...typography.bodySmall, color: TEXT_TERTIARY }}>Status</span>
                         <span style={{ ...typography.buttonSmall, color: "#00a63e" }}>Active</span>
                       </div>
                     </div>

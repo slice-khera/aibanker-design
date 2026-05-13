@@ -4,8 +4,9 @@ import { useRef } from "react";
 import { BOTTOM_INSET, NavButton, StatusBar } from "./AppChrome";
 import { typography } from "../lib/typography";
 import { formatINR } from "../lib/financial-data";
-import { GREEN_500, GREEN_50, RED_500, RED_50, ORANGE_500, ORANGE_50, TEXT_TERTIARY, BG_PRIMARY } from "../lib/colors";
+import { GREEN_500, GREEN_50, RED_500, RED_50, ORANGE_500, ORANGE_50, TEXT_PRIMARY, TEXT_TERTIARY, BG_PRIMARY } from "../lib/colors";
 import type { GoalIndicatorData, GoalStatus } from "./GoalTracker";
+import { RADIUS_M, RADIUS_CIRCLE } from "../lib/radii";
 
 // ─── Constants ────────────────────────────────────────────────
 
@@ -134,7 +135,7 @@ function GoalCardTall({
       onClick={onTap}
       className="text-left active:scale-[0.97] transition-transform"
       style={{
-        borderRadius: 16,
+        borderRadius: RADIUS_M,
         overflow: "hidden",
         cursor: "pointer",
         display: "flex",
@@ -223,7 +224,7 @@ function GoalCardTall({
               display: "inline-flex",
               alignItems: "center",
               padding: "4px 8px",
-              borderRadius: 100,
+              borderRadius: RADIUS_CIRCLE,
               backgroundColor: STATUS_BG[goal.status],
               marginBottom: 8,
             }}
@@ -264,7 +265,7 @@ function NewGoalCard() {
       style={{
         width: "100%",
         height: "100%",
-        borderRadius: 16,
+        borderRadius: RADIUS_M,
         border: `1.5px dashed rgba(0,0,0,0.12)`,
         backgroundColor: BG_PRIMARY,
         display: "flex",
@@ -278,7 +279,7 @@ function NewGoalCard() {
         style={{
           width: 48,
           height: 48,
-          borderRadius: 100,
+          borderRadius: RADIUS_CIRCLE,
           backgroundColor: "rgba(0,0,0,0.04)",
           display: "flex",
           alignItems: "center",
@@ -386,7 +387,7 @@ export default function GoalListScreen({
           <span
             style={{
               ...typography.headerH3,
-              color: "rgba(0,0,0,0.9)",
+              color: TEXT_PRIMARY,
               flex: "1 0 0",
               minWidth: 0,
               overflow: "hidden",

@@ -10,6 +10,7 @@ import {
   RED_500, RED_50,
   BLUE_500, BLUE_50,
   ORANGE_500, ORANGE_50,
+  TEXT_PRIMARY, TEXT_TERTIARY,
 } from "../lib/colors";
 
 export type InitialSuggestion = {
@@ -32,7 +33,7 @@ type Props = {
 function ChevronRightIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M6 4l4 4-4 4" stroke="rgba(0,0,0,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6 4l4 4-4 4" stroke={TEXT_TERTIARY} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -73,48 +74,48 @@ function LeakIcon() {
 const CARD_ICONS: Record<string, React.ReactNode> = {
   understand: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <rect x="2" y="9" width="2.5" height="5" rx="0.5" fill="rgba(0,0,0,0.9)" />
-      <rect x="6.75" y="6" width="2.5" height="8" rx="0.5" fill="rgba(0,0,0,0.9)" />
-      <rect x="11.5" y="3" width="2.5" height="11" rx="0.5" fill="rgba(0,0,0,0.9)" />
+      <rect x="2" y="9" width="2.5" height="5" rx="0.5" fill={TEXT_PRIMARY} />
+      <rect x="6.75" y="6" width="2.5" height="8" rx="0.5" fill={TEXT_PRIMARY} />
+      <rect x="11.5" y="3" width="2.5" height="11" rx="0.5" fill={TEXT_PRIMARY} />
     </svg>
   ),
   "goal-new": (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="8" r="6" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" />
-      <circle cx="8" cy="8" r="3" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" />
-      <circle cx="8" cy="8" r="1" fill="rgba(0,0,0,0.9)" />
+      <circle cx="8" cy="8" r="6" stroke={TEXT_PRIMARY} strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="3" stroke={TEXT_PRIMARY} strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="1" fill={TEXT_PRIMARY} />
     </svg>
   ),
   "review-goal": (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="8" r="6" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" />
-      <circle cx="8" cy="8" r="3" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" />
-      <circle cx="8" cy="8" r="1" fill="rgba(0,0,0,0.9)" />
+      <circle cx="8" cy="8" r="6" stroke={TEXT_PRIMARY} strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="3" stroke={TEXT_PRIMARY} strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="1" fill={TEXT_PRIMARY} />
     </svg>
   ),
   leaks: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M8 2C8 2 3.5 7.5 3.5 10.5a4.5 4.5 0 0 0 9 0C12.5 7.5 8 2 8 2z" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" strokeLinejoin="round" />
+      <path d="M8 2C8 2 3.5 7.5 3.5 10.5a4.5 4.5 0 0 0 9 0C12.5 7.5 8 2 8 2z" stroke={TEXT_PRIMARY} strokeWidth="1.2" strokeLinejoin="round" />
     </svg>
   ),
   budget: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="8" r="6" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" />
-      <path d="M8 2v6h6" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" strokeLinecap="round" />
+      <circle cx="8" cy="8" r="6" stroke={TEXT_PRIMARY} strokeWidth="1.2" />
+      <path d="M8 2v6h6" stroke={TEXT_PRIMARY} strokeWidth="1.2" strokeLinecap="round" />
     </svg>
   ),
   txns: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <rect x="3" y="2" width="10" height="12" rx="1.2" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" />
-      <line x1="5.5" y1="5.5" x2="10.5" y2="5.5" stroke="rgba(0,0,0,0.9)" strokeWidth="1" strokeLinecap="round" />
-      <line x1="5.5" y1="8" x2="10.5" y2="8" stroke="rgba(0,0,0,0.9)" strokeWidth="1" strokeLinecap="round" />
-      <line x1="5.5" y1="10.5" x2="8.5" y2="10.5" stroke="rgba(0,0,0,0.9)" strokeWidth="1" strokeLinecap="round" />
+      <rect x="3" y="2" width="10" height="12" rx="1.2" stroke={TEXT_PRIMARY} strokeWidth="1.2" />
+      <line x1="5.5" y1="5.5" x2="10.5" y2="5.5" stroke={TEXT_PRIMARY} strokeWidth="1" strokeLinecap="round" />
+      <line x1="5.5" y1="8" x2="10.5" y2="8" stroke={TEXT_PRIMARY} strokeWidth="1" strokeLinecap="round" />
+      <line x1="5.5" y1="10.5" x2="8.5" y2="10.5" stroke={TEXT_PRIMARY} strokeWidth="1" strokeLinecap="round" />
     </svg>
   ),
   networth: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <polyline points="2,12 5.5,7 8.5,9 14,4" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-      <polyline points="11,4 14,4 14,7" stroke="rgba(0,0,0,0.9)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points="2,12 5.5,7 8.5,9 14,4" stroke={TEXT_PRIMARY} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points="11,4 14,4 14,7" stroke={TEXT_PRIMARY} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
 };

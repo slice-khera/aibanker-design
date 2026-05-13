@@ -14,7 +14,7 @@ import {
   SLATE_10,
 } from "../lib/colors";
 import { SPACE_XS, SPACE_M, SPACE_L } from "../lib/spacing";
-import { RADIUS_M } from "../lib/radii";
+import { RADIUS_M, RADIUS_CIRCLE } from "../lib/radii";
 import { ELEVATION_CARD } from "../lib/elevation";
 import { StatusBar, GestureNav } from "../components/AppChrome";
 import QuestionnaireOverlay from "../components/QuestionnaireOverlay";
@@ -939,7 +939,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
                             color: TEXT_PRIMARY,
                             backgroundColor: BG_SECONDARY,
                             border: `1px solid ${OUTLINE_SUBTLE}`,
-                            borderRadius: 100,
+                            borderRadius: RADIUS_CIRCLE,
                             padding: `${SPACE_XS}px ${SPACE_M}px`,
                             cursor: "pointer",
                           }}
@@ -968,7 +968,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
                     color: TEXT_PRIMARY,
                     backgroundColor: BG_SECONDARY,
                     border: `1px solid ${OUTLINE_SUBTLE}`,
-                    borderRadius: 100,
+                    borderRadius: RADIUS_CIRCLE,
                     padding: `${SPACE_XS}px ${SPACE_M}px`,
                     cursor: "pointer",
                   }}
@@ -1029,7 +1029,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
                         color: TEXT_PRIMARY,
                         backgroundColor: BG_SECONDARY,
                         border: `1px solid ${OUTLINE_SUBTLE}`,
-                        borderRadius: 100,
+                        borderRadius: RADIUS_CIRCLE,
                         padding: `${SPACE_XS}px ${SPACE_M}px`,
                         cursor: "pointer",
                       }}
@@ -1074,7 +1074,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
                       color: TEXT_PRIMARY,
                       backgroundColor: BG_SECONDARY,
                       border: `1px solid ${OUTLINE_SUBTLE}`,
-                      borderRadius: 100,
+                      borderRadius: RADIUS_CIRCLE,
                       padding: `${SPACE_XS}px ${SPACE_M}px`,
                       cursor: "pointer",
                     }}
@@ -1187,7 +1187,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
                           color: TEXT_PRIMARY,
                           backgroundColor: BG_SECONDARY,
                           border: `1px solid ${OUTLINE_SUBTLE}`,
-                          borderRadius: 100,
+                          borderRadius: RADIUS_CIRCLE,
                           padding: `${SPACE_XS}px ${SPACE_M}px`,
                           cursor: "pointer",
                         }}
@@ -1209,7 +1209,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
                         color: BG_PRIMARY,
                         backgroundColor: TEXT_PRIMARY,
                         border: "none",
-                        borderRadius: 100,
+                        borderRadius: RADIUS_CIRCLE,
                         padding: `${SPACE_XS}px ${SPACE_M}px`,
                         cursor: "pointer",
                       }}
@@ -1225,7 +1225,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
                         color: TEXT_PRIMARY,
                         backgroundColor: BG_SECONDARY,
                         border: `1px solid ${OUTLINE_SUBTLE}`,
-                        borderRadius: 100,
+                        borderRadius: RADIUS_CIRCLE,
                         padding: `${SPACE_XS}px ${SPACE_M}px`,
                         cursor: "pointer",
                       }}
@@ -1417,7 +1417,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
                             color: TEXT_PRIMARY,
                             backgroundColor: BG_SECONDARY,
                             border: `1px solid ${OUTLINE_SUBTLE}`,
-                            borderRadius: 100,
+                            borderRadius: RADIUS_CIRCLE,
                             padding: `${SPACE_XS}px ${SPACE_M}px`,
                             cursor: "pointer",
                           }}

@@ -2,7 +2,7 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { typography } from "../lib/typography";
-import { BG_PRIMARY } from "../lib/colors";
+import { BG_PRIMARY, TEXT_SECONDARY, ALPHA_BLACK_30, TEXT_PRIMARY } from "../lib/colors";
 
 export const STATUS_BAR_HEIGHT = 44; // DLS: 8px top padding + 36px bar
 export const BOTTOM_INSET = 20; // gesture nav: 8px + 4px bar + 8px
@@ -32,7 +32,7 @@ export function StatusBar({ backgroundColor = BG_PRIMARY, time = "9:41" }: { bac
             fontWeight: 700,
             fontSize: 14,
             letterSpacing: -0.4,
-            color: "rgba(0,0,0,0.7)",
+            color: TEXT_SECONDARY,
             whiteSpace: "nowrap",
             margin: 0,
           }}
@@ -98,7 +98,7 @@ export function GestureNav({ backgroundColor = "transparent" }: { backgroundColo
         style={{
           width: 128,
           height: 4,
-          backgroundColor: "rgba(0,0,0,0.3)",
+          backgroundColor: ALPHA_BLACK_30,
           borderRadius: 40,
         }}
       />
@@ -134,11 +134,11 @@ export function NavButton({ kind, onClick, ariaLabel }: NavButtonProps) {
     >
       {kind === "back" ? (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M15 6L9 12L15 18" stroke="rgba(0,0,0,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M15 6L9 12L15 18" stroke={TEXT_SECONDARY} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ) : (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M18 6L6 18M6 6l12 12" stroke="rgba(0,0,0,0.7)" strokeWidth="2" strokeLinecap="round" />
+          <path d="M18 6L6 18M6 6l12 12" stroke={TEXT_SECONDARY} strokeWidth="2" strokeLinecap="round" />
         </svg>
       )}
     </button>
@@ -209,7 +209,7 @@ export function AppBar({
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
-              color: "rgba(0,0,0,0.9)",
+              color: TEXT_PRIMARY,
               ...typography.headerH4,
             }}
           >

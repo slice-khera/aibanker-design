@@ -9,15 +9,16 @@ import { ILLUST_AFFORD_IT, ILLUST_MY_SPENDS, ILLUST_FEEDBACK } from "../lib/illu
 import {
   VALENTINO_500, VALENTINO_50, GREEN_500, GREEN_50, ORANGE_500, ORANGE_50,
   BG_PRIMARY, BG_SURFACE, BG_SURFACE_2, BG_SECONDARY, BLUE_50, RED_50,
-  OUTLINE_SUBTLE, TEXT_PRIMARY, TEXT_SECONDARY,
+  OUTLINE_SUBTLE, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_TERTIARY,
+  ALPHA_BLACK_20,
 } from "../lib/colors";
 import { ELEVATION_CARD } from "../lib/elevation";
-import { RADIUS_PILL, RADIUS_CIRCLE } from "../lib/radii";
+import { RADIUS_M, RADIUS_PILL, RADIUS_CIRCLE } from "../lib/radii";
 import { SPACE_XS, SPACE_M } from "../lib/spacing";
 
 // ── Feedback row (inline SVGs with proper color tokens) ─────────
 
-const TEXT_TERTIARY_CHAT = "rgba(0,0,0,0.5)";
+const TEXT_TERTIARY_CHAT = TEXT_TERTIARY;
 
 function FeedbackIcon({ children, viewBox = "0 0 20 20" }: { children: React.ReactNode; viewBox?: string }) {
   return <svg width="16" height="16" viewBox={viewBox} fill="none">{children}</svg>;
@@ -220,7 +221,7 @@ type ChatProps = {
 
 function VoiceIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="rgba(0,0,0,0.5)" strokeWidth="2.2">
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke={TEXT_TERTIARY} strokeWidth="2.2">
       <path d="M12 3.75a3 3 0 0 1 3 3v4.5a3 3 0 1 1-6 0v-4.5a3 3 0 0 1 3-3Z" />
       <path d="M6.75 10.5v.75a5.25 5.25 0 0 0 10.5 0v-.75" strokeLinecap="round" />
       <path d="M12 16.5v2.75" strokeLinecap="round" />
@@ -327,20 +328,20 @@ function ChatAppBar({
         {...dragHandleProps}
       >
         <div className="absolute top-0 left-0 right-0 flex justify-center" style={{ paddingTop: 12 }}>
-          <div style={{ width: 36, height: 4, backgroundColor: "rgba(0,0,0,0.2)", borderRadius: 100 }} />
+          <div style={{ width: 36, height: 4, backgroundColor: ALPHA_BLACK_20, borderRadius: RADIUS_CIRCLE }} />
         </div>
         <div className="flex items-center w-full">
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 1 }}>
-            <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)", margin: 0 }}>
+            <p style={{ ...typography.headerH4, color: TEXT_PRIMARY, margin: 0 }}>
               {hasUserMessages ? "Continue chat" : "Start chat"}
             </p>
           </div>
           <div
             className="flex items-center justify-center rounded-full"
-            style={{ width: 36, height: 36, backgroundColor: "rgba(0,0,0,0.05)" }}
+            style={{ width: 36, height: 36, backgroundColor: OUTLINE_SUBTLE }}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2 10l5-6 5 6" stroke="rgba(0,0,0,0.5)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M2 10l5-6 5 6" stroke={TEXT_TERTIARY} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
         </div>
@@ -438,11 +439,11 @@ export function TypeBox({
           {leftAction}
           <div
             className="flex items-center overflow-hidden flex-1"
-            style={{ height: 48, backgroundColor: BG_PRIMARY, border: "1px solid rgba(0,0,0,0.05)", borderRadius: 100, boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)" }}
+            style={{ height: 48, backgroundColor: BG_PRIMARY, border: `1px solid ${OUTLINE_SUBTLE}`, borderRadius: RADIUS_CIRCLE, boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)" }}
           >
             <div
               className="flex items-center w-full h-full"
-              style={{ backgroundColor: BG_PRIMARY, borderRadius: 100, paddingLeft: 16, paddingRight: 8, paddingTop: 8, paddingBottom: 8 }}
+              style={{ backgroundColor: BG_PRIMARY, borderRadius: RADIUS_CIRCLE, paddingLeft: 16, paddingRight: 8, paddingTop: 8, paddingBottom: 8 }}
             >
               <input
                 type="text"
@@ -453,7 +454,7 @@ export function TypeBox({
                 className="flex-1 min-w-0 bg-transparent outline-none"
                 style={{
                   ...typography.bodySmall,
-                  color: "rgba(0,0,0,0.9)",
+                  color: TEXT_PRIMARY,
                 }}
               />
               {value.trim() && (
@@ -691,16 +692,16 @@ function MosaicCard({
       style={{
         background: action.bg,
         border: "none",
-        borderRadius: 16,
+        borderRadius: RADIUS_M,
         boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)",
         ...extraStyle,
       }}
     >
       <div style={{ position: "absolute", top: 16, left: 16, right: 16, display: "flex", flexDirection: "column", gap: 4 }}>
-        <span style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.7)", whiteSpace: "nowrap" }}>
+        <span style={{ ...typography.metadata, textTransform: "uppercase", color: TEXT_SECONDARY, whiteSpace: "nowrap" }}>
           {action.category}
         </span>
-        <span style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)" }}>
+        <span style={{ ...typography.headerH4, color: TEXT_PRIMARY }}>
           {action.title}
         </span>
       </div>
@@ -740,7 +741,7 @@ function ReviewOnTrackScreen({
 
   return (
     <div className="shrink-0 mb-6">
-      <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>
+      <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>
         {highlightValues(displayedText)}
       </p>
 
@@ -780,11 +781,11 @@ function ReviewOnTrackScreen({
               className="max-w-[75%] rounded-[16px] rounded-tr-lg"
               style={{ backgroundColor: VALENTINO_50, padding: "12px 16px" }}
             >
-              <p style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>{selectedLabel}</p>
+              <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>{selectedLabel}</p>
             </div>
           </div>
           {/* Assistant reply */}
-          <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>
+          <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>
             {highlightValues(displayedReply)}
           </p>
           {replyDone && <FeedbackRow voice={voice} />}
@@ -826,7 +827,7 @@ function New5TextOnly({
 
   return (
     <div className="shrink-0 mb-6">
-      <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>
+      <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>
         {highlightValues(displayedText)}
       </p>
 
@@ -849,7 +850,7 @@ function New5TextOnly({
                   color: "rgba(0,0,0,0.6)",
                   backgroundColor: BG_PRIMARY,
                   border: "1px solid rgba(0,0,0,0.08)",
-                  borderRadius: 100,
+                  borderRadius: RADIUS_CIRCLE,
                   padding: "6px 12px",
                   boxShadow: "0px 1px 4px rgba(0,0,0,0.06)",
                 }}
@@ -870,13 +871,13 @@ function New5TextOnly({
               className="max-w-[75%] rounded-[16px] rounded-tr-lg"
               style={{ backgroundColor: VALENTINO_50, padding: "12px 16px" }}
             >
-              <p style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>{selectedLabel}</p>
+              <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>{selectedLabel}</p>
             </div>
           </div>
           {/* Assistant reply — starts after delay */}
           {showReply && (
             <div className="animate-chat-message-in">
-              <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.9)" }}>
+              <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>
                 {highlightValues(displayedReply)}
               </p>
               {replyDone && <FeedbackRow voice={voice} />}
@@ -1403,10 +1404,10 @@ export default function Chat({
                 {(drawerContent || pinnedContent) && (
                   <div className="mb-4 space-y-2">
                     {drawerContent ? (
-                      <div className="rounded-2xl border p-3" style={{ ...typography.caption, borderColor: BG_SURFACE_2, backgroundColor: BG_SURFACE, color: "rgba(0,0,0,0.5)" }}>{drawerContent}</div>
+                      <div className="rounded-2xl border p-3" style={{ ...typography.caption, borderColor: BG_SURFACE_2, backgroundColor: BG_SURFACE, color: TEXT_TERTIARY }}>{drawerContent}</div>
                     ) : null}
                     {pinnedContent ? (
-                      <div className="rounded-2xl border p-3" style={{ ...typography.caption, borderColor: GREEN_50, backgroundColor: GREEN_50, color: "rgba(0,0,0,0.9)" }}>{pinnedContent}</div>
+                      <div className="rounded-2xl border p-3" style={{ ...typography.caption, borderColor: GREEN_50, backgroundColor: GREEN_50, color: TEXT_PRIMARY }}>{pinnedContent}</div>
                     ) : null}
                   </div>
                 )}
@@ -1483,7 +1484,7 @@ export default function Chat({
               }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M8 3v10M4 9l4 4 4-4" stroke="rgba(0,0,0,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M8 3v10M4 9l4 4 4-4" stroke={TEXT_TERTIARY} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
 

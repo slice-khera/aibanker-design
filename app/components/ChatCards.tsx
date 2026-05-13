@@ -10,7 +10,10 @@ import {
   BLUE_50, BLUE_400, BLUE_500,
   SLATE_10, SLATE_30, SLATE_50, SLATE_300, SLATE_500, SLATE_800,
   BG_PRIMARY,
+  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_TERTIARY,
+  ALPHA_BLACK_20, ALPHA_BLACK_30, OUTLINE_SUBTLE,
 } from "../lib/colors";
+import { RADIUS_S, RADIUS_PILL, RADIUS_CIRCLE } from "../lib/radii";
 
 // ─── Shared types ──────────────────────────────────────────
 
@@ -135,7 +138,7 @@ export function DlsTag({
         display: "inline-flex",
         alignItems: "center",
         padding: "4px 8px",
-        borderRadius: 100,
+        borderRadius: RADIUS_CIRCLE,
         backgroundColor: colors.bg,
         color: colors.text,
         textTransform: "uppercase",
@@ -162,7 +165,7 @@ function CardHeader({ label, onArrowTap, arrowInvisible }: { label: string; onAr
         width: 36,
         height: 36,
         borderRadius: "50%",
-        backgroundColor: "rgba(0,0,0,0.05)",
+        backgroundColor: OUTLINE_SUBTLE,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -172,7 +175,7 @@ function CardHeader({ label, onArrowTap, arrowInvisible }: { label: string; onAr
       }}
     >
       <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-        <path d="M3 10L10 3M10 3H4.5M10 3V8.5" stroke="rgba(0,0,0,0.5)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M3 10L10 3M10 3H4.5M10 3V8.5" stroke={TEXT_TERTIARY} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </div>
   );
@@ -183,7 +186,7 @@ function CardHeader({ label, onArrowTap, arrowInvisible }: { label: string; onAr
         style={{
           ...typography.metadata,
           textTransform: "uppercase",
-          color: "rgba(0,0,0,0.5)",
+          color: TEXT_TERTIARY,
         }}
       >
         {label}
@@ -231,7 +234,7 @@ function ConfirmedRow({ label, onArrowTap }: { label: string; onArrowTap?: () =>
           <path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
-      <span style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.9)", flex: 1 }}>{label}</span>
+      <span style={{ ...typography.buttonSmall, color: TEXT_PRIMARY, flex: 1 }}>{label}</span>
       {onArrowTap && (
         <button
           type="button"
@@ -239,7 +242,7 @@ function ConfirmedRow({ label, onArrowTap }: { label: string; onArrowTap?: () =>
           style={{ border: "none", background: "transparent", padding: 0, cursor: "pointer", display: "flex" }}
         >
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-            <path d="M3 10L10 3M10 3H4.5M10 3V8.5" stroke="rgba(0,0,0,0.5)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M3 10L10 3M10 3H4.5M10 3V8.5" stroke={TEXT_TERTIARY} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
       )}
@@ -340,7 +343,7 @@ function SpendOverviewCard({ data }: { data: Extract<ChatCardData, { type: "spen
         <path d={linePath} fill="none" stroke={VALENTINO_500} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
 
         {/* Average dashed line */}
-        <line x1={padX} y1={avgY} x2={W - padX} y2={avgY} stroke="rgba(0,0,0,0.2)" strokeWidth="1" strokeDasharray="5 4" />
+        <line x1={padX} y1={avgY} x2={W - padX} y2={avgY} stroke={ALPHA_BLACK_20} strokeWidth="1" strokeDasharray="5 4" />
 
         {/* Handle dot with glow */}
         {activePoint && (
@@ -358,7 +361,7 @@ function SpendOverviewCard({ data }: { data: Extract<ChatCardData, { type: "spen
             {i === activeIndex ? (
               <DlsTag intent="brand" emphasis="bold">{d.label}</DlsTag>
             ) : (
-              <span style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)" }}>
+              <span style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30 }}>
                 {d.label}
               </span>
             )}
@@ -374,10 +377,10 @@ function SpendOverviewCard({ data }: { data: Extract<ChatCardData, { type: "spen
 
   return (
     <div style={{ padding: "4px 0 8px" }}>
-      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+      <p style={{ ...typography.caption, color: TEXT_TERTIARY, marginBottom: 8 }}>
         {displayMonth} spends
       </p>
-      <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
+      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 4 }}>
         {formatINRFull(displayAmount)}
       </p>
       <p style={{ ...typography.caption, color: comparisonColor, marginBottom: 12 }}>
@@ -518,7 +521,7 @@ function CategoryBreakdownCard({ data }: { data: Extract<ChatCardData, { type: "
             style={{
               width: 40,
               height: 40,
-              borderRadius: 100,
+              borderRadius: RADIUS_CIRCLE,
               backgroundColor: BG_PRIMARY,
               border: "1px solid #f0f4f7",
               display: "flex",
@@ -533,17 +536,17 @@ function CategoryBreakdownCard({ data }: { data: Extract<ChatCardData, { type: "
 
           {/* Name + progress bar */}
           <div style={{ flex: "1 0 0", minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-            <p style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.9)", margin: 0 }}>
+            <p style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, margin: 0 }}>
               {cat.name}
             </p>
             <div style={{ paddingTop: 4, paddingBottom: 4 }}>
-              <div style={{ height: 8, backgroundColor: trackColor(cat.color), borderRadius: 100, overflow: "hidden" }}>
+              <div style={{ height: 8, backgroundColor: trackColor(cat.color), borderRadius: RADIUS_CIRCLE, overflow: "hidden" }}>
                 <div
                   style={{
                     width: `${Math.min(cat.pct, 100)}%`,
                     height: "100%",
                     backgroundColor: cat.color,
-                    borderRadius: 100,
+                    borderRadius: RADIUS_CIRCLE,
                   }}
                 />
               </div>
@@ -552,10 +555,10 @@ function CategoryBreakdownCard({ data }: { data: Extract<ChatCardData, { type: "
 
           {/* Amount + percentage */}
           <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
-            <p style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.9)", textAlign: "right", whiteSpace: "nowrap", margin: 0 }}>
+            <p style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, textAlign: "right", whiteSpace: "nowrap", margin: 0 }}>
               {formatINRFull(cat.amount)}
             </p>
-            <p style={{ ...typography.caption, color: "rgba(0,0,0,0.7)", textAlign: "right", whiteSpace: "nowrap", margin: 0 }}>
+            <p style={{ ...typography.caption, color: TEXT_SECONDARY, textAlign: "right", whiteSpace: "nowrap", margin: 0 }}>
               {cat.pct}%
             </p>
           </div>
@@ -566,13 +569,13 @@ function CategoryBreakdownCard({ data }: { data: Extract<ChatCardData, { type: "
 
   return (
     <div style={{ padding: "4px 0 8px" }}>
-      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+      <p style={{ ...typography.caption, color: TEXT_TERTIARY, marginBottom: 8 }}>
         {month} spends
       </p>
-      <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
+      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 4 }}>
         {formatINRFull(amount)}
       </p>
-      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 16 }}>
+      <p style={{ ...typography.caption, color: TEXT_TERTIARY, marginBottom: 16 }}>
         {subtext}
       </p>
       {categoryRows}
@@ -589,7 +592,7 @@ function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "
   const content = (
     <>
       {/* Amount */}
-      <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
+      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 4 }}>
         {formatINRFull(amount)}
       </p>
 
@@ -599,17 +602,17 @@ function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "
       </p>
 
       {/* Divider */}
-      <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginBottom: 16 }} />
+      <div style={{ height: 1, backgroundColor: OUTLINE_SUBTLE, marginBottom: 16 }} />
 
       {activated ? (
         <ConfirmedRow label={`${productType} set up`} onArrowTap={onArrowTap} />
       ) : (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4 }}>
+            <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4 }}>
               PAYING FROM
             </p>
-            <p style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.7)" }}>
+            <p style={{ ...typography.buttonSmall, color: TEXT_SECONDARY }}>
               {accountLabel}
             </p>
           </div>
@@ -656,22 +659,22 @@ function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-po
       <CardHeader label={goalName} />
 
       {/* Amount */}
-      <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 16 }}>
+      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 16 }}>
         {formatINRFull(amount)}
       </p>
 
       {/* Divider */}
-      <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginBottom: 16 }} />
+      <div style={{ height: 1, backgroundColor: OUTLINE_SUBTLE, marginBottom: 16 }} />
 
       {done ? (
         <ConfirmedRow label="Added to pot" />
       ) : (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.3)", marginBottom: 4 }}>
+            <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4 }}>
               ADDING FROM
             </p>
-            <p style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.7)" }}>
+            <p style={{ ...typography.buttonSmall, color: TEXT_SECONDARY }}>
               {fromAccount}
             </p>
           </div>
@@ -685,7 +688,7 @@ function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-po
               color: BG_PRIMARY,
               cursor: "pointer",
               padding: "8px 20px",
-              borderRadius: 100,
+              borderRadius: RADIUS_CIRCLE,
               flexShrink: 0,
             }}
           >
@@ -711,7 +714,7 @@ function GoalProgressCard({ data }: { data: Extract<ChatCardData, { type: "goal-
         display: "inline-flex",
         alignItems: "center",
         padding: "4px 8px",
-        borderRadius: 100,
+        borderRadius: RADIUS_CIRCLE,
         backgroundColor: statusBg,
         flexShrink: 0,
       }}
@@ -724,18 +727,18 @@ function GoalProgressCard({ data }: { data: Extract<ChatCardData, { type: "goal-
 
   const content = (
     <>
-      <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)", marginBottom: 16 }}>
+      <p style={{ ...typography.headerH4, color: TEXT_PRIMARY, marginBottom: 16 }}>
         {name}
       </p>
 
       {/* Progress bar */}
-      <div style={{ height: 8, backgroundColor: VALENTINO_50, borderRadius: 100, overflow: "hidden", marginBottom: 8 }}>
+      <div style={{ height: 8, backgroundColor: VALENTINO_50, borderRadius: RADIUS_CIRCLE, overflow: "hidden", marginBottom: 8 }}>
         <div
           style={{
             width: `${clampedPct}%`,
             height: "100%",
             backgroundColor: VALENTINO_500,
-            borderRadius: 100,
+            borderRadius: RADIUS_CIRCLE,
             boxShadow: "0px 2px 4px rgba(211,10,215,0.2)",
           }}
         />
@@ -743,10 +746,10 @@ function GoalProgressCard({ data }: { data: Extract<ChatCardData, { type: "goal-
 
       {/* Stats row */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ ...typography.caption, color: "rgba(0,0,0,0.5)" }}>
+        <span style={{ ...typography.caption, color: TEXT_TERTIARY }}>
           {formatINRFull(saved)} / {formatINRFull(target)}
         </span>
-        <span style={{ ...typography.headerH2, color: "rgba(0,0,0,0.9)" }}>
+        <span style={{ ...typography.headerH2, color: TEXT_PRIMARY }}>
           {pct}%
         </span>
       </div>
@@ -759,7 +762,7 @@ function GoalProgressCard({ data }: { data: Extract<ChatCardData, { type: "goal-
     <>
       {/* Header row: label left, status pill right */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-        <span style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.5)" }}>
+        <span style={{ ...typography.metadata, textTransform: "uppercase", color: TEXT_TERTIARY }}>
           Goal progress
         </span>
         {statusPill}
@@ -783,21 +786,21 @@ function SavingsPlanCard({ data }: { data: Extract<ChatCardData, { type: "saving
     <div style={shell}>
       <CardHeader label="Savings plan" />
 
-      <p style={{ ...typography.headerH4, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
+      <p style={{ ...typography.headerH4, color: TEXT_PRIMARY, marginBottom: 4 }}>
         {name}
       </p>
-      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 16 }}>
+      <p style={{ ...typography.caption, color: TEXT_TERTIARY, marginBottom: 16 }}>
         {formatINRFull(target)} by {timeline}
       </p>
 
       {/* Progress bar */}
-      <div style={{ height: 8, backgroundColor: VALENTINO_50, borderRadius: 100, overflow: "hidden", marginBottom: 16 }}>
+      <div style={{ height: 8, backgroundColor: VALENTINO_50, borderRadius: RADIUS_CIRCLE, overflow: "hidden", marginBottom: 16 }}>
         <div
           style={{
             width: `${clampedPct}%`,
             height: "100%",
             backgroundColor: VALENTINO_500,
-            borderRadius: 100,
+            borderRadius: RADIUS_CIRCLE,
             boxShadow: "0px 2px 4px rgba(211,10,215,0.2)",
           }}
         />
@@ -807,22 +810,22 @@ function SavingsPlanCard({ data }: { data: Extract<ChatCardData, { type: "saving
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
         {existingSavings > 0 && (
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ ...typography.caption, color: "rgba(0,0,0,0.5)" }}>Existing savings applied</span>
-            <span style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.9)" }}>{formatINRFull(existingSavings)}</span>
+            <span style={{ ...typography.caption, color: TEXT_TERTIARY }}>Existing savings applied</span>
+            <span style={{ ...typography.buttonSmall, color: TEXT_PRIMARY }}>{formatINRFull(existingSavings)}</span>
           </div>
         )}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ ...typography.caption, color: "rgba(0,0,0,0.5)" }}>Monthly via {productType}</span>
-          <span style={{ ...typography.buttonSmall, color: "rgba(0,0,0,0.9)" }}>{formatINRFull(monthlyAmount)}</span>
+          <span style={{ ...typography.caption, color: TEXT_TERTIARY }}>Monthly via {productType}</span>
+          <span style={{ ...typography.buttonSmall, color: TEXT_PRIMARY }}>{formatINRFull(monthlyAmount)}</span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ ...typography.caption, color: "rgba(0,0,0,0.5)" }}>Rate</span>
+          <span style={{ ...typography.caption, color: TEXT_TERTIARY }}>Rate</span>
           <span style={{ ...typography.buttonSmall, color: GREEN_500 }}>{rate}</span>
         </div>
       </div>
 
       {/* Hairline */}
-      <div style={{ height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginBottom: 12 }} />
+      <div style={{ height: 1, backgroundColor: OUTLINE_SUBTLE, marginBottom: 12 }} />
 
       {/* Timeline label */}
       <div
@@ -830,7 +833,7 @@ function SavingsPlanCard({ data }: { data: Extract<ChatCardData, { type: "saving
           display: "inline-flex",
           alignItems: "center",
           padding: "4px 8px",
-          borderRadius: 100,
+          borderRadius: RADIUS_CIRCLE,
           backgroundColor: BLUE_50,
         }}
       >
@@ -866,7 +869,7 @@ function MerchantConcentrationCard({ data }: { data: Extract<ChatCardData, { typ
         <div key={m.name} style={{ display: "flex", gap: 12, alignItems: "center", paddingTop: 16, paddingBottom: 16 }}>
           {/* Initial avatar */}
           <div style={{
-            width: 40, height: 40, borderRadius: 100,
+            width: 40, height: 40, borderRadius: RADIUS_CIRCLE,
             backgroundColor: m.color || PALETTE[i % PALETTE.length],
             border: "1px solid #f0f4f7",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
@@ -877,26 +880,26 @@ function MerchantConcentrationCard({ data }: { data: Extract<ChatCardData, { typ
           </div>
           {/* Name + bar */}
           <div style={{ flex: "1 0 0", minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-            <p style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.9)", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            <p style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {m.name}
             </p>
             <div style={{ paddingTop: 4, paddingBottom: 4 }}>
-              <div style={{ height: 8, backgroundColor: trackColor(m.color || PALETTE[i % PALETTE.length]), borderRadius: 100, overflow: "hidden" }}>
+              <div style={{ height: 8, backgroundColor: trackColor(m.color || PALETTE[i % PALETTE.length]), borderRadius: RADIUS_CIRCLE, overflow: "hidden" }}>
                 <div style={{
                   width: `${(m.amount / totalSpend) * 100}%`,
                   height: "100%",
                   backgroundColor: m.color || PALETTE[i % PALETTE.length],
-                  borderRadius: 100,
+                  borderRadius: RADIUS_CIRCLE,
                 }} />
               </div>
             </div>
           </div>
           {/* Amount + percentage */}
           <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
-            <p style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.9)", textAlign: "right", whiteSpace: "nowrap", margin: 0 }}>
+            <p style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, textAlign: "right", whiteSpace: "nowrap", margin: 0 }}>
               {formatINRFull(m.amount)}
             </p>
-            <p style={{ ...typography.caption, color: "rgba(0,0,0,0.7)", textAlign: "right", whiteSpace: "nowrap", margin: 0 }}>{m.pct}%</p>
+            <p style={{ ...typography.caption, color: TEXT_SECONDARY, textAlign: "right", whiteSpace: "nowrap", margin: 0 }}>{m.pct}%</p>
           </div>
         </div>
       ))}
@@ -905,13 +908,13 @@ function MerchantConcentrationCard({ data }: { data: Extract<ChatCardData, { typ
 
   return (
     <div style={{ padding: "4px 0 8px" }}>
-      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+      <p style={{ ...typography.caption, color: TEXT_TERTIARY, marginBottom: 8 }}>
         {month} spends
       </p>
-      <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
+      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 4 }}>
         {formatINRFull(totalSpend)}
       </p>
-      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 16 }}>
+      <p style={{ ...typography.caption, color: TEXT_TERTIARY, marginBottom: 16 }}>
         across {merchantCount} merchants
       </p>
       {rows}
@@ -989,7 +992,7 @@ function CategoryMomCard({ data }: { data: Extract<ChatCardData, { type: "catego
         {[0, 0.5, 1].map((frac) => {
           const y = padTop + drawH - frac * drawH;
           return (
-            <text key={frac} x={0} y={y + 4} textAnchor="start" fill="rgba(0,0,0,0.3)" fontSize={mfs} fontWeight={mfw} fontFamily={mff} letterSpacing={mls}>
+            <text key={frac} x={0} y={y + 4} textAnchor="start" fill={ALPHA_BLACK_30} fontSize={mfs} fontWeight={mfw} fontFamily={mff} letterSpacing={mls}>
               {roundAxis(maxVal * frac)}
             </text>
           );
@@ -1023,7 +1026,7 @@ function CategoryMomCard({ data }: { data: Extract<ChatCardData, { type: "catego
             onClick={(e) => { e.stopPropagation(); setSelectedCat(selectedCat === i ? null : i); }}
             style={{
               ...typography.caption,
-              color: selectedCat === i ? "rgba(0,0,0,0.9)" : "rgba(0,0,0,0.5)",
+              color: selectedCat === i ? TEXT_PRIMARY : TEXT_TERTIARY,
               fontWeight: selectedCat === i ? 500 : undefined,
               flex: 1,
               textAlign: "center",
@@ -1039,11 +1042,11 @@ function CategoryMomCard({ data }: { data: Extract<ChatCardData, { type: "catego
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginTop: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <div style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: "#fae2fa" }} />
-          <span style={{ ...typography.caption, color: "rgba(0,0,0,0.5)" }}>{lastMonth}</span>
+          <span style={{ ...typography.caption, color: TEXT_TERTIARY }}>{lastMonth}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <div style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: VALENTINO_500 }} />
-          <span style={{ ...typography.caption, color: "rgba(0,0,0,0.5)" }}>{thisMonth}</span>
+          <span style={{ ...typography.caption, color: TEXT_TERTIARY }}>{thisMonth}</span>
         </div>
       </div>
     </div>
@@ -1051,10 +1054,10 @@ function CategoryMomCard({ data }: { data: Extract<ChatCardData, { type: "catego
 
   return (
     <div style={{ padding: "4px 0 8px" }} onClick={() => setSelectedCat(null)}>
-      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+      <p style={{ ...typography.caption, color: TEXT_TERTIARY, marginBottom: 8 }}>
         {displayTitle}
       </p>
-      <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
+      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 4 }}>
         {formatINRFull(displayThisValue)}
       </p>
       <p style={{ ...typography.caption, color: displayDiffColor, marginBottom: 16 }}>
@@ -1118,14 +1121,14 @@ function SpendTrendCard({ data }: { data: Extract<ChatCardData, { type: "spend-t
         {[0, 0.5, 1].map((frac) => {
           const y = padTop + drawH - frac * drawH;
           return (
-            <text key={frac} x={0} y={y + 4} textAnchor="start" fill="rgba(0,0,0,0.3)" fontSize={mfs} fontWeight={mfw} fontFamily={mff} letterSpacing={mls}>
+            <text key={frac} x={0} y={y + 4} textAnchor="start" fill={ALPHA_BLACK_30} fontSize={mfs} fontWeight={mfw} fontFamily={mff} letterSpacing={mls}>
               {roundAxis(maxVal * frac)}
             </text>
           );
         })}
 
         {/* Average dashed line */}
-        <line x1={padL} y1={avgY} x2={W - padR} y2={avgY} stroke="rgba(0,0,0,0.2)" strokeWidth="1" strokeDasharray="5 4" />
+        <line x1={padL} y1={avgY} x2={W - padR} y2={avgY} stroke={ALPHA_BLACK_20} strokeWidth="1" strokeDasharray="5 4" />
 
         {/* Bars */}
         {chartData.map((d, i) => {
@@ -1156,7 +1159,7 @@ function SpendTrendCard({ data }: { data: Extract<ChatCardData, { type: "spend-t
             onClick={(e) => { e.stopPropagation(); setActiveIndex(i); }}
             style={{
               ...typography.caption,
-              color: i === activeIndex ? "rgba(0,0,0,0.9)" : "rgba(0,0,0,0.5)",
+              color: i === activeIndex ? TEXT_PRIMARY : TEXT_TERTIARY,
               fontWeight: i === activeIndex ? 500 : undefined,
               flex: 1,
               textAlign: "center",
@@ -1174,10 +1177,10 @@ function SpendTrendCard({ data }: { data: Extract<ChatCardData, { type: "spend-t
 
   return (
     <div style={{ padding: "4px 0 8px" }} onClick={() => setActiveIndex(highlightIndex)}>
-      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+      <p style={{ ...typography.caption, color: TEXT_TERTIARY, marginBottom: 8 }}>
         {displayMonth} spends
       </p>
-      <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
+      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 4 }}>
         {formatINRFull(activeMonthValue)}
       </p>
       <p style={{ ...typography.caption, color: comparisonColor, marginBottom: 16 }}>
@@ -1242,7 +1245,7 @@ function SpendingHeatmapCard({ data }: { data: Extract<ChatCardData, { type: "sp
   for (let i = 0; i < startDay; i++) cells.push(null);
   for (let i = 0; i < dailySpend.length; i++) cells.push(i);
 
-  const tertiary = "rgba(0,0,0,0.3)";
+  const tertiary = ALPHA_BLACK_30;
 
   const chart = (
     <div>
@@ -1264,7 +1267,7 @@ function SpendingHeatmapCard({ data }: { data: Extract<ChatCardData, { type: "sp
               onClick={() => setSelectedDay(selectedDay === cellIdx ? null : cellIdx)}
               style={{
                 aspectRatio: "1",
-                borderRadius: 8,
+                borderRadius: RADIUS_S,
                 backgroundColor: intensityColor(val),
                 display: "flex",
                 alignItems: "center",
@@ -1277,7 +1280,7 @@ function SpendingHeatmapCard({ data }: { data: Extract<ChatCardData, { type: "sp
               {val !== null && (
                 <span style={{
                   ...typography.bodySmall,
-                  color: val / maxSpend > 0.5 ? BG_PRIMARY : "rgba(0,0,0,0.5)",
+                  color: val / maxSpend > 0.5 ? BG_PRIMARY : TEXT_TERTIARY,
                 }}>
                   {cellIdx + 1}
                 </span>
@@ -1300,10 +1303,10 @@ function SpendingHeatmapCard({ data }: { data: Extract<ChatCardData, { type: "sp
   return (
     <div style={{ padding: "4px 0 8px" }} onClick={(e) => { if (e.target === e.currentTarget) setSelectedDay(null); }}>
       <div onClick={() => setSelectedDay(null)} style={{ cursor: selectedDay !== null ? "pointer" : undefined }}>
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+        <p style={{ ...typography.caption, color: TEXT_TERTIARY, marginBottom: 8 }}>
           {displayLabel}
         </p>
-        <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
+        <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 4 }}>
           {formatINRFull(displayAmount)}
         </p>
         <p style={{ ...typography.caption, color: subtextColor, marginBottom: 16 }}>
@@ -1378,11 +1381,11 @@ function PaymentModeDonutCardV2({ data }: { data: Extract<ChatCardData, { type: 
           />
         ))}
         {/* Center amount — H1, vertically centered to ring */}
-        <text x={cx} y={cy - 8} textAnchor="middle" dominantBaseline="central" fill="rgba(0,0,0,0.9)" fontSize={typography.headerH1.fontSize} fontWeight={typography.headerH1.fontWeight} letterSpacing={typography.headerH1.letterSpacing} fontFamily={typography.headerH1.fontFamily} style={{ transition: "opacity 0.2s" }}>
+        <text x={cx} y={cy - 8} textAnchor="middle" dominantBaseline="central" fill={TEXT_PRIMARY} fontSize={typography.headerH1.fontSize} fontWeight={typography.headerH1.fontWeight} letterSpacing={typography.headerH1.letterSpacing} fontFamily={typography.headerH1.fontFamily} style={{ transition: "opacity 0.2s" }}>
           {formatINR(arcModes[selected].amount)}
         </text>
         {/* Center name — Caption, below the amount */}
-        <text x={cx} y={cy + 24} textAnchor="middle" fill="rgba(0,0,0,0.5)" fontSize={typography.caption.fontSize} fontWeight={typography.caption.fontWeight} letterSpacing={typography.caption.letterSpacing} fontFamily={typography.caption.fontFamily} style={{ transition: "opacity 0.2s" }}>
+        <text x={cx} y={cy + 24} textAnchor="middle" fill={TEXT_TERTIARY} fontSize={typography.caption.fontSize} fontWeight={typography.caption.fontWeight} letterSpacing={typography.caption.letterSpacing} fontFamily={typography.caption.fontFamily} style={{ transition: "opacity 0.2s" }}>
           {arcModes[selected].name}
         </text>
       </svg>
@@ -1401,9 +1404,9 @@ function PaymentModeDonutCardV2({ data }: { data: Extract<ChatCardData, { type: 
               transition: "opacity 0.2s",
             }}
           >
-            <div style={{ width: 12, height: 12, borderRadius: 100, backgroundColor: selected === i ? m.color : trackColor(m.color), flexShrink: 0, transition: "background-color 0.2s" }} />
-            <span style={{ ...(selected === i ? typography.buttonNormal : typography.bodyNormal), color: selected === i ? "rgba(0,0,0,0.9)" : "rgba(0,0,0,0.5)", flex: 1, transition: "color 0.2s" }}>{m.name}</span>
-            <span style={{ ...(selected === i ? typography.buttonSmall : typography.bodySmall), color: selected === i ? "rgba(0,0,0,0.9)" : "rgba(0,0,0,0.5)", transition: "color 0.2s" }}>{m.pct}%</span>
+            <div style={{ width: 12, height: 12, borderRadius: RADIUS_CIRCLE, backgroundColor: selected === i ? m.color : trackColor(m.color), flexShrink: 0, transition: "background-color 0.2s" }} />
+            <span style={{ ...(selected === i ? typography.buttonNormal : typography.bodyNormal), color: selected === i ? TEXT_PRIMARY : TEXT_TERTIARY, flex: 1, transition: "color 0.2s" }}>{m.name}</span>
+            <span style={{ ...(selected === i ? typography.buttonSmall : typography.bodySmall), color: selected === i ? TEXT_PRIMARY : TEXT_TERTIARY, transition: "color 0.2s" }}>{m.pct}%</span>
           </div>
         ))}
       </div>
@@ -1412,13 +1415,13 @@ function PaymentModeDonutCardV2({ data }: { data: Extract<ChatCardData, { type: 
 
   return (
     <div style={{ padding: "4px 0 8px" }}>
-      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+      <p style={{ ...typography.caption, color: TEXT_TERTIARY, marginBottom: 8 }}>
         {month} spends
       </p>
-      <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
+      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 4 }}>
         {formatINRFull(totalSpend)}
       </p>
-      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+      <p style={{ ...typography.caption, color: TEXT_TERTIARY, marginBottom: 8 }}>
         across {modes.length} payment modes
       </p>
       {donutAndLegend}
@@ -1470,7 +1473,7 @@ function TransactionTableCard({ data }: { data: Extract<ChatCardData, { type: "t
             style={{
               width: 40,
               height: 40,
-              borderRadius: 100,
+              borderRadius: RADIUS_CIRCLE,
               backgroundColor: avatarColor,
               border: "1px solid #f0f4f7",
               display: "flex",
@@ -1488,7 +1491,7 @@ function TransactionTableCard({ data }: { data: Extract<ChatCardData, { type: "t
             <p
               style={{
                 ...typography.bodyNormal,
-                color: "rgba(0,0,0,0.9)",
+                color: TEXT_PRIMARY,
                 margin: 0,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -1497,21 +1500,21 @@ function TransactionTableCard({ data }: { data: Extract<ChatCardData, { type: "t
             >
               {tx.merchant}
             </p>
-            <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", margin: 0, marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>
+            <p style={{ ...typography.caption, color: TEXT_TERTIARY, margin: 0, marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>
               {tx.date}
-              <span style={{ width: 2, height: 2, borderRadius: 100, backgroundColor: "rgba(0,0,0,0.3)", flexShrink: 0 }} />
+              <span style={{ width: 2, height: 2, borderRadius: RADIUS_CIRCLE, backgroundColor: ALPHA_BLACK_30, flexShrink: 0 }} />
               {tx.category}
             </p>
           </div>
           {/* Amount */}
-          <span style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.9)", flexShrink: 0, whiteSpace: "nowrap" }}>
+          <span style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, flexShrink: 0, whiteSpace: "nowrap" }}>
             {formatINRFull(tx.amount)}
           </span>
         </div>
         );
       })}
       {overflow > 0 && (
-        <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", textAlign: "center", padding: "12px 0", margin: 0 }}>
+        <p style={{ ...typography.caption, color: TEXT_TERTIARY, textAlign: "center", padding: "12px 0", margin: 0 }}>
           +{overflow} more transaction{overflow > 1 ? "s" : ""}
         </p>
       )}
@@ -1520,13 +1523,13 @@ function TransactionTableCard({ data }: { data: Extract<ChatCardData, { type: "t
 
   return (
     <div style={{ padding: "4px 0 8px" }}>
-      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 8 }}>
+      <p style={{ ...typography.caption, color: TEXT_TERTIARY, marginBottom: 8 }}>
         {title}
       </p>
-      <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", marginBottom: 4 }}>
+      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 4 }}>
         {formatINRFull(totalAmount)}
       </p>
-      <p style={{ ...typography.caption, color: "rgba(0,0,0,0.5)", marginBottom: 16 }}>
+      <p style={{ ...typography.caption, color: TEXT_TERTIARY, marginBottom: 16 }}>
         {dateRange}
       </p>
       {txList}
@@ -1605,27 +1608,27 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
     return (
       <div style={{ backgroundColor: BG_PRIMARY, border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW }}>
         <CardHeader label="Confirmed obligations" onArrowTap={onArrowTap} />
-        <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", margin: 0 }}>
-          {formatINRFull(confirmedTotal)}<span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>/mo</span>
+        <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, margin: 0 }}>
+          {formatINRFull(confirmedTotal)}<span style={{ ...typography.bodySmall, color: TEXT_TERTIARY }}>/mo</span>
         </p>
         {confirmedItems.map((item, i) => (
           <div
             key={item.id}
             style={{
               padding: i === confirmedItems.length - 1 ? "16px 0 0 0" : "16px 0",
-              borderBottom: i < confirmedItems.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+              borderBottom: i < confirmedItems.length - 1 ? `1px solid ${OUTLINE_SUBTLE}` : "none",
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <p style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.9)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+              <p style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
                 {item.payee}
               </p>
-              <span style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.9)", flexShrink: 0, whiteSpace: "nowrap", marginLeft: 8 }}>
+              <span style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, flexShrink: 0, whiteSpace: "nowrap", marginLeft: 8 }}>
                 {formatINRFull(getAmount(item))}
               </span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
-              <p style={{ ...typography.caption, color: "rgba(0,0,0,0.7)", margin: 0 }}>
+              <p style={{ ...typography.caption, color: TEXT_SECONDARY, margin: 0 }}>
                 {getType(item)}
               </p>
             </div>
@@ -1647,11 +1650,11 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
     >
       {/* Live confirmed total header */}
       <div style={{ marginBottom: 0 }}>
-        <p style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(0,0,0,0.5)", margin: 0, marginBottom: 4 }}>
+        <p style={{ ...typography.metadata, textTransform: "uppercase", color: TEXT_TERTIARY, margin: 0, marginBottom: 4 }}>
           Confirmed obligations
         </p>
-        <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", margin: 0 }}>
-          {formatINRFull(confirmedTotal)}<span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>/mo</span>
+        <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, margin: 0 }}>
+          {formatINRFull(confirmedTotal)}<span style={{ ...typography.bodySmall, color: TEXT_TERTIARY }}>/mo</span>
         </p>
       </div>
 
@@ -1670,7 +1673,7 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
                 alignItems: "center",
                 gap: 8,
                 padding: i === display.length - 1 ? "16px 0 0 0" : "16px 0",
-                borderBottom: (!isExpanded && i < display.length - 1) ? "1px solid rgba(0,0,0,0.05)" : "none",
+                borderBottom: (!isExpanded && i < display.length - 1) ? `1px solid ${OUTLINE_SUBTLE}` : "none",
                 transition: "border-color 200ms ease",
               }}
             >
@@ -1689,7 +1692,7 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
                     </svg>
                   ) : (
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <rect x="2.5" y="2.5" width="19" height="19" rx="3.5" stroke="rgba(0,0,0,0.2)" strokeWidth="1" />
+                      <rect x="2.5" y="2.5" width="19" height="19" rx="3.5" stroke={ALPHA_BLACK_20} strokeWidth="1" />
                     </svg>
                   )}
                 </div>
@@ -1698,16 +1701,16 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
               <div style={{ flex: 1, minWidth: 0, cursor: "pointer" }} onClick={() => handleExpand(item.id)}>
                 {/* Row 1: Title + Amount */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <p style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.9)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+                  <p style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
                     {item.payee}
                   </p>
-                  <span style={{ ...typography.bodyNormal, color: "rgba(0,0,0,0.9)", flexShrink: 0, whiteSpace: "nowrap", marginLeft: 8 }}>
+                  <span style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, flexShrink: 0, whiteSpace: "nowrap", marginLeft: 8 }}>
                     {formatINRFull(currentAmount)}
                   </span>
                 </div>
                 {/* Row 2: Category + Edit */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
-                  <p style={{ ...typography.caption, color: "rgba(0,0,0,0.7)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+                  <p style={{ ...typography.caption, color: TEXT_SECONDARY, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
                     {currentType}
                   </p>
                   <span
@@ -1737,7 +1740,7 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
                 gridTemplateRows: isExpanded ? "1fr" : "0fr",
                 opacity: isExpanded ? 1 : 0,
                 transition: "grid-template-rows 250ms ease, opacity 200ms ease",
-                borderBottom: (isExpanded && i < display.length - 1) ? "1px solid rgba(0,0,0,0.05)" : "none",
+                borderBottom: (isExpanded && i < display.length - 1) ? `1px solid ${OUTLINE_SUBTLE}` : "none",
               }}
             >
               <div style={{ overflow: "hidden" }}>
@@ -1779,10 +1782,10 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
                             ...typography.bodySmall,
                             height: 32,
                             padding: "0 16px",
-                            borderRadius: 64,
-                            border: isActive ? `1px solid ${VALENTINO_500}` : "1px solid rgba(0,0,0,0.2)",
+                            borderRadius: RADIUS_PILL,
+                            border: isActive ? `1px solid ${VALENTINO_500}` : `1px solid ${ALPHA_BLACK_20}`,
                             backgroundColor: isActive ? VALENTINO_50 : BG_PRIMARY,
-                            color: "rgba(0,0,0,0.9)",
+                            color: TEXT_PRIMARY,
                             cursor: "pointer",
                             whiteSpace: "nowrap",
                             flexShrink: 0,
@@ -1818,7 +1821,7 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
               style={{
                 ...typography.buttonSmall,
                 height: 36,
-                borderRadius: 100,
+                borderRadius: RADIUS_CIRCLE,
                 backgroundColor: VALENTINO_500,
                 color: BG_PRIMARY,
                 border: "none",

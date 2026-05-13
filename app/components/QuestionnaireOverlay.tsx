@@ -4,11 +4,14 @@ import { useState, useRef, useEffect } from "react";
 import { typography } from "../lib/typography";
 import {
   TEXT_PRIMARY,
+  TEXT_SECONDARY,
   TEXT_TERTIARY,
   OUTLINE_SUBTLE,
+  ALPHA_BLACK_30,
   VALENTINO_500,
   BG_PRIMARY,
 } from "../lib/colors";
+import { RADIUS_M, RADIUS_CIRCLE } from "../lib/radii";
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -89,7 +92,7 @@ export default function QuestionnaireOverlay({
       <div
         style={{
           backgroundColor: BG_PRIMARY,
-          borderRadius: 16,
+          borderRadius: RADIUS_M,
           boxShadow: "0px 4px 40px rgba(0,0,0,0.10), 0px 0px 0px 1px rgba(0,0,0,0.04)",
           overflow: "hidden",
         }}
@@ -117,7 +120,7 @@ export default function QuestionnaireOverlay({
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path
                 d="M18 6L6 18M6 6l12 12"
-                stroke="rgba(0,0,0,0.7)"
+                stroke={TEXT_SECONDARY}
                 strokeWidth="2"
                 strokeLinecap="round"
               />
@@ -217,14 +220,14 @@ export default function QuestionnaireOverlay({
                       style={{
                         width: 24,
                         height: 24,
-                        borderRadius: 100,
-                        border: `2px solid ${isSelected ? VALENTINO_500 : "rgba(0,0,0,0.3)"}`,
+                        borderRadius: RADIUS_CIRCLE,
+                        border: `2px solid ${isSelected ? VALENTINO_500 : ALPHA_BLACK_30}`,
                         backgroundColor: "transparent",
                         transition: "border-color 150ms ease",
                       }}
                     >
                       {isSelected && (
-                        <div style={{ width: 10, height: 10, borderRadius: 100, backgroundColor: VALENTINO_500 }} />
+                        <div style={{ width: 10, height: 10, borderRadius: RADIUS_CIRCLE, backgroundColor: VALENTINO_500 }} />
                       )}
                     </div>
                   </div>
@@ -266,7 +269,7 @@ export default function QuestionnaireOverlay({
                 style={{
                   width: 32,
                   height: 32,
-                  borderRadius: 100,
+                  borderRadius: RADIUS_CIRCLE,
                   backgroundColor: VALENTINO_500,
                   border: "none",
                   cursor: "pointer",

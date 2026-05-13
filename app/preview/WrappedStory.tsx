@@ -185,7 +185,7 @@ function CountdownTimer({ duration, onExpire, resetKey }: { duration: number; on
         width: 48,
         height: 48,
         backgroundColor: BG_PRIMARY,
-        border: "1px solid rgba(0,0,0,0.05)",
+        border: `1px solid ${OUTLINE_SUBTLE}`,
         boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)",
       }}
     >

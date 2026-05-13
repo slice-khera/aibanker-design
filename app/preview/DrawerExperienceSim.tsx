@@ -23,7 +23,7 @@ import {
   VALENTINO_50,
   RED_50,
 } from "../lib/colors";
-import { RADIUS_S, RADIUS_M, RADIUS_L } from "../lib/radii";
+import { RADIUS_S, RADIUS_M, RADIUS_L, RADIUS_CIRCLE } from "../lib/radii";
 import { ELEVATION_CARD, ELEVATION_BELOW } from "../lib/elevation";
 import { SPACE_S } from "../lib/spacing";
 
@@ -140,8 +140,8 @@ function MyMoneyScreen() {
               <span style={{ ...typography.caption, color: TEXT_TERTIARY, flex: 1 }}>Progress</span>
               <span style={{ ...typography.caption, color: GREEN_500, fontWeight: 500 }}>54%</span>
             </div>
-            <div style={{ height: 8, backgroundColor: GREEN_50, borderRadius: 100, overflow: "hidden" }}>
-              <div style={{ width: "54%", height: "100%", backgroundColor: GREEN_500, borderRadius: 100, boxShadow: "0px 2px 4px rgba(211,10,215,0.2)" }} />
+            <div style={{ height: 8, backgroundColor: GREEN_50, borderRadius: RADIUS_CIRCLE, overflow: "hidden" }}>
+              <div style={{ width: "54%", height: "100%", backgroundColor: GREEN_500, borderRadius: RADIUS_CIRCLE, boxShadow: "0px 2px 4px rgba(211,10,215,0.2)" }} />
             </div>
           </div>
         </div>

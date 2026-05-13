@@ -6,6 +6,8 @@
  * to show realistic vertical space usage.
  */
 
+import { ALPHA_BLACK_40, TEXT_TERTIARY } from "../lib/colors";
+
 const ROW_1 = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"];
 const ROW_2 = ["a", "s", "d", "f", "g", "h", "j", "k", "l"];
 const ROW_3 = ["z", "x", "c", "v", "b", "n", "m"];
@@ -186,7 +188,7 @@ export default function MockKeyboard({ visible }: { visible: boolean }) {
 
           {/* Return */}
           <SecondaryKey width={91} opacity={0.5}>
-            <span style={{ fontFamily: FONT_UI, fontWeight: 400, fontSize: 19, color: "rgba(0,0,0,0.4)", lineHeight: "normal" }}>
+            <span style={{ fontFamily: FONT_UI, fontWeight: 400, fontSize: 19, color: ALPHA_BLACK_40, lineHeight: "normal" }}>
               return
             </span>
           </SecondaryKey>
@@ -198,7 +200,7 @@ export default function MockKeyboard({ visible }: { visible: boolean }) {
         </div>
 
         {/* Mic icon */}
-        <div style={{ position: "absolute", bottom: 26, right: 28, fontSize: 27, color: "rgba(0,0,0,0.5)", lineHeight: "normal" }}>
+        <div style={{ position: "absolute", bottom: 26, right: 28, fontSize: 27, color: TEXT_TERTIARY, lineHeight: "normal" }}>
           🎙
         </div>
 
@@ -212,7 +214,7 @@ export default function MockKeyboard({ visible }: { visible: boolean }) {
             width: 128,
             height: 4,
             borderRadius: 40,
-            backgroundColor: "rgba(0,0,0,0.4)",
+            backgroundColor: ALPHA_BLACK_40,
           }}
         />
       </div>

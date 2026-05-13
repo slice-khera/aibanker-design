@@ -3,8 +3,10 @@
 import { typography } from "../lib/typography";
 import {
   TEXT_PRIMARY,
+  TEXT_SECONDARY,
   TEXT_TERTIARY,
   OUTLINE_SUBTLE,
+  ALPHA_BLACK_30,
   BLUE_50,
   BLUE_500,
   ORANGE_50,
@@ -16,6 +18,7 @@ import {
 } from "../lib/colors";
 import { formatINR } from "../lib/financial-data";
 import { AppBar, NavButton, GestureNav } from "./AppChrome";
+import { RADIUS_S, RADIUS_M, RADIUS_CIRCLE } from "../lib/radii";
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -33,7 +36,6 @@ export type PotDetailProps = {
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const TEXT_SECONDARY = "rgba(0,0,0,0.7)";
 const SHADOW_CARD = "0px 2px 32px 0px rgba(0,0,0,0.05)";
 
 // ── Inline SVGs ────────────────────────────────────────────────────────────────
@@ -84,7 +86,7 @@ function RecurringIcon() {
 function ChevronRightIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path d="M9 6l6 6-6 6" stroke="rgba(0,0,0,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 6l6 6-6 6" stroke={ALPHA_BLACK_30} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -99,7 +101,7 @@ function StashIcon({ icon, heroScene }: { icon?: string; heroScene?: string }) {
         style={{
           width: 80,
           height: 80,
-          borderRadius: 16,
+          borderRadius: RADIUS_M,
           border: `0.54px solid ${OUTLINE_SUBTLE}`,
           backgroundColor: BLUE_50,
           overflow: "hidden",
@@ -112,7 +114,7 @@ function StashIcon({ icon, heroScene }: { icon?: string; heroScene?: string }) {
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, #87CEEB 0%, #b8e6b8 60%, #6abf69 100%)" }} />
         <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 72, height: 44, borderRadius: "50% 50% 0 0", background: "linear-gradient(180deg, #5cb85c 0%, #3d8b3d 100%)" }} />
         <div style={{ position: "absolute", top: 18, left: "50%", transform: "translateX(-50%)", width: 0, height: 0, borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderBottom: "14px solid #ff6b35" }} />
-        <div style={{ position: "absolute", top: 12, left: 12, width: 20, height: 8, borderRadius: 8, backgroundColor: "rgba(255,255,255,0.85)" }} />
+        <div style={{ position: "absolute", top: 12, left: 12, width: 20, height: 8, borderRadius: RADIUS_S, backgroundColor: "rgba(255,255,255,0.85)" }} />
       </div>
     );
   }
@@ -123,7 +125,7 @@ function StashIcon({ icon, heroScene }: { icon?: string; heroScene?: string }) {
       style={{
         width: 80,
         height: 80,
-        borderRadius: 16,
+        borderRadius: RADIUS_M,
         border: `0.54px solid ${OUTLINE_SUBTLE}`,
         backgroundColor: BLUE_50,
         display: "flex",
@@ -195,7 +197,7 @@ function ListItem({ avatar, title, subtitle, trailing }: ListItemProps) {
           style={{
             width: 40,
             height: 40,
-            borderRadius: 100,
+            borderRadius: RADIUS_CIRCLE,
             backgroundColor: BG_PRIMARY,
             border: `1px solid ${OUTLINE_SUBTLE}`,
             display: "flex",
@@ -226,7 +228,7 @@ function Tag({ label, color, bg }: { label: string; color: string; bg: string })
     <div
       style={{
         backgroundColor: bg,
-        borderRadius: 100,
+        borderRadius: RADIUS_CIRCLE,
         paddingLeft: 8,
         paddingRight: 8,
         paddingTop: 4,
@@ -242,7 +244,7 @@ function Tag({ label, color, bg }: { label: string; color: string; bg: string })
 
 function BadgeDot({ color = ORANGE_500 }: { color?: string }) {
   return (
-    <div style={{ padding: 4, borderRadius: 100 }}>
+    <div style={{ padding: 4, borderRadius: RADIUS_CIRCLE }}>
       <div style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
     </div>
   );
@@ -259,7 +261,7 @@ function ExtendedButton({ label, onClick }: { label: string; onClick?: () => voi
         flex: 1,
         backgroundColor: BG_SURFACE_2,
         border: "none",
-        borderRadius: 100,
+        borderRadius: RADIUS_CIRCLE,
         paddingTop: 12,
         paddingBottom: 12,
         paddingLeft: 24,
@@ -289,7 +291,7 @@ function ProgressCard({
       style={{
         backgroundColor: BG_PRIMARY,
         border: `1px solid ${OUTLINE_SUBTLE}`,
-        borderRadius: 16,
+        borderRadius: RADIUS_M,
         padding: 24,
         boxShadow: SHADOW_CARD,
         display: "flex",
@@ -298,13 +300,13 @@ function ProgressCard({
       }}
     >
       {/* Progress bar — DLS: 8px pill, /50 track, /500 fill */}
-      <div style={{ height: 8, backgroundColor: ORANGE_50, borderRadius: 100, overflow: "hidden", width: "100%" }}>
+      <div style={{ height: 8, backgroundColor: ORANGE_50, borderRadius: RADIUS_CIRCLE, overflow: "hidden", width: "100%" }}>
         <div
           style={{
             width: `${percent}%`,
             height: "100%",
             backgroundColor: ORANGE_500,
-            borderRadius: 100,
+            borderRadius: RADIUS_CIRCLE,
             boxShadow: "0px 2px 4px rgba(211,10,215,0.2)",
           }}
         />

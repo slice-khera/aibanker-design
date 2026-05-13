@@ -4,8 +4,9 @@ import { useRef } from "react";
 import {
   VALENTINO_500, BLUE_500, GREEN_500, GREEN_50, RED_500, RED_50,
   ORANGE_500, ORANGE_50,
-  BG_PRIMARY,
+  BG_PRIMARY, TEXT_PRIMARY, OUTLINE_SUBTLE,
 } from "../lib/colors";
+import { RADIUS_CIRCLE } from "../lib/radii";
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -137,7 +138,7 @@ function ProgressRing({
             fontFamily: "var(--font-rubik), sans-serif",
             fontSize: 9,
             fontWeight: 400,
-            fill: "rgba(0,0,0,0.9)",
+            fill: TEXT_PRIMARY,
           }}
         >
           {clamped}%
@@ -231,7 +232,7 @@ export default function GoalTracker({ goals, onGoalTap, onGoalListOpen, singleVa
           width: 48,
           height: 48,
           backgroundColor: BG_PRIMARY,
-          border: "1px solid rgba(0,0,0,0.05)",
+          border: `1px solid ${OUTLINE_SUBTLE}`,
           boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)",
           cursor: "pointer",
           position: "relative",
@@ -267,7 +268,7 @@ export default function GoalTracker({ goals, onGoalTap, onGoalListOpen, singleVa
               right: 4,
               width: 6,
               height: 6,
-              borderRadius: 100,
+              borderRadius: RADIUS_CIRCLE,
               backgroundColor: BEHIND_COLOR,
               animation: "goal-alert-pulse 2s ease-in-out infinite",
             }}

@@ -11,7 +11,9 @@ import {
   TEXT_TERTIARY,
   VALENTINO_50,
   VALENTINO_500,
+  ALPHA_BLACK_30,
 } from "../lib/colors";
+import { RADIUS_M } from "../lib/radii";
 
 export type PlanSummaryItem = {
   label: string;
@@ -132,7 +134,7 @@ export default function PlanCruncherV2({
     <div
       className={`plan-cruncher-entrance${mounted ? " plan-cruncher-entered" : ""}`}
       style={{
-        borderRadius: 16,
+        borderRadius: RADIUS_M,
         backgroundColor: BG_CARD,
         border: `1px solid ${OUTLINE_SUBTLE}`,
         boxShadow: "0px 6px 8px 0px rgba(0,0,0,0.05)",
@@ -176,7 +178,7 @@ export default function PlanCruncherV2({
                 flexShrink: 0,
               }}
             >
-              <path d="M4 6L8 10L12 6" stroke="rgba(0,0,0,0.3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M4 6L8 10L12 6" stroke={ALPHA_BLACK_30} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           )}
         </div>

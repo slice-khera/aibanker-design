@@ -13,6 +13,7 @@ import {
   TEXT_PRIMARY,
   TEXT_TERTIARY,
   TEXT_DISABLED,
+  ALPHA_BLACK_40,
   SLATE_50,
 } from "../lib/colors";
 
@@ -123,7 +124,7 @@ function ChevronDown({ expanded }: { expanded: boolean }) {
     >
       <path
         d="M4 6L8 10L12 6"
-        stroke="rgba(0,0,0,0.4)"
+        stroke={ALPHA_BLACK_40}
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -389,7 +390,7 @@ export default function PlanMode({ steps, visible, completed }: PlanModeProps) {
               }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M18 6L6 18M6 6l12 12" stroke="rgba(0,0,0,0.5)" strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M18 6L6 18M6 6l12 12" stroke={TEXT_TERTIARY} strokeWidth="2.5" strokeLinecap="round" />
               </svg>
             </button>
             <span

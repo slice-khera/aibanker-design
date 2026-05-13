@@ -4,6 +4,7 @@ import { useState } from "react";
 import PotDetail from "@/app/components/PotDetail";
 import QuestionnaireOverlay from "@/app/components/QuestionnaireOverlay";
 import { typography } from "@/app/lib/typography";
+import { TEXT_PRIMARY } from "@/app/lib/colors";
 
 const DEMO_QUESTIONS = [
   {
@@ -54,7 +55,7 @@ export default function PotPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f0f4f7] px-6 py-6" style={{ color: "rgba(0,0,0,0.9)" }}>
+    <div className="flex min-h-screen items-center justify-center bg-[#f0f4f7] px-6 py-6" style={{ color: TEXT_PRIMARY }}>
       {/* Background decorations */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-white/70 blur-3xl" />
