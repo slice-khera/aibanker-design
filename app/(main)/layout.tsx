@@ -39,7 +39,7 @@ const PLAYGROUND_ITEMS = [
 ];
 
 const SKILLS_ITEMS = [
-  { href: "/skills", label: "All skills" },
+  { href: "/skills", label: "Skills" },
 ];
 
 // ── Breadcrumb labels ────────────────────────────────────────
