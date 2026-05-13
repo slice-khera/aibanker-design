@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { typography } from "../lib/typography";
-import { VALENTINO_50, OUTLINE_SUBTLE, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_TERTIARY, ALPHA_BLACK_30, BG_PRIMARY, BG_SECONDARY } from "../lib/colors";
+import { VALENTINO_50, VALENTINO_500, OUTLINE_SUBTLE, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_TERTIARY, ALPHA_BLACK_30, BG_PRIMARY, BG_SECONDARY } from "../lib/colors";
 import { SPACE_XS, SPACE_S, SPACE_M, SPACE_L } from "../lib/spacing";
 import { RADIUS_S, RADIUS_M, RADIUS_PILL, RADIUS_CIRCLE } from "../lib/radii";
 import { ELEVATION_CARD } from "../lib/elevation";
@@ -141,7 +141,7 @@ function useTypewriter(fullText: string, active: boolean, onComplete?: () => voi
 
 const JAPAN_GOAL: GoalIndicatorData = {
   id: "1", name: "Trip to Japan", pct: 42, status: "on-track",
-  icon: "plane", ringColor: "#d30ad7", daysLabel: "4 months left",
+  icon: "plane", ringColor: VALENTINO_500, daysLabel: "4 months left",
   saved: 84000, target: 200000,
 };
 

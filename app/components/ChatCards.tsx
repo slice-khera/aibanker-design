@@ -9,6 +9,7 @@ import {
   ORANGE_50, ORANGE_400, ORANGE_500, ORANGE_600,
   BLUE_50, BLUE_400, BLUE_500,
   SLATE_10, SLATE_30, SLATE_50, SLATE_300, SLATE_500, SLATE_800,
+  BG_PRIMARY,
 } from "../lib/colors";
 
 // ─── Shared types ──────────────────────────────────────────
@@ -108,12 +109,12 @@ export const TAG_STYLES: Record<string, Record<string, { bg: string; text: strin
     neutral:  { bg: SLATE_10, text: SLATE_800 },
   },
   bold: {
-    positive: { bg: GREEN_500, text: "#fff" },
-    warning:  { bg: ORANGE_500, text: "#fff" },
-    negative: { bg: RED_400, text: "#fff" },
-    brand:    { bg: VALENTINO_500, text: "#fff" },
-    info:     { bg: BLUE_500, text: "#fff" },
-    neutral:  { bg: SLATE_800, text: "#fff" },
+    positive: { bg: GREEN_500, text: BG_PRIMARY },
+    warning:  { bg: ORANGE_500, text: BG_PRIMARY },
+    negative: { bg: RED_400, text: BG_PRIMARY },
+    brand:    { bg: VALENTINO_500, text: BG_PRIMARY },
+    info:     { bg: BLUE_500, text: BG_PRIMARY },
+    neutral:  { bg: SLATE_800, text: BG_PRIMARY },
   },
 };
 
@@ -518,7 +519,7 @@ function CategoryBreakdownCard({ data }: { data: Extract<ChatCardData, { type: "
               width: 40,
               height: 40,
               borderRadius: 100,
-              backgroundColor: "#fff",
+              backgroundColor: BG_PRIMARY,
               border: "1px solid #f0f4f7",
               display: "flex",
               alignItems: "center",
@@ -632,7 +633,7 @@ function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "
     </>
   );
 
-  const shell = { backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW };
+  const shell = { backgroundColor: BG_PRIMARY, border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW };
 
   return (
     <div style={shell}>
@@ -648,7 +649,7 @@ function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-po
   const { goalName, amount, fromAccount, activated, onAdd } = data;
   const [done, setDone] = useState(activated ?? false);
 
-  const shell = { backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW };
+  const shell = { backgroundColor: BG_PRIMARY, border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW };
 
   return (
     <div style={shell}>
@@ -681,7 +682,7 @@ function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-po
               ...typography.buttonSmall,
               border: "none",
               background: VALENTINO_500,
-              color: "#fff",
+              color: BG_PRIMARY,
               cursor: "pointer",
               padding: "8px 20px",
               borderRadius: 100,
@@ -752,7 +753,7 @@ function GoalProgressCard({ data }: { data: Extract<ChatCardData, { type: "goal-
     </>
   );
 
-  const cardShell = { backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW } as const;
+  const cardShell = { backgroundColor: BG_PRIMARY, border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW } as const;
 
   const inner = (
     <>
@@ -776,7 +777,7 @@ function SavingsPlanCard({ data }: { data: Extract<ChatCardData, { type: "saving
   const { name, target, timeline, existingSavings, monthlyAmount, productType, rate, pct, timelineLabel } = data;
   const clampedPct = Math.min(pct, 100);
 
-  const shell = { backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW } as const;
+  const shell = { backgroundColor: BG_PRIMARY, border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW } as const;
 
   return (
     <div style={shell}>
@@ -870,7 +871,7 @@ function MerchantConcentrationCard({ data }: { data: Extract<ChatCardData, { typ
             border: "1px solid #f0f4f7",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
           }}>
-            <span style={{ ...typography.buttonSmall, color: "#fff" }}>
+            <span style={{ ...typography.buttonSmall, color: BG_PRIMARY }}>
               {m.name.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -1230,11 +1231,11 @@ function SpendingHeatmapCard({ data }: { data: Extract<ChatCardData, { type: "sp
     const t = Math.min(val / maxSpend, 1);
     if (t < 0.25) return "#fae2fa";
     if (t < 0.5) return "#ea89ec";
-    if (t < 0.75) return "#d30ad7";
+    if (t < 0.75) return VALENTINO_500;
     return "#87068a";
   };
 
-  const intensityLevels = ["#eaebed", "#fae2fa", "#ea89ec", "#d30ad7", "#87068a"];
+  const intensityLevels = ["#eaebed", "#fae2fa", "#ea89ec", VALENTINO_500, "#87068a"];
 
   // Build grid cells: leading empties for startDay offset, then day cells
   const cells: (number | null)[] = [];
@@ -1276,7 +1277,7 @@ function SpendingHeatmapCard({ data }: { data: Extract<ChatCardData, { type: "sp
               {val !== null && (
                 <span style={{
                   ...typography.bodySmall,
-                  color: val / maxSpend > 0.5 ? "#fff" : "rgba(0,0,0,0.5)",
+                  color: val / maxSpend > 0.5 ? BG_PRIMARY : "rgba(0,0,0,0.5)",
                 }}>
                   {cellIdx + 1}
                 </span>
@@ -1478,7 +1479,7 @@ function TransactionTableCard({ data }: { data: Extract<ChatCardData, { type: "t
               flexShrink: 0,
             }}
           >
-            <span style={{ ...typography.buttonSmall, color: "#fff" }}>
+            <span style={{ ...typography.buttonSmall, color: BG_PRIMARY }}>
               {tx.merchant.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -1602,7 +1603,7 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
   if (submitted) {
     const confirmedItems = display.filter((i) => selected.has(i.id));
     return (
-      <div style={{ backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW }}>
+      <div style={{ backgroundColor: BG_PRIMARY, border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW }}>
         <CardHeader label="Confirmed obligations" onArrowTap={onArrowTap} />
         <p style={{ ...typography.headerH1, color: "rgba(0,0,0,0.9)", margin: 0 }}>
           {formatINRFull(confirmedTotal)}<span style={{ ...typography.bodySmall, color: "rgba(0,0,0,0.5)" }}>/mo</span>
@@ -1637,7 +1638,7 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
   return (
     <div
       style={{
-        backgroundColor: "#fff",
+        backgroundColor: BG_PRIMARY,
         border: "1px solid rgba(0,0,0,0.08)",
         borderRadius: CARD_RADIUS,
         padding: CARD_PAD,
@@ -1780,7 +1781,7 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
                             padding: "0 16px",
                             borderRadius: 64,
                             border: isActive ? `1px solid ${VALENTINO_500}` : "1px solid rgba(0,0,0,0.2)",
-                            backgroundColor: isActive ? VALENTINO_50 : "#fff",
+                            backgroundColor: isActive ? VALENTINO_50 : BG_PRIMARY,
                             color: "rgba(0,0,0,0.9)",
                             cursor: "pointer",
                             whiteSpace: "nowrap",
@@ -1819,7 +1820,7 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
                 height: 36,
                 borderRadius: 100,
                 backgroundColor: VALENTINO_500,
-                color: "#fff",
+                color: BG_PRIMARY,
                 border: "none",
                 cursor: "pointer",
                 padding: "0 16px",

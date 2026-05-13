@@ -3,6 +3,7 @@
 // Dual-voice: every Ryan message has a Byron counterpart.
 
 import type { ChatCardData } from "../../components/ChatCards";
+import { VALENTINO_500 } from "../../lib/colors";
 
 export type Voice = "ryan" | "byron";
 
@@ -139,7 +140,7 @@ export const PLAYGROUND_REVEALS: Record<string, PlaygroundReveal> = {
       showAll: true,
       categories: [
         { name: "Food & Delivery", amount: 64200, pct: 27, color: "#ff9a17", icon: "🍔" },
-        { name: "Shopping", amount: 48800, pct: 21, color: "#d30ad7", icon: "🛍️" },
+        { name: "Shopping", amount: 48800, pct: 21, color: VALENTINO_500, icon: "🛍️" },
         { name: "Transport", amount: 32400, pct: 14, color: "#2b6acf", icon: "🚗" },
         { name: "Entertainment", amount: 19800, pct: 8, color: "#00a63e", icon: "🎬" },
         { name: "Subscriptions", amount: 9720, pct: 4, color: "#ce1d26", icon: "📱" },
@@ -460,7 +461,7 @@ export const WRAPPED_BEATS: WrappedBeat[] = [
 
 // DLS Decorative tokens — subtle (bg), bold (text/number), accent (blob at 12%)
 export const CARD_PALETTES = [
-  { bg: "#FAE2FA", accent: "rgba(211, 10, 215, 0.12)", text: "#D30AD7" },   // Valentino
+  { bg: "#FAE2FA", accent: "rgba(211, 10, 215, 0.12)", text: VALENTINO_500 },   // Valentino
   { bg: "#E6EDF9", accent: "rgba(43, 106, 207, 0.12)", text: "#2B6ACF" },   // Blue
   { bg: "#E0F4E8", accent: "rgba(61, 187, 108, 0.12)", text: "#00A63E" },   // Green
   { bg: "#FFF3E3", accent: "rgba(255, 178, 79, 0.12)", text: "#C27511" },   // Orange

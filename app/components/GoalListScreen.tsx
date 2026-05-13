@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { BOTTOM_INSET, NavButton, StatusBar } from "./AppChrome";
 import { typography } from "../lib/typography";
 import { formatINR } from "../lib/financial-data";
-import { GREEN_500, GREEN_50, RED_500, RED_50, ORANGE_500, ORANGE_50, TEXT_TERTIARY } from "../lib/colors";
+import { GREEN_500, GREEN_50, RED_500, RED_50, ORANGE_500, ORANGE_50, TEXT_TERTIARY, BG_PRIMARY } from "../lib/colors";
 import type { GoalIndicatorData, GoalStatus } from "./GoalTracker";
 
 // ─── Constants ────────────────────────────────────────────────
@@ -143,7 +143,7 @@ function GoalCardTall({
         height: "100%",
         border: "none",
         position: "relative",
-        backgroundColor: "#fff",
+        backgroundColor: BG_PRIMARY,
       }}
     >
       {/* Full-bleed background */}
@@ -237,7 +237,7 @@ function GoalCardTall({
           <p
             style={{
               ...typography.headerH1,
-              color: "#fff",
+              color: BG_PRIMARY,
               margin: 0,
               marginBottom: 4,
               textShadow: "0 1px 6px rgba(0,0,0,0.3)",
@@ -266,7 +266,7 @@ function NewGoalCard() {
         height: "100%",
         borderRadius: 16,
         border: `1.5px dashed rgba(0,0,0,0.12)`,
-        backgroundColor: "#fff",
+        backgroundColor: BG_PRIMARY,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -373,10 +373,10 @@ export default function GoalListScreen({
 
   return (
     <div
-      style={{ backgroundColor: "#fff", display: "flex", flexDirection: "column", width: "100%", height: "100%" }}
+      style={{ backgroundColor: BG_PRIMARY, display: "flex", flexDirection: "column", width: "100%", height: "100%" }}
     >
       {/* DLS Standard App Bar (Button type, no button) — scoped to this screen */}
-      <div className="shrink-0" style={{ backgroundColor: "#fff" }}>
+      <div className="shrink-0" style={{ backgroundColor: BG_PRIMARY }}>
         <StatusBar />
         <div
           className="flex items-center"

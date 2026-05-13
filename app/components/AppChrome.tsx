@@ -2,13 +2,14 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { typography } from "../lib/typography";
+import { BG_PRIMARY } from "../lib/colors";
 
 export const STATUS_BAR_HEIGHT = 44; // DLS: 8px top padding + 36px bar
 export const BOTTOM_INSET = 20; // gesture nav: 8px + 4px bar + 8px
 
 // ── Status bar (decorative) ─────────────────────────────────────────────────
 
-export function StatusBar({ backgroundColor = "#fff", time = "9:41" }: { backgroundColor?: string; time?: string }) {
+export function StatusBar({ backgroundColor = BG_PRIMARY, time = "9:41" }: { backgroundColor?: string; time?: string }) {
   return (
     <div
       aria-hidden="true"
@@ -160,7 +161,7 @@ export function AppBar({
   title,
   trailing,
   shadow = false,
-  backgroundColor = "#fff",
+  backgroundColor = BG_PRIMARY,
   hideStatusBar = false,
 }: AppBarProps) {
   return (
@@ -242,7 +243,7 @@ type FooterInsetProps = {
 
 export function FooterInset({
   children,
-  backgroundColor = "#fff",
+  backgroundColor = BG_PRIMARY,
   paddingX = 24,
   paddingTop = 8,
   minBottomPadding = 12,

@@ -545,7 +545,7 @@ export default function AASim({
                 border: "none",
                 cursor: selectedBank ? "pointer" : "default",
                 ...typography.buttonNormal,
-                color: selectedBank ? "#FFFFFF" : TEXT_DISABLED,
+                color: selectedBank ? BG_PRIMARY : TEXT_DISABLED,
               }}
             >
               Continue
@@ -646,7 +646,7 @@ export default function AASim({
                 border: "none",
                 cursor: otpValue.length === 4 ? "pointer" : "default",
                 ...typography.buttonNormal,
-                color: otpValue.length === 4 ? "#FFFFFF" : TEXT_DISABLED,
+                color: otpValue.length === 4 ? BG_PRIMARY : TEXT_DISABLED,
               }}
             >
               Continue
@@ -771,7 +771,7 @@ export default function AASim({
                 border: "none",
                 cursor: "pointer",
                 ...typography.buttonNormal,
-                color: "#FFFFFF",
+                color: BG_PRIMARY,
               }}
             >
               Approve

@@ -67,6 +67,7 @@ import type {
 import { getEffectiveBudget } from "@/app/lib/budget-utils";
 import { useUserState } from "@/app/hooks/useUserState";
 import { typography } from "@/app/lib/typography";
+import { VALENTINO_500, BG_PRIMARY } from "@/app/lib/colors";
 import {
   DBG_SPEND_OVERVIEW, DBG_CATEGORY_BAR,
   DBG_GOAL_AHEAD, DBG_GOAL_BEHIND, DBG_GOAL_ONTRACK,
@@ -1254,7 +1255,7 @@ Be insightful, not just descriptive.`;
       daysLabel,
       saved: totalSaved,
       target: goal.amountNum,
-      ringColor: "#d30ad7",
+      ringColor: VALENTINO_500,
       endDate: goal.timeline,
       monthlyAmount: contributionAmount,
       gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)",
@@ -3658,7 +3659,7 @@ Be insightful, not just descriptive.`;
                 className="absolute inset-0 z-20"
                 style={{
                   overflow: "hidden",
-                  backgroundColor: "white",
+                  backgroundColor: BG_PRIMARY,
                   transform: chatScreenPhase === "open" ? "translateY(0%)" : "translateY(100%)",
                   opacity: chatScreenPhase === "open" ? 1 : 0.98,
                   transition: "transform 460ms cubic-bezier(0.22, 1, 0.36, 1), opacity 260ms ease-out",
@@ -3804,7 +3805,7 @@ Be insightful, not just descriptive.`;
                       bottom: 0,
                       left: 0,
                       right: 0,
-                      backgroundColor: "#fff",
+                      backgroundColor: BG_PRIMARY,
                       borderRadius: "24px 24px 0 0",
                       padding: "16px 24px 40px",
                       transform: fdSheetPhase === "open" ? "translateY(0)" : "translateY(100%)",
@@ -3847,7 +3848,7 @@ Be insightful, not just descriptive.`;
                             borderRadius: 64,
                             border: fdSelectedAmount === opt.value ? "1px solid #d30ad7" : "1px solid rgba(0,0,0,0.2)",
                             color: "rgba(0,0,0,0.9)",
-                            backgroundColor: fdSelectedAmount === opt.value ? "#fae2fa" : "#fff",
+                            backgroundColor: fdSelectedAmount === opt.value ? "#fae2fa" : BG_PRIMARY,
                             cursor: "pointer",
                             transition: "all 150ms ease",
                           }}
@@ -3886,8 +3887,8 @@ Be insightful, not just descriptive.`;
                         width: "100%",
                         padding: "12px 24px",
                         borderRadius: 100,
-                        backgroundColor: "#d30ad7",
-                        color: "#fff",
+                        backgroundColor: VALENTINO_500,
+                        color: BG_PRIMARY,
                         border: "none",
                         cursor: "pointer",
                       }}
@@ -3914,7 +3915,7 @@ Be insightful, not just descriptive.`;
                       bottom: 0,
                       left: 0,
                       right: 0,
-                      backgroundColor: "#fff",
+                      backgroundColor: BG_PRIMARY,
                       borderRadius: "24px 24px 0 0",
                       padding: "16px 24px 40px",
                       transform: obligSheetPhase === "open" ? "translateY(0)" : "translateY(100%)",
@@ -3947,7 +3948,7 @@ Be insightful, not just descriptive.`;
                           padding: "4px 8px",
                           borderRadius: 100,
                           backgroundColor: obligSheetItem.type === "Rent/EMI" ? "#F6F9FC" : obligSheetItem.type === "Subscription" ? "#E6EDF9" : obligSheetItem.type === "Utility" ? "#E6EDF9" : "#FAE2FA",
-                          color: obligSheetItem.type === "Rent/EMI" ? "#252A31" : obligSheetItem.type === "Subscription" ? "#2B6ACF" : obligSheetItem.type === "Utility" ? "#2B6ACF" : "#d30ad7",
+                          color: obligSheetItem.type === "Rent/EMI" ? "#252A31" : obligSheetItem.type === "Subscription" ? "#2B6ACF" : obligSheetItem.type === "Utility" ? "#2B6ACF" : VALENTINO_500,
                           ...typography.metadata,
                           textTransform: "uppercase",
                         }}
@@ -4006,8 +4007,8 @@ Be insightful, not just descriptive.`;
                           height: 48,
                           padding: "0 24px",
                           borderRadius: 100,
-                          backgroundColor: "#d30ad7",
-                          color: "#fff",
+                          backgroundColor: VALENTINO_500,
+                          color: BG_PRIMARY,
                           border: "none",
                           cursor: "pointer",
                         }}
@@ -4082,7 +4083,7 @@ Be insightful, not just descriptive.`;
                     transition: "transform 350ms cubic-bezier(0.22, 1, 0.36, 1)",
                     willChange: "transform",
                     pointerEvents: potDetailPhase === "exiting" ? "none" : "auto",
-                    backgroundColor: "#fff",
+                    backgroundColor: BG_PRIMARY,
                   }}
                   onTransitionEnd={() => {
                     if (potDetailPhase === "exiting") {
@@ -4110,7 +4111,7 @@ Be insightful, not just descriptive.`;
                 <div
                   className="absolute inset-0 z-40"
                   style={{
-                    backgroundColor: "#fff",
+                    backgroundColor: BG_PRIMARY,
                     display: "flex",
                     flexDirection: "column",
                     transform: goalDetailPhase === "open" ? "translateX(0%)" : "translateX(100%)",
@@ -4156,7 +4157,7 @@ Be insightful, not just descriptive.`;
                           style={{
                             width: `${Math.min(goalDetail.pct, 100)}%`,
                             height: "100%",
-                            backgroundColor: "#d30ad7",
+                            backgroundColor: VALENTINO_500,
                             borderRadius: 100,
                           }}
                         />
@@ -4216,7 +4217,7 @@ Be insightful, not just descriptive.`;
                 <div
                   className="absolute inset-0 z-50"
                   style={{
-                    backgroundColor: "#fff",
+                    backgroundColor: BG_PRIMARY,
                     display: "flex",
                     flexDirection: "column",
                     transform: rdDetailPhase === "open" ? "translateX(0%)" : "translateX(100%)",

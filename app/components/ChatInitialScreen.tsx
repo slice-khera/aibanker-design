@@ -63,7 +63,7 @@ function GoalIcon() {
 function LeakIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M10 3C10 3 4.5 9.5 4.5 13a5.5 5.5 0 0 0 11 0C15.5 9.5 10 3 10 3z" stroke="#d30ad7" strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M10 3C10 3 4.5 9.5 4.5 13a5.5 5.5 0 0 0 11 0C15.5 9.5 10 3 10 3z" stroke={VALENTINO_500} strokeWidth="1.4" strokeLinejoin="round" />
     </svg>
   );
 }

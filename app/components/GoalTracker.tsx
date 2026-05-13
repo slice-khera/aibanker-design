@@ -4,6 +4,7 @@ import { useRef } from "react";
 import {
   VALENTINO_500, BLUE_500, GREEN_500, GREEN_50, RED_500, RED_50,
   ORANGE_500, ORANGE_50,
+  BG_PRIMARY,
 } from "../lib/colors";
 
 // ─── Types ────────────────────────────────────────────────────
@@ -229,7 +230,7 @@ export default function GoalTracker({ goals, onGoalTap, onGoalListOpen, singleVa
         style={{
           width: 48,
           height: 48,
-          backgroundColor: "#fff",
+          backgroundColor: BG_PRIMARY,
           border: "1px solid rgba(0,0,0,0.05)",
           boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)",
           cursor: "pointer",

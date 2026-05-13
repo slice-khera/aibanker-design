@@ -579,7 +579,7 @@ export default function SavingsFlowSimBottom() {
           }}
         />
 
-        <div style={{ backgroundColor: "white", pointerEvents: "auto" }}>
+        <div style={{ backgroundColor: BG_PRIMARY, pointerEvents: "auto" }}>
           {/* PlanCruncher — anchored to bottom, above input bar */}
           {cruncherVisible && (
             <div style={{ padding: "0 16px", paddingBottom: 8 }}>

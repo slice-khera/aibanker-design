@@ -10,6 +10,7 @@ import {
   ORANGE_50,
   ORANGE_500,
   GREEN_500,
+  BG_PRIMARY,
   BG_SURFACE,
   BG_SURFACE_2,
 } from "../lib/colors";
@@ -195,7 +196,7 @@ function ListItem({ avatar, title, subtitle, trailing }: ListItemProps) {
             width: 40,
             height: 40,
             borderRadius: 100,
-            backgroundColor: "#fff",
+            backgroundColor: BG_PRIMARY,
             border: `1px solid ${OUTLINE_SUBTLE}`,
             display: "flex",
             alignItems: "center",
@@ -286,7 +287,7 @@ function ProgressCard({
   return (
     <div
       style={{
-        backgroundColor: "#fff",
+        backgroundColor: BG_PRIMARY,
         border: `1px solid ${OUTLINE_SUBTLE}`,
         borderRadius: 16,
         padding: 24,
@@ -340,7 +341,7 @@ export default function PotDetail({
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        backgroundColor: "#fff",
+        backgroundColor: BG_PRIMARY,
         overflow: "hidden",
       }}
     >

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { BG_PRIMARY } from "../../lib/colors";
 
 /**
  * Device frame — matches main app bezel (360×780, rounded corners, dark housing).
@@ -24,7 +25,7 @@ export default function DeviceFrame({ children }: { children: ReactNode }) {
           aspectRatio: "360/780",
           borderRadius: 26,
           overflow: "hidden",
-          background: "#fff",
+          background: BG_PRIMARY,
           position: "relative",
         }}
       >

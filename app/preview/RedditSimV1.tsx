@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { typography } from "../lib/typography";
 import {
   VALENTINO_50,
+  VALENTINO_500,
   OUTLINE_SUBTLE,
   TEXT_PRIMARY,
   TEXT_TERTIARY,
@@ -49,7 +50,7 @@ type Phase =
 
 const JAPAN_GOAL: GoalIndicatorData = {
   id: "1", name: "Trip to Japan", pct: 42, status: "on-track",
-  icon: "plane", ringColor: "#d30ad7", daysLabel: "4 months left",
+  icon: "plane", ringColor: VALENTINO_500, daysLabel: "4 months left",
   saved: 84000, target: 200000,
 };
 

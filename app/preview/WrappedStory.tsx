@@ -184,7 +184,7 @@ function CountdownTimer({ duration, onExpire, resetKey }: { duration: number; on
       style={{
         width: 48,
         height: 48,
-        backgroundColor: "#fff",
+        backgroundColor: BG_PRIMARY,
         border: "1px solid rgba(0,0,0,0.05)",
         boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)",
       }}
@@ -329,7 +329,7 @@ function GuessQuestionScreen({
   return (
     <div
       className="h-full w-full flex flex-col"
-      style={{ backgroundColor: "#FFFFFF", padding: `${SPACE_L}px ${SPACE_L}px ${SPACE_M}px` }}
+      style={{ backgroundColor: BG_PRIMARY, padding: `${SPACE_L}px ${SPACE_L}px ${SPACE_M}px` }}
     >
       {/* Question — vertically centered, text centered */}
       <div className="flex-1 flex flex-col justify-center">
@@ -359,8 +359,8 @@ function GuessQuestionScreen({
               className="w-full transition-colors active:scale-[0.99]"
               style={{
                 ...typography.bodyNormal,
-                color: isSelected ? "#FFFFFF" : TEXT_PRIMARY,
-                backgroundColor: isSelected ? palette.text : "#FFFFFF",
+                color: isSelected ? BG_PRIMARY : TEXT_PRIMARY,
+                backgroundColor: isSelected ? palette.text : BG_PRIMARY,
                 border: `1px solid ${palette.text}`,
                 borderRadius: RADIUS_PILL,
                 padding: `14px ${SPACE_L}px`,
@@ -416,7 +416,7 @@ function RyanQuipBubble({ text, isActive, instant = false }: { text: string; isA
     <div className="flex justify-start animate-chat-message-in">
       <div
         className="max-w-[75%] rounded-[16px] rounded-tl-lg"
-        style={{ backgroundColor: "#FFFFFF", padding: "12px 16px" }}
+        style={{ backgroundColor: BG_PRIMARY, padding: "12px 16px" }}
       >
         <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY, margin: 0 }}>
           {displayed || "\u00A0"}

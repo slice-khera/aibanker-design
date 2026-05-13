@@ -6,6 +6,7 @@ import {
   VALENTINO_500,
   GREEN_500,
   GREEN_50,
+  BG_PRIMARY,
   BG_SURFACE,
   BG_SURFACE_2,
   OUTLINE_SUBTLE,
@@ -102,7 +103,7 @@ function CompletedCheckIcon({ size = 24 }: { size?: number }) {
         flexShrink: 0,
       }}
     >
-      <CheckIcon size={14} color="#fff" />
+      <CheckIcon size={14} color={BG_PRIMARY} />
     </div>
   );
 }
@@ -355,7 +356,7 @@ export default function PlanMode({ steps, visible, completed }: PlanModeProps) {
             opacity: expanded ? 1 : 0,
             overflow: "hidden",
             borderRadius: "0 0 14px 14px",
-            backgroundColor: "#fff",
+            backgroundColor: BG_PRIMARY,
             border: expanded ? `1px solid ${OUTLINE_SUBTLE}` : "1px solid transparent",
             borderTop: "none",
             boxShadow: expanded ? "0 8px 24px rgba(0,0,0,0.08)" : "none",

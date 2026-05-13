@@ -390,7 +390,7 @@ function ChatAppBar({
   return (
     <div className="w-full shrink-0">
       <AppBar
-        backgroundColor="#fff"
+        backgroundColor={BG_PRIMARY}
         leading={(
           <div onPointerDown={(e) => e.stopPropagation()}>
             <button
@@ -438,11 +438,11 @@ export function TypeBox({
           {leftAction}
           <div
             className="flex items-center overflow-hidden flex-1"
-            style={{ height: 48, backgroundColor: "#fff", border: "1px solid rgba(0,0,0,0.05)", borderRadius: 100, boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)" }}
+            style={{ height: 48, backgroundColor: BG_PRIMARY, border: "1px solid rgba(0,0,0,0.05)", borderRadius: 100, boxShadow: "0px 2px 32px 0px rgba(0,0,0,0.05)" }}
           >
             <div
               className="flex items-center w-full h-full"
-              style={{ backgroundColor: "#fff", borderRadius: 100, paddingLeft: 16, paddingRight: 8, paddingTop: 8, paddingBottom: 8 }}
+              style={{ backgroundColor: BG_PRIMARY, borderRadius: 100, paddingLeft: 16, paddingRight: 8, paddingTop: 8, paddingBottom: 8 }}
             >
               <input
                 type="text"
@@ -460,7 +460,7 @@ export function TypeBox({
                 <button
                   onClick={onSubmit}
                   className="shrink-0 flex items-center justify-center rounded-full ml-1"
-                  style={{ width: 36, height: 36, backgroundColor: "#fff", border: `1px solid ${OUTLINE_SUBTLE}` }}
+                  style={{ width: 36, height: 36, backgroundColor: BG_PRIMARY, border: `1px solid ${OUTLINE_SUBTLE}` }}
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                     <path d="M7 11V3M3 7l4-4 4 4" stroke={VALENTINO_500} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -847,7 +847,7 @@ function New5TextOnly({
                 style={{
                   ...typography.caption,
                   color: "rgba(0,0,0,0.6)",
-                  backgroundColor: "#ffffff",
+                  backgroundColor: BG_PRIMARY,
                   border: "1px solid rgba(0,0,0,0.08)",
                   borderRadius: 100,
                   padding: "6px 12px",

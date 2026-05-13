@@ -1206,7 +1206,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
                       className="transition-transform active:scale-[0.97]"
                       style={{
                         ...typography.buttonSmall,
-                        color: "#ffffff",
+                        color: BG_PRIMARY,
                         backgroundColor: TEXT_PRIMARY,
                         border: "none",
                         borderRadius: 100,

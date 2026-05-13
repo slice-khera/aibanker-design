@@ -7,6 +7,7 @@ import type { ChatCardData } from "../components/ChatCards";
 import { CATEGORY_ICONS, CATEGORY_COLORS } from "../components/ChatCards";
 import type { GoalIndicatorData } from "../components/GoalTracker";
 import type { Question } from "../components/QuestionnaireOverlay";
+import { VALENTINO_500 } from "../lib/colors";
 
 // ─── Card fixtures ────────────────────────────────────────────
 
@@ -49,23 +50,23 @@ export type GoalTrackerScenario = "none" | "single" | "single-icon" | "single-al
 export const GOAL_TRACKER_SCENARIOS: Record<GoalTrackerScenario, GoalIndicatorData[]> = {
   none: [],
   single: [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "\u2708\ufe0f", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
+    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "\u2708\ufe0f", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
   ],
   "single-icon": [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "\u2708\ufe0f", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
+    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "\u2708\ufe0f", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
   ],
   "single-alert": [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "behind", icon: "\u2708\ufe0f", daysLabel: "15 days behind", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
+    { id: "1", name: "Trip to Japan", pct: 42, status: "behind", icon: "\u2708\ufe0f", daysLabel: "15 days behind", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
   ],
   "single-icon-alert": [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "behind", icon: "\u2708\ufe0f", daysLabel: "15 days behind", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
+    { id: "1", name: "Trip to Japan", pct: 42, status: "behind", icon: "\u2708\ufe0f", daysLabel: "15 days behind", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
   ],
   two: [
-    { id: "1", name: "Trip to Japan", pct: 62, status: "ahead", icon: "\u2708\ufe0f", daysLabel: "11 days ahead", saved: 124000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
+    { id: "1", name: "Trip to Japan", pct: 62, status: "ahead", icon: "\u2708\ufe0f", daysLabel: "11 days ahead", saved: 124000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
     { id: "2", name: "Emergency Fund", pct: 35, status: "on-track", icon: "\ud83d\udee1\ufe0f", daysLabel: "On track", saved: 175000, target: 500000, ringColor: "#ff9a17", endDate: "Mar 2027", monthlyAmount: 15000, gradient: "linear-gradient(135deg, #fff3e3 0%, #ff9a17 100%)", heroEmoji: "\ud83d\udee1\ufe0f" },
   ],
   three: [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "\u2708\ufe0f", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: "#d30ad7", endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
+    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "\u2708\ufe0f", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
     { id: "2", name: "Emergency Fund", pct: 78, status: "ahead", icon: "\ud83d\udee1\ufe0f", daysLabel: "12 days ahead", saved: 390000, target: 500000, ringColor: "#ff9a17", endDate: "Mar 2027", monthlyAmount: 15000, gradient: "linear-gradient(135deg, #fff3e3 0%, #ff9a17 100%)", heroEmoji: "\ud83d\udee1\ufe0f" },
     { id: "3", name: "New Laptop", pct: 65, status: "on-track", icon: "\ud83d\udcbb", daysLabel: "On track", saved: 48750, target: 75000, ringColor: "#00a63e", endDate: "Sep 2026", monthlyAmount: 5000, gradient: "linear-gradient(135deg, #e0f4e8 0%, #00a63e 100%)", heroEmoji: "\ud83d\udcbb" },
   ],
@@ -198,7 +199,7 @@ export const DBG_DONUT_V2: ChatCardData = {
   month: "Feb",
   totalSpend: 78400,
   modes: [
-    { name: "UPI", amount: 41200, pct: 53, color: "#d30ad7" },
+    { name: "UPI", amount: 41200, pct: 53, color: VALENTINO_500 },
     { name: "Credit Card", amount: 22100, pct: 28, color: "#2b6acf" },
     { name: "Debit Card", amount: 9400, pct: 12, color: "#ff9a17" },
     { name: "NEFT/IMPS", amount: 3800, pct: 5, color: "#00a63e" },
