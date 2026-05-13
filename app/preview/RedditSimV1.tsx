@@ -6,7 +6,6 @@ import {
   VALENTINO_50,
   OUTLINE_SUBTLE,
   TEXT_PRIMARY,
-  TEXT_SECONDARY,
   TEXT_TERTIARY,
   ALPHA_BLACK_30,
   BG_PRIMARY,
@@ -22,6 +21,8 @@ import PlanCruncherV2 from "../components/PlanCruncherV2";
 import QuestionnaireOverlay from "../components/QuestionnaireOverlay";
 import type { QuestionOption } from "../components/QuestionnaireOverlay";
 import MockKeyboard from "../components/MockKeyboard";
+import PersonaToggle from "../components/PersonaToggle";
+import type { Persona } from "../components/PersonaToggle";
 import { useTypewriter } from "../components/Chat";
 import {
   INITIAL_MESSAGES,
@@ -43,20 +44,6 @@ type Phase =
   | "questionnaire"
   | "working"
   | "result";
-
-// ── Persona types (visual only — Byron is locked in) ────────────
-
-type Persona = "ryan" | "byron";
-
-const PERSONA_NAMES: Record<Persona, string> = {
-  ryan: "Ryan",
-  byron: "Byron",
-};
-
-const CHARACTER_ASSETS: Record<Persona, string> = {
-  ryan: "/characters/ryan.svg",
-  byron: "/characters/byron.svg",
-};
 
 // ── Goal data ───────────────────────────────────────────────────
 
@@ -194,55 +181,6 @@ function ThinkingIndicator() {
   );
 }
 
-// ── Persona toggle (visual — does not switch content) ───────────
-
-function PersonaToggle({ active }: { active: Persona }) {
-  const tabs: Persona[] = ["ryan", "byron"];
-
-  return (
-    <div
-      className="flex items-center"
-      style={{
-        borderRadius: RADIUS_CIRCLE,
-        border: `1px solid ${OUTLINE_SUBTLE}`,
-        boxShadow: ELEVATION_CARD,
-        padding: 3,
-        backgroundColor: BG_PRIMARY,
-        gap: 2,
-      }}
-    >
-      {tabs.map((p) => {
-        const isActive = active === p;
-        return (
-          <div
-            key={p}
-            className="flex items-center transition-all duration-200 ease-out"
-            style={{
-              height: 44,
-              borderRadius: RADIUS_CIRCLE,
-              backgroundColor: isActive ? BG_SECONDARY : "transparent",
-              padding: isActive ? (p === "ryan" ? "0 12px 0 4px" : "0 4px 0 12px") : "0 14px",
-              gap: 6,
-              cursor: "pointer",
-              ...typography.buttonSmall,
-              color: isActive ? TEXT_PRIMARY : TEXT_SECONDARY,
-              opacity: isActive ? 1 : 0.6,
-            }}
-          >
-            {isActive && p === "ryan" && (
-              <img src={CHARACTER_ASSETS[p]} alt="" width={36} height={36} style={{ borderRadius: "50%", flexShrink: 0 }} />
-            )}
-            {PERSONA_NAMES[p]}
-            {isActive && p === "byron" && (
-              <img src={CHARACTER_ASSETS[p]} alt="" width={36} height={36} style={{ borderRadius: "50%", flexShrink: 0 }} />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 // ── Floating AppBar ─────────────────────────────────────────────
 
 function FloatingAppBar() {
@@ -262,7 +200,7 @@ function FloatingAppBar() {
             </div>
           </div>
           <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-            <PersonaToggle active="byron" />
+            <PersonaToggle active="byron" onToggle={() => {}} />
           </div>
           <GoalTracker goals={[JAPAN_GOAL]} onGoalTap={() => {}} />
         </div>

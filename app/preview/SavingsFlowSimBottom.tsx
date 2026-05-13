@@ -15,7 +15,7 @@ import { RADIUS_CIRCLE, RADIUS_PILL } from "../lib/radii";
 import { SPACE_XS, SPACE_M } from "../lib/spacing";
 import { ELEVATION_CARD } from "../lib/elevation";
 import { StatusBar, GestureNav, FooterInset } from "../components/AppChrome";
-import PlanCruncher from "../components/PlanCruncher";
+import PlanCruncherV2 from "../components/PlanCruncherV2";
 import QuestionnaireOverlay from "../components/QuestionnaireOverlay";
 import type { QuestionOption } from "../components/QuestionnaireOverlay";
 import MockKeyboard from "../components/MockKeyboard";
@@ -583,7 +583,7 @@ export default function SavingsFlowSimBottom() {
           {/* PlanCruncher — anchored to bottom, above input bar */}
           {cruncherVisible && (
             <div style={{ padding: "0 16px", paddingBottom: 8 }}>
-              <PlanCruncher
+              <PlanCruncherV2
                 goalName={goalName}
                 visible
                 statusText={cruncherStatus}

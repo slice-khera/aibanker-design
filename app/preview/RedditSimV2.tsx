@@ -5,11 +5,9 @@ import {
   VALENTINO_50,
   OUTLINE_SUBTLE,
   TEXT_PRIMARY,
-  TEXT_SECONDARY,
   TEXT_TERTIARY,
   ALPHA_BLACK_30,
   BG_PRIMARY,
-  BG_SECONDARY,
 } from "../lib/colors";
 import { SPACE_M } from "../lib/spacing";
 import { RADIUS_CIRCLE } from "../lib/radii";
@@ -17,6 +15,7 @@ import { ELEVATION_CARD } from "../lib/elevation";
 import { StatusBar, GestureNav } from "../components/AppChrome";
 import GoalTracker from "../components/GoalTracker";
 import type { GoalIndicatorData } from "../components/GoalTracker";
+import PersonaToggle from "../components/PersonaToggle";
 
 // ── Goal data ───────────────────────────────────────────────────
 
@@ -25,59 +24,6 @@ const JAPAN_GOAL: GoalIndicatorData = {
   icon: "plane", ringColor: "#d30ad7", daysLabel: "4 months left",
   saved: 84000, target: 200000,
 };
-
-// ── Persona toggle (visual only) ────────────────────────────────
-
-const CHARACTER_ASSETS: Record<string, string> = {
-  ryan: "/characters/ryan.svg",
-  byron: "/characters/byron.svg",
-};
-
-function PersonaToggle() {
-  const tabs: Array<{ id: string; name: string }> = [
-    { id: "ryan", name: "Ryan" },
-    { id: "byron", name: "Byron" },
-  ];
-
-  return (
-    <div
-      className="flex items-center"
-      style={{
-        borderRadius: RADIUS_CIRCLE,
-        border: `1px solid ${OUTLINE_SUBTLE}`,
-        boxShadow: ELEVATION_CARD,
-        padding: 3,
-        backgroundColor: BG_PRIMARY,
-        gap: 2,
-      }}
-    >
-      {tabs.map((p) => {
-        const isActive = p.id === "byron";
-        return (
-          <div
-            key={p.id}
-            className="flex items-center"
-            style={{
-              height: 44,
-              borderRadius: RADIUS_CIRCLE,
-              backgroundColor: isActive ? BG_SECONDARY : "transparent",
-              padding: isActive ? "0 4px 0 12px" : "0 14px",
-              gap: 6,
-              ...typography.buttonSmall,
-              color: isActive ? TEXT_PRIMARY : TEXT_SECONDARY,
-              opacity: isActive ? 1 : 0.6,
-            }}
-          >
-            {p.name}
-            {isActive && (
-              <img src={CHARACTER_ASSETS[p.id]} alt="" width={36} height={36} style={{ borderRadius: "50%", flexShrink: 0 }} />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 // ── Static screenshot ───────────────────────────────────────────
 
@@ -102,7 +48,7 @@ export default function RedditSimV2() {
             </div>
           </div>
           <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-            <PersonaToggle />
+            <PersonaToggle active="byron" onToggle={() => {}} />
           </div>
           <GoalTracker goals={[JAPAN_GOAL]} onGoalTap={() => {}} />
         </div>

@@ -10,10 +10,10 @@ import { ILLUST_AFFORD_IT, ILLUST_MY_SPENDS, ILLUST_FEEDBACK } from "../lib/illu
 import { StatusBar, GestureNav, FooterInset } from "../components/AppChrome";
 import GoalTracker from "../components/GoalTracker";
 import type { GoalIndicatorData } from "../components/GoalTracker";
+import PersonaToggle from "../components/PersonaToggle";
+import type { Persona } from "../components/PersonaToggle";
 
 // ── Persona types ───────────────────────────────────────────────
-
-type Persona = "ryan" | "byron";
 
 type PersonaContent = {
   name: string;
@@ -244,59 +244,6 @@ const JAPAN_GOAL: GoalIndicatorData = {
 };
 
 // ── Floating AppBar ─────────────────────────────────────────────
-
-const CHARACTER_ASSETS: Record<Persona, string> = {
-  ryan: "/characters/ryan.svg",
-  byron: "/characters/byron.svg",
-};
-
-function PersonaToggle({ active, onToggle }: { active: Persona; onToggle: (p: Persona) => void }) {
-  const tabs: Persona[] = ["ryan", "byron"];
-
-  return (
-    <div
-      className="flex items-center"
-      style={{
-        borderRadius: RADIUS_CIRCLE,
-        border: `1px solid ${OUTLINE_SUBTLE}`,
-        boxShadow: ELEVATION_CARD,
-        padding: 3,
-        backgroundColor: BG_PRIMARY,
-        gap: 2,
-      }}
-    >
-      {tabs.map((p) => {
-        const isActive = active === p;
-        return (
-          <div
-            key={p}
-            onClick={() => onToggle(p)}
-            className="flex items-center transition-all duration-200 ease-out"
-            style={{
-              height: 44,
-              borderRadius: RADIUS_CIRCLE,
-              backgroundColor: isActive ? BG_SECONDARY : "transparent",
-              padding: isActive ? (p === "ryan" ? "0 12px 0 4px" : "0 4px 0 12px") : "0 14px",
-              gap: 6,
-              cursor: "pointer",
-              ...typography.buttonSmall,
-              color: isActive ? TEXT_PRIMARY : TEXT_SECONDARY,
-              opacity: isActive ? 1 : 0.6,
-            }}
-          >
-            {isActive && p === "ryan" && (
-              <img src={CHARACTER_ASSETS[p]} alt="" width={36} height={36} style={{ borderRadius: "50%", flexShrink: 0, animation: "fadeIn 0.3s ease-out" }} />
-            )}
-            {PERSONAS[p].name}
-            {isActive && p === "byron" && (
-              <img src={CHARACTER_ASSETS[p]} alt="" width={36} height={36} style={{ borderRadius: "50%", flexShrink: 0, animation: "fadeIn 0.3s ease-out" }} />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 function FloatingAppBar({ persona, onPersonaToggle }: { persona: Persona; onPersonaToggle: (p: Persona) => void }) {
   return (
