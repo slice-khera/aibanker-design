@@ -10,7 +10,8 @@ import PlanCruncherV2 from "@/app/components/PlanCruncherV2";
 import GoalTracker from "@/app/components/GoalTracker";
 import PersonaToggle from "@/app/components/PersonaToggle";
 import type { Persona } from "@/app/components/PersonaToggle";
-import { StatusBar, AppBar, NavButton, GestureNav } from "@/app/components/AppChrome";
+import { StatusBar, AppBar, NavButton, GestureNav, FloatingAppBar } from "@/app/components/AppChrome";
+import FeedbackBar from "@/app/components/FeedbackBar";
 
 // Fixture data
 import { DBG_GOAL_QUESTIONS, GOAL_TRACKER_SCENARIOS } from "@/app/lib/debug-fixtures";
@@ -102,6 +103,38 @@ function AppChromeStandard() {
       />
       <div className="flex flex-1 items-center justify-center">
         <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY, opacity: 0.3 }}>Screen content</p>
+      </div>
+      <GestureNav />
+    </div>
+  );
+}
+
+function FeedbackBarScreen() {
+  const [persona, setPersona] = useState<Persona>("ryan");
+
+  return (
+    <div className="relative flex h-full flex-col bg-white">
+      <FloatingAppBar
+        leading={
+          <div
+            className="flex items-center justify-center rounded-full bg-white"
+            style={{ width: 48, height: 48, border: `1px solid ${OUTLINE_SUBTLE}`, boxShadow: ELEVATION_CARD }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke={TEXT_PRIMARY} strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+        }
+        center={<PersonaToggle active={persona} onToggle={setPersona} />}
+        trailing={<GoalTracker goals={GOAL_TRACKER_SCENARIOS.single} onGoalTap={() => {}} singleVariant="icon" />}
+      />
+      <div className="flex-1 px-4 pt-4">
+        <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>
+          {persona === "byron"
+            ? "Look, you spend ₹18,200/month on food. That's not a budget problem, that's a personality. Pick one cuisine and commit."
+            : "Looking at your last three months, you're spending about ₹18,200/month on food. Trimming that to ₹14,000 would free up around ₹4,000 a month for savings."}
+        </p>
+        <FeedbackBar voice={persona} />
       </div>
       <GestureNav />
     </div>
@@ -207,6 +240,13 @@ const COMPONENTS: ComponentDef[] = [
       { name: "standard", render: () => <AppChromeStandard /> },
       { name: "degen", render: () => <AppChromeDegen /> },
     ],
+  },
+  {
+    id: "feedback-bar",
+    label: "Feedback bar",
+    description: "Thumbs up / down + AI disclaimer under banker messages. Switch persona via the toggle, tap a thumb to vote.",
+    deviceFrame: true,
+    variants: [{ name: "v1", render: () => <FeedbackBarScreen /> }],
   },
 ];
 

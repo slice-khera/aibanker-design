@@ -267,3 +267,35 @@ export function FooterInset({
     </div>
   );
 }
+
+// ── Floating app bar (degen mode chrome) ────────────────────────────────────
+
+export const FLOATING_APP_BAR_HEIGHT = STATUS_BAR_HEIGHT + 64; // 44 status + 8 top pad + 48 button + 8 bottom pad
+
+type FloatingAppBarProps = {
+  leading?: ReactNode;
+  center?: ReactNode;
+  trailing?: ReactNode;
+};
+
+export function FloatingAppBar({ leading, center, trailing }: FloatingAppBarProps) {
+  return (
+    <>
+      <div className="absolute top-0 left-0 right-0 z-10" style={{ pointerEvents: "none" }}>
+        <div style={{ pointerEvents: "auto" }}>
+          <StatusBar backgroundColor="transparent" />
+          <div className="flex items-center" style={{ padding: "8px 12px 8px 8px" }}>
+            <div style={{ width: 48, height: 48, display: "flex", alignItems: "center" }}>
+              {leading}
+            </div>
+            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+              {center}
+            </div>
+            {trailing}
+          </div>
+        </div>
+      </div>
+      <div style={{ height: FLOATING_APP_BAR_HEIGHT, flexShrink: 0 }} aria-hidden="true" />
+    </>
+  );
+}
