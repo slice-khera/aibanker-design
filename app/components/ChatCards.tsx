@@ -28,7 +28,7 @@ export type ChatCardData =
   | { type: "spending-heatmap"; month: string; year: number; startDay: number; dailySpend: (number | null)[]; maxSpend: number }
   | { type: "payment-mode-donut-v2"; month: string; totalSpend: number; modes: { name: string; amount: number; pct: number; color: string }[] }
   | { type: "transaction-table"; title: string; transactions: { date: string; merchant: string; amount: number; category: string }[] }
-  | { type: "obligations-list-v2"; items: { id: string; payee: string; amount: number; type: string; seenMonths: string }[]; monthlyIncome: number; onSubmit?: (selected: { id: string; amount: number; type: string }[]) => void; submitted?: boolean; onArrowTap?: () => void }
+  | { type: "confirm-list"; label?: string; items: { id: string; payee: string; amount: number; type: string }[]; monthlyIncome?: number; onSubmit?: (selected: { id: string; amount: number; type: string }[]) => void; submitted?: boolean; onArrowTap?: () => void }
   | { type: "spend-trend"; month: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number }
   | { type: "add-to-pot"; goalName: string; amount: number; fromAccount: string; activated?: boolean; onAdd?: () => void };
 
@@ -50,7 +50,7 @@ export type VisualizationData = Extract<
 export type WidgetData = Extract<
   ChatCardData,
   | { type: "investment-product" }
-  | { type: "obligations-list-v2" }
+  | { type: "confirm-list" }
   | { type: "add-to-pot" }
   | { type: "goal-progress" }
   | { type: "savings-plan" }
@@ -152,13 +152,14 @@ export function DlsTag({
 
 // ─── Shared card shell ─────────────────────────────────────
 
-const CARD_RADIUS = 16;
-const CARD_PAD = "16px";
-const CARD_SHADOW = "0px 2px 32px 0px rgba(0,0,0,0.05)";
+export const CARD_RADIUS = 16;
+export const CARD_PAD = "16px";
+export const CARD_SHADOW = "0px 2px 32px 0px rgba(0,0,0,0.05)";
+export const CARD_BORDER = "1px solid rgba(0,0,0,0.08)";
 
 // ─── Card header (shared) ──────────────────────────────────
 
-function CardHeader({ label, onArrowTap, arrowInvisible }: { label: string; onArrowTap?: () => void; arrowInvisible?: boolean }) {
+export function CardHeader({ label, onArrowTap, arrowInvisible }: { label: string; onArrowTap?: () => void; arrowInvisible?: boolean }) {
   const arrowIcon = (
     <div
       style={{
@@ -636,7 +637,7 @@ function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "
     </>
   );
 
-  const shell = { backgroundColor: BG_PRIMARY, border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW };
+  const shell = { backgroundColor: BG_PRIMARY, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW };
 
   return (
     <div style={shell}>
@@ -652,7 +653,7 @@ function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-po
   const { goalName, amount, fromAccount, activated, onAdd } = data;
   const [done, setDone] = useState(activated ?? false);
 
-  const shell = { backgroundColor: BG_PRIMARY, border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW };
+  const shell = { backgroundColor: BG_PRIMARY, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW };
 
   return (
     <div style={shell}>
@@ -703,33 +704,29 @@ function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-po
 // ─── 4. Goal Progress Card ─────────────────────────────────
 
 function GoalProgressCard({ data }: { data: Extract<ChatCardData, { type: "goal-progress" }> }) {
-  const { name, pct, saved, target, daysLabel, status } = data;
-  const statusColor = status === "ahead" ? GREEN_500 : status === "behind" ? RED_500 : ORANGE_500;
-  const statusBg = status === "ahead" ? GREEN_50 : status === "behind" ? RED_50 : ORANGE_50;
+  const { name, pct, saved, target, daysLabel, status, onArrowTap } = data;
   const clampedPct = Math.min(pct, 100);
+  const statusIntent = status === "ahead" ? "positive" : status === "behind" ? "negative" : "warning";
 
-  const statusPill = (
-    <div
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        padding: "4px 8px",
-        borderRadius: RADIUS_CIRCLE,
-        backgroundColor: statusBg,
-        flexShrink: 0,
-      }}
-    >
-      <span style={{ ...typography.metadata, textTransform: "uppercase", color: statusColor }}>
-        {daysLabel}
-      </span>
-    </div>
-  );
+  const shell = { backgroundColor: BG_PRIMARY, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW } as const;
 
-  const content = (
-    <>
-      <p style={{ ...typography.headerH4, color: TEXT_PRIMARY, marginBottom: 16 }}>
+  return (
+    <div style={shell}>
+      {/* Header row: label left, status tag right */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <span style={{ ...typography.metadata, textTransform: "uppercase", color: TEXT_TERTIARY }}>
+          Goal progress
+        </span>
+        <DlsTag intent={statusIntent} emphasis="subtle">{daysLabel}</DlsTag>
+      </div>
+
+      {/* Hero: goal name */}
+      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, margin: 0, marginBottom: 16 }}>
         {name}
       </p>
+
+      {/* Divider */}
+      <div style={{ height: 1, backgroundColor: OUTLINE_SUBTLE, marginBottom: 16 }} />
 
       {/* Progress bar */}
       <div style={{ height: 8, backgroundColor: VALENTINO_50, borderRadius: RADIUS_CIRCLE, overflow: "hidden", marginBottom: 8 }}>
@@ -746,32 +743,15 @@ function GoalProgressCard({ data }: { data: Extract<ChatCardData, { type: "goal-
 
       {/* Stats row */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ ...typography.caption, color: TEXT_TERTIARY }}>
+        <span style={{ ...typography.bodyNormal, color: TEXT_TERTIARY }}>
           {formatINRFull(saved)} / {formatINRFull(target)}
         </span>
-        <span style={{ ...typography.headerH2, color: TEXT_PRIMARY }}>
+        <span style={{ ...typography.headerH4, color: TEXT_PRIMARY }}>
           {pct}%
         </span>
       </div>
-    </>
+    </div>
   );
-
-  const cardShell = { backgroundColor: BG_PRIMARY, border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW } as const;
-
-  const inner = (
-    <>
-      {/* Header row: label left, status pill right */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-        <span style={{ ...typography.metadata, textTransform: "uppercase", color: TEXT_TERTIARY }}>
-          Goal progress
-        </span>
-        {statusPill}
-      </div>
-      {content}
-    </>
-  );
-
-  return <div style={cardShell}>{inner}</div>;
 }
 
 // ─── 5. Savings Plan Card ─────────────────────────────────
@@ -780,7 +760,7 @@ function SavingsPlanCard({ data }: { data: Extract<ChatCardData, { type: "saving
   const { name, target, timeline, existingSavings, monthlyAmount, productType, rate, pct, timelineLabel } = data;
   const clampedPct = Math.min(pct, 100);
 
-  const shell = { backgroundColor: BG_PRIMARY, border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW } as const;
+  const shell = { backgroundColor: BG_PRIMARY, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW } as const;
 
   return (
     <div style={shell}>
@@ -1540,7 +1520,7 @@ function TransactionTableCard({ data }: { data: Extract<ChatCardData, { type: "t
 // ─── DLS Tag Intent Map (used by V2 obligations chips) ────
 
 const TAG_INTENT: Record<string, { bg: string; text: string }> = {
-  "Rent/EMI": { bg: SLATE_10, text: SLATE_800 },
+  "Rent": { bg: SLATE_10, text: SLATE_800 },
   "Loan EMI": { bg: ORANGE_50, text: ORANGE_600 },
   "Subscription": { bg: BLUE_50, text: BLUE_500 },
   "Utility": { bg: BLUE_50, text: BLUE_500 },
@@ -1562,8 +1542,9 @@ function getSnapStep(amount: number): number {
   return 1000;
 }
 
-function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "obligations-list-v2" }> }) {
-  const { items, onSubmit, submitted, onArrowTap } = data;
+function ConfirmListCard({ data }: { data: Extract<ChatCardData, { type: "confirm-list" }> }) {
+  const { items, onSubmit, submitted, onArrowTap, label: headerLabel } = data;
+  const displayLabel = headerLabel ?? "Your items";
   const display = items.slice(0, 5);
 
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
@@ -1606,8 +1587,8 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
   if (submitted) {
     const confirmedItems = display.filter((i) => selected.has(i.id));
     return (
-      <div style={{ backgroundColor: BG_PRIMARY, border: "1px solid rgba(0,0,0,0.08)", borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW }}>
-        <CardHeader label="Confirmed obligations" onArrowTap={onArrowTap} />
+      <div style={{ backgroundColor: BG_PRIMARY, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW }}>
+        <CardHeader label={displayLabel} onArrowTap={onArrowTap} />
         <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, margin: 0 }}>
           {formatINRFull(confirmedTotal)}<span style={{ ...typography.bodySmall, color: TEXT_TERTIARY }}>/mo</span>
         </p>
@@ -1642,21 +1623,17 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
     <div
       style={{
         backgroundColor: BG_PRIMARY,
-        border: "1px solid rgba(0,0,0,0.08)",
+        border: CARD_BORDER,
         borderRadius: CARD_RADIUS,
         padding: CARD_PAD,
         boxShadow: CARD_SHADOW,
       }}
     >
       {/* Live confirmed total header */}
-      <div style={{ marginBottom: 0 }}>
-        <p style={{ ...typography.metadata, textTransform: "uppercase", color: TEXT_TERTIARY, margin: 0, marginBottom: 4 }}>
-          Confirmed obligations
-        </p>
-        <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, margin: 0 }}>
-          {formatINRFull(confirmedTotal)}<span style={{ ...typography.bodySmall, color: TEXT_TERTIARY }}>/mo</span>
-        </p>
-      </div>
+      <CardHeader label={displayLabel} onArrowTap={onArrowTap} />
+      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, margin: 0 }}>
+        {formatINRFull(confirmedTotal)}<span style={{ ...typography.bodySmall, color: TEXT_TERTIARY }}>/mo</span>
+      </p>
 
       {display.map((item, i) => {
         const isExpanded = expandedId === item.id;
@@ -1716,6 +1693,7 @@ function ObligationsListCardV2({ data }: { data: Extract<ChatCardData, { type: "
                   <span
                     style={{
                       ...typography.caption,
+                      fontWeight: 500,
                       color: VALENTINO_500,
                       flexShrink: 0,
                       whiteSpace: "nowrap",
@@ -1865,8 +1843,8 @@ export default function ChatCard({ card }: { card: ChatCardData }) {
       return <PaymentModeDonutCardV2 data={card} />;
     case "transaction-table":
       return <TransactionTableCard data={card} />;
-    case "obligations-list-v2":
-      return <ObligationsListCardV2 data={card} />;
+    case "confirm-list":
+      return <ConfirmListCard data={card} />;
     case "add-to-pot":
       return <AddToPotCard data={card} />;
     default:

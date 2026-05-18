@@ -3548,7 +3548,7 @@ Be insightful, not just descriptive.`;
           },
         };
       }
-      if (card?.type === "obligations-list-v2") {
+      if (card?.type === "confirm-list") {
         return {
           ...message,
           card: {

@@ -8,6 +8,7 @@ import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 import {
   DBG_FD_SETUP, DBG_FD_ACTIVATED,
   DBG_OBLIGATIONS_V2,
+  DBG_GOAL_AHEAD, DBG_GOAL_BEHIND, DBG_GOAL_ONTRACK,
 } from "@/app/lib/debug-fixtures";
 
 // ── Widget items with state variants ──────────────────────────
@@ -27,11 +28,20 @@ const WIDGET_ITEMS: WidgetItem[] = [
     ],
   },
   {
-    type: "obligations-list-v2",
+    type: "confirm-list",
     label: "Obligations list",
     fixtures: [
       { name: "unsubmitted", data: { ...DBG_OBLIGATIONS_V2 } },
       { name: "submitted", data: { ...DBG_OBLIGATIONS_V2, submitted: true } as ChatCardData },
+    ],
+  },
+  {
+    type: "goal-progress",
+    label: "Goal progress",
+    fixtures: [
+      { name: "ahead", data: { ...DBG_GOAL_AHEAD } },
+      { name: "behind", data: { ...DBG_GOAL_BEHIND } },
+      { name: "on-track", data: { ...DBG_GOAL_ONTRACK } },
     ],
   },
   {

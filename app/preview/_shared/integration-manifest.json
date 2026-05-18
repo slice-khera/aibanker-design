@@ -6,7 +6,10 @@
       "plan-cruncher-v2":      { "kind": "import", "symbols": ["PlanCruncherV2"],      "sourcePaths": ["app/components/PlanCruncherV2.tsx"] },
       "goal-tracker":          { "kind": "import", "symbols": ["GoalTracker"],         "sourcePaths": ["app/components/GoalTracker.tsx"] },
       "persona-toggle":        { "kind": "import", "symbols": ["PersonaToggle"],       "sourcePaths": ["app/components/PersonaToggle.tsx"] },
-      "app-chrome":            { "kind": "import", "symbols": ["StatusBar", "AppBar", "NavButton", "GestureNav"], "sourcePaths": ["app/components/AppChrome.tsx"] }
+      "app-chrome":            { "kind": "import", "symbols": ["StatusBar", "AppBar", "NavButton", "GestureNav"], "sourcePaths": ["app/components/AppChrome.tsx"] },
+      "savings-ladder":        { "kind": "import", "symbols": ["SavingsLadder"],       "sourcePaths": ["app/components/SavingsLadder.tsx"] },
+      "spending-plan-card":    { "kind": "import", "symbols": ["SpendingPlanCard"],    "sourcePaths": ["app/components/SpendingPlanCard.tsx"] },
+      "verdict-banner":        { "kind": "import", "symbols": ["VerdictBanner"],       "sourcePaths": ["app/components/VerdictBanner.tsx"] }
     },
     "visualizations": {
       "spend-overview":         { "kind": "cardType", "cardType": "spend-overview",         "sourcePaths": ["app/components/ChatCards.tsx"] },
@@ -16,12 +19,12 @@
       "spending-heatmap":       { "kind": "cardType", "cardType": "spending-heatmap",       "sourcePaths": ["app/components/ChatCards.tsx"] },
       "payment-mode-donut-v2":  { "kind": "cardType", "cardType": "payment-mode-donut-v2",  "sourcePaths": ["app/components/ChatCards.tsx"] },
       "transaction-table":      { "kind": "cardType", "cardType": "transaction-table",      "sourcePaths": ["app/components/ChatCards.tsx"] },
-      "spend-trend":            { "kind": "cardType", "cardType": "spend-trend",            "sourcePaths": ["app/components/ChatCards.tsx"] },
-      "goal-progress":          { "kind": "cardType", "cardType": "goal-progress",          "sourcePaths": ["app/components/ChatCards.tsx"] }
+      "spend-trend":            { "kind": "cardType", "cardType": "spend-trend",            "sourcePaths": ["app/components/ChatCards.tsx"] }
     },
     "widgets": {
       "investment-product":  { "kind": "cardType", "cardType": "investment-product",  "sourcePaths": ["app/components/ChatCards.tsx"] },
-      "obligations-list-v2": { "kind": "cardType", "cardType": "obligations-list-v2", "sourcePaths": ["app/components/ChatCards.tsx"] },
+      "confirm-list":        { "kind": "cardType", "cardType": "confirm-list",        "sourcePaths": ["app/components/ChatCards.tsx"] },
+      "goal-progress":       { "kind": "cardType", "cardType": "goal-progress",       "sourcePaths": ["app/components/ChatCards.tsx"] },
       "add-to-pot":          { "kind": "cardType", "cardType": "add-to-pot",          "sourcePaths": ["app/components/ChatCards.tsx"] }
     },
     "screens": {
@@ -36,7 +39,8 @@
       "degen-mode":        { "kind": "import", "symbols": ["DegenModeSimV1"],        "sourcePaths": ["app/preview/DegenModeSimV1.tsx"] },
       "reddit":            { "kind": "import", "symbols": ["RedditSimV1", "RedditSimV2"], "sourcePaths": ["app/preview/RedditSimV1.tsx", "app/preview/RedditSimV2.tsx"] },
       "refresh-session":   { "kind": "import", "symbols": ["RefreshSessionSimV1", "RefreshSessionSimV2"], "sourcePaths": ["app/preview/RefreshSessionSimV1.tsx", "app/preview/RefreshSessionSimV2.tsx"] },
-      "drawer-experience": { "kind": "import", "symbols": ["DrawerExperienceSim"],   "sourcePaths": ["app/preview/DrawerExperienceSim.tsx"] }
+      "drawer-experience": { "kind": "import", "symbols": ["DrawerExperienceSim"],   "sourcePaths": ["app/preview/DrawerExperienceSim.tsx"] },
+      "gbp-flow":          { "kind": "import", "symbols": ["GBPFlowSim"],            "sourcePaths": ["app/preview/GBPFlowSim.tsx"] }
     }
   }
 }

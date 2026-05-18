@@ -308,6 +308,126 @@ export type Pool = {
   heroScene?: string;
 };
 
+// ============ GBP (Goal-Budget Planning) TYPES ============
+
+/** Two destination types — max 1 of each active at a time */
+export type DestinationType = "goal" | "pool";
+
+export type GBPGoal = {
+  name: string;
+  targetAmount: number;
+  deadline: string; // ISO date
+  monthlyContribution: number;
+  createdAt: string;
+};
+
+export type GBPPool = {
+  name: string;
+  monthlyContribution: number;
+  balance: number;
+  targetAmount?: number; // optional for pools
+  status: "active" | "paused" | "dissolved";
+  createdAt: string;
+};
+
+/** How the user expressed "how much" */
+export type AmountMethod = "goal-derived" | "ladder" | "rate";
+
+/** Savings ladder tiers for vague intent */
+export type LadderTier = "comfortable" | "realistic" | "stretch";
+
+export type LadderOption = {
+  tier: LadderTier;
+  monthlyAmount: number;
+  description: string;
+  categoryCuts: number; // how many categories need adjustment
+};
+
+/** Five verdicts from feasibility check */
+export type Verdict = "comfortable" | "feasible" | "tight" | "infeasible" | "impossible";
+
+export type VerdictResult = {
+  verdict: Verdict;
+  closingLine: string;
+  maxAchievable?: number; // for infeasible
+  postponedDeadline?: string; // for infeasible alt
+  reducedTarget?: number; // for infeasible alt
+};
+
+/** Financial footprint — 5 buckets */
+export type FootprintBucketType = "income" | "obligations" | "p2p" | "sporadic-income" | "sporadic-expense";
+
+export type FootprintItem = {
+  id: string;
+  label: string;
+  amount: number;
+  type: string; // "salary", "rent", "EMI", etc.
+  frequency: string; // "monthly", "one-off"
+  confirmed: boolean;
+};
+
+export type FootprintBucket = {
+  bucketType: FootprintBucketType;
+  title: string;
+  description: string;
+  items: FootprintItem[];
+};
+
+/** Category budget with cap and range */
+export type CategoryBudget = {
+  name: string;
+  cap: number;
+  rangeMin: number;
+  rangeMax: number;
+  isBiggestCut: boolean;
+};
+
+/** Full spending plan */
+export type SpendingPlan = {
+  income: number;
+  obligations: number;
+  savingsTarget: number;
+  dailyPool: number;
+  categoryBudgets: CategoryBudget[];
+  verdict: VerdictResult;
+};
+
+/** Merge flavors when Pool + Goal coexist */
+export type MergeFlavor = "soft" | "hard";
+
+export type MergeOption = {
+  flavor: MergeFlavor;
+  description: string;
+  reversible: boolean;
+};
+
+/** Shortfall handling */
+export type ShortfallOption = "skip" | "reduce-next" | "withdraw";
+
+export type ShortfallAction = {
+  option: ShortfallOption;
+  message: string;
+  impact?: string; // e.g. "Trip slips ~1 month"
+};
+
+/** GBP journey step (4-step linear) */
+export type GBPStep = "goal-setup" | "footprint-walk" | "spending-plan" | "lock-in";
+
+/** GBP flow state */
+export type GBPFlowState = {
+  step: GBPStep;
+  destinationType: DestinationType;
+  amountMethod: AmountMethod;
+  activeBucket: number; // 0-4 index into footprint walk
+  goal: GBPGoal | null;
+  pool: GBPPool | null;
+  spendingPlan: SpendingPlan | null;
+  ladderSelection: LadderTier | null;
+  ratePercentage: number | null;
+  footprintBuckets: FootprintBucket[];
+  locked: boolean;
+};
+
 // ============ FLOW ASSIST TYPES ============
 
 export type FlowAction =

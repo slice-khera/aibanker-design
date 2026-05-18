@@ -17,11 +17,26 @@ import SnackbarHost from "@/app/components/SnackbarHost";
 import { useControlPanel } from "@/app/preview/_shared/ControlPanel";
 import { useSlotControls } from "@/app/preview/_shared/PlaygroundCard";
 
+// GBP components
+import SavingsLadder from "@/app/components/SavingsLadder";
+import SpendingPlanCard from "@/app/components/SpendingPlanCard";
+import VerdictBanner from "@/app/components/VerdictBanner";
+
 // Fixture data
 import { DBG_GOAL_QUESTIONS, GOAL_TRACKER_SCENARIOS } from "@/app/lib/debug-fixtures";
 import { TEXT_PRIMARY, OUTLINE_SUBTLE, VALENTINO_500 } from "@/app/lib/colors";
 import { ELEVATION_CARD } from "@/app/lib/elevation";
 import { typography } from "@/app/lib/typography";
+import {
+  LADDER_OPTIONS,
+  SPENDING_PLAN_FIXTURE,
+  VERDICT_COMFORTABLE,
+  VERDICT_FEASIBLE,
+  VERDICT_TIGHT,
+  VERDICT_INFEASIBLE,
+  VERDICT_IMPOSSIBLE,
+} from "@/app/preview/fixtures/gbpFlowFixture";
+import type { LadderTier } from "@/app/lib/types";
 
 // ── Cruncher status texts (from flows) ───────────────────────
 
@@ -198,6 +213,33 @@ function AppChromeDegen() {
   );
 }
 
+// ── GBP component wrappers ──────────────────────────────────
+
+function SavingsLadderWrapper() {
+  const [selected, setSelected] = useState<LadderTier | null>(null);
+  return (
+    <div style={{ padding: 16 }}>
+      <SavingsLadder options={LADDER_OPTIONS} selected={selected} onSelect={setSelected} />
+    </div>
+  );
+}
+
+function SpendingPlanWrapper() {
+  return (
+    <div style={{ padding: 16 }}>
+      <SpendingPlanCard plan={SPENDING_PLAN_FIXTURE} />
+    </div>
+  );
+}
+
+const VERDICT_VARIANTS = [
+  { name: "Comfortable", result: VERDICT_COMFORTABLE },
+  { name: "Feasible", result: VERDICT_FEASIBLE },
+  { name: "Tight", result: VERDICT_TIGHT },
+  { name: "Infeasible", result: VERDICT_INFEASIBLE },
+  { name: "Impossible", result: VERDICT_IMPOSSIBLE },
+];
+
 // ── Component definitions ────────────────────────────────────
 
 type ComponentDef = {
@@ -308,6 +350,35 @@ const COMPONENTS: ComponentDef[] = [
     variants: [
       { name: "playground", render: () => <SnackbarPlayground /> },
     ],
+  },
+  {
+    id: "savings-ladder",
+    label: "Savings ladder",
+    description: "3-tier picker — comfortable, realistic, stretch",
+    variants: [
+      { name: "v1", render: () => <SavingsLadderWrapper /> },
+    ],
+  },
+  {
+    id: "spending-plan-card",
+    label: "Spending plan card",
+    description: "Income/obligations/savings math + category budgets with ranges",
+    variants: [
+      { name: "v1", render: () => <SpendingPlanWrapper /> },
+    ],
+  },
+  {
+    id: "verdict-banner",
+    label: "Verdict banner",
+    description: "5-verdict feasibility outcome — fixed closing copy per tier",
+    variants: VERDICT_VARIANTS.map((v) => ({
+      name: v.name,
+      render: () => (
+        <div style={{ padding: 16 }}>
+          <VerdictBanner result={v.result} />
+        </div>
+      ),
+    })),
   },
 ];
 

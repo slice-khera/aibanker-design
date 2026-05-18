@@ -369,11 +369,11 @@ export const AA_CARD = {
 // ── Persona-matched obligations ─────────────────────────────────
 
 export const ONBOARDING_OBLIGATIONS = {
-  type: "obligations-list-v2" as const,
+  type: "confirm-list" as const,
   items: [
-    { id: "ob-1", payee: "Satya Prakashan", amount: 25000, type: "Rent/EMI", seenMonths: "4/4 months" },
-    { id: "ob-2", payee: "HDFC Car Loan", amount: 18000, type: "Loan EMI", seenMonths: "4/4 months" },
-    { id: "ob-3", payee: "Priya Sharma", amount: 8000, type: "P2P", seenMonths: "3/4 months" },
+    { id: "ob-1", payee: "Satya Prakashan", amount: 25000, type: "Rent/EMI" },
+    { id: "ob-2", payee: "HDFC Car Loan", amount: 18000, type: "Loan EMI" },
+    { id: "ob-3", payee: "Priya Sharma", amount: 8000, type: "P2P" },
   ],
   monthlyIncome: 120000,
 };

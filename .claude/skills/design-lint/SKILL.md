@@ -67,3 +67,16 @@ Flag any local function that duplicates a shared component.
 2. Ask the user before making fixes
 3. Commit each category separately for easy rollback
 4. Run `npx tsc --noEmit` after each commit to verify
+
+## Recording a pass (for the playground chip)
+
+When the user asks you to lint a specific playground item (e.g., "run design-lint on plan-cruncher-v2") **and the item passes cleanly with zero findings**, record the pass so the playground chip flips to `confirmed`:
+
+1. Read `app/preview/_shared/lint-passes.json`.
+2. Add or replace the entry: `"<id>": "<current ISO timestamp>"`.
+3. Write the file back.
+4. Run `node scripts/scan-playground-status.mjs` to regenerate `status-generated.ts`.
+
+The id must match one defined in `app/preview/_shared/integration-manifest.json`. If the item is already `integrated` (its symbol is used in real app code), the lint pass is still recorded but the chip stays `integrated` — code wins over confirmation.
+
+Any subsequent edit to the item's source files invalidates the pass automatically (the scan compares file mtimes against `lintedAt`), so the chip drops back to `exploring` until you re-lint.

@@ -14,6 +14,8 @@ import RedditSimV2 from "@/app/preview/RedditSimV2";
 import RefreshSessionSimV1 from "@/app/preview/RefreshSessionSimV1";
 import RefreshSessionSimV2 from "@/app/preview/RefreshSessionSimV2";
 import DrawerExperienceSim from "@/app/preview/DrawerExperienceSim";
+import GBPFlowSim from "@/app/preview/GBPFlowSim";
+import type { GBPStory } from "@/app/preview/fixtures/gbpFlowFixture";
 
 // ── Flow definitions ──────────────────────────────────────────
 type FlowDef = {
@@ -85,6 +87,19 @@ const FLOWS: FlowDef[] = [
     description: "Drawer push up/down with back layer and chat sheet",
     variants: [
       { name: "v1", render: () => <DrawerExperienceSim /> },
+    ],
+  },
+  {
+    id: "gbp-flow",
+    label: "Goal-budget planning",
+    description: "Full savings journey — ladder, footprint walk, spending plan, verdict, lock-in",
+    variants: [
+      { name: "Clean start", render: () => <GBPFlowSim story={"clean-start" as GBPStory} /> },
+      { name: "Goal exists", render: () => <GBPFlowSim story={"goal-exists" as GBPStory} /> },
+      { name: "Pool exists", render: () => <GBPFlowSim story={"pool-exists" as GBPStory} /> },
+      { name: "Both exist", render: () => <GBPFlowSim story={"both-exist" as GBPStory} /> },
+      { name: "Impossible amount", render: () => <GBPFlowSim story={"impossible-amount" as GBPStory} /> },
+      { name: "Cashflow blocked", render: () => <GBPFlowSim story={"cashflow-blocked" as GBPStory} /> },
     ],
   },
 ];

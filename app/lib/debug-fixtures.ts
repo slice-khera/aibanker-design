@@ -222,13 +222,13 @@ export const DBG_TXN_TABLE: ChatCardData = {
 };
 
 export const DBG_OBLIGATIONS_V2: ChatCardData = {
-  type: "obligations-list-v2",
+  type: "confirm-list",
   items: [
-    { id: "v2-1", payee: "Satya Prak", amount: 21700, type: "Rent/EMI", seenMonths: "3/4 months" },
-    { id: "v2-2", payee: "Satishk019", amount: 4000, type: "P2P", seenMonths: "3/4 months" },
-    { id: "v2-3", payee: "Vinod Kumar", amount: 3000, type: "P2P", seenMonths: "3/4 months" },
-    { id: "v2-4", payee: "Mukesh Kumar", amount: 2500, type: "P2P", seenMonths: "4/4 months" },
-    { id: "v2-5", payee: "Delhi Metro", amount: 1500, type: "Utility", seenMonths: "3/4 months" },
+    { id: "v2-1", payee: "Satya Prak", amount: 21700, type: "Rent" },
+    { id: "v2-2", payee: "Satishk019", amount: 4000, type: "P2P" },
+    { id: "v2-3", payee: "Vinod Kumar", amount: 3000, type: "P2P" },
+    { id: "v2-4", payee: "Mukesh Kumar", amount: 2500, type: "P2P" },
+    { id: "v2-5", payee: "Delhi Metro", amount: 1500, type: "Utility" },
   ],
   monthlyIncome: 27000,
 };

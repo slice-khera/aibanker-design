@@ -9,7 +9,6 @@ import {
   DBG_SPEND_OVERVIEW, DBG_CATEGORY_BAR,
   DBG_MERCHANT_BAR, DBG_CATEGORY_MOM, DBG_SPEND_TREND,
   DBG_HEATMAP, DBG_DONUT_V2, DBG_TXN_TABLE,
-  DBG_GOAL_AHEAD, DBG_GOAL_BEHIND, DBG_GOAL_ONTRACK,
   DBG_BIG_EXPENSES,
 } from "@/app/lib/debug-fixtures";
 
@@ -63,15 +62,6 @@ const VIZ_ITEMS: VizItem[] = [
     type: "spend-trend",
     label: "Spend trend",
     fixtures: [{ name: "default", data: { ...DBG_SPEND_TREND } }],
-  },
-  {
-    type: "goal-progress",
-    label: "Goal progress",
-    fixtures: [
-      { name: "ahead", data: { ...DBG_GOAL_AHEAD } },
-      { name: "behind", data: { ...DBG_GOAL_BEHIND } },
-      { name: "on-track", data: { ...DBG_GOAL_ONTRACK } },
-    ],
   },
 ];
 
