@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FLOW_STATUS, STATUSES } from "@/app/preview/_shared/status-registry";
-import type { ItemStatus } from "@/app/preview/_shared/status-registry";
+import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 
 // Sim imports — reused as-is
@@ -87,7 +86,7 @@ const FLOWS: FlowDef[] = [
   },
 ];
 
-function FlowEntry({ flow, status, onCycleStatus }: { flow: FlowDef; status: ItemStatus; onCycleStatus: () => void }) {
+function FlowEntry({ flow }: { flow: FlowDef }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [autoplay, setAutoplay] = useState(false);
 
@@ -95,8 +94,7 @@ function FlowEntry({ flow, status, onCycleStatus }: { flow: FlowDef; status: Ite
     <PlaygroundCard
       name={flow.label}
       description={flow.description}
-      status={status}
-      onCycleStatus={onCycleStatus}
+      status={resolveStatus(flow.id)}
       variants={flow.variants.map((v) => v.name)}
       activeVariantIndex={activeIdx}
       onVariantChange={setActiveIdx}
@@ -110,16 +108,6 @@ function FlowEntry({ flow, status, onCycleStatus }: { flow: FlowDef; status: Ite
 }
 
 export default function FlowsPage() {
-  const [statuses, setStatuses] = useState<Record<string, ItemStatus>>(() => ({ ...FLOW_STATUS }));
-
-  const cycleStatus = (id: string) => {
-    setStatuses((prev) => {
-      const cur = prev[id] ?? "exploring";
-      const idx = STATUSES.indexOf(cur);
-      return { ...prev, [id]: STATUSES[(idx + 1) % STATUSES.length] };
-    });
-  };
-
   return (
     <div className="px-8 py-8">
       <div className="mb-8">
@@ -131,12 +119,7 @@ export default function FlowsPage() {
 
       <div className="flex flex-col gap-6">
         {FLOWS.map((flow) => (
-          <FlowEntry
-            key={flow.id}
-            flow={flow}
-            status={statuses[flow.id] ?? "exploring"}
-            onCycleStatus={() => cycleStatus(flow.id)}
-          />
+          <FlowEntry key={flow.id} flow={flow} />
         ))}
       </div>
     </div>

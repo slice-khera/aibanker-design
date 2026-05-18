@@ -3,8 +3,7 @@
 import { useState } from "react";
 import ChatCard from "@/app/components/ChatCards";
 import type { ChatCardData } from "@/app/components/ChatCards";
-import { WIDGET_STATUS, STATUSES } from "@/app/preview/_shared/status-registry";
-import type { ItemStatus } from "@/app/preview/_shared/status-registry";
+import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 import {
   DBG_FD_SETUP, DBG_FD_ACTIVATED,
@@ -62,14 +61,13 @@ const WIDGET_ITEMS: WidgetItem[] = [
   },
 ];
 
-function WidgetEntry({ item, status, onCycleStatus }: { item: WidgetItem; status: ItemStatus; onCycleStatus: () => void }) {
+function WidgetEntry({ item }: { item: WidgetItem }) {
   const [activeIdx, setActiveIdx] = useState(0);
 
   return (
     <PlaygroundCard
       name={item.label}
-      status={status}
-      onCycleStatus={onCycleStatus}
+      status={resolveStatus(item.type)}
       variants={item.fixtures.map((f) => f.name)}
       activeVariantIndex={activeIdx}
       onVariantChange={setActiveIdx}
@@ -80,16 +78,6 @@ function WidgetEntry({ item, status, onCycleStatus }: { item: WidgetItem; status
 }
 
 export default function WidgetsPage() {
-  const [statuses, setStatuses] = useState<Record<string, ItemStatus>>(() => ({ ...WIDGET_STATUS }));
-
-  const cycleStatus = (type: string) => {
-    setStatuses((prev) => {
-      const cur = prev[type] ?? "exploring";
-      const idx = STATUSES.indexOf(cur);
-      return { ...prev, [type]: STATUSES[(idx + 1) % STATUSES.length] };
-    });
-  };
-
   return (
     <div className="px-8 py-8">
       <div className="mb-8">
@@ -101,12 +89,7 @@ export default function WidgetsPage() {
 
       <div className="flex flex-col gap-6">
         {WIDGET_ITEMS.map((item) => (
-          <WidgetEntry
-            key={item.type}
-            item={item}
-            status={statuses[item.type] ?? "exploring"}
-            onCycleStatus={() => cycleStatus(item.type)}
-          />
+          <WidgetEntry key={item.type} item={item} />
         ))}
       </div>
     </div>

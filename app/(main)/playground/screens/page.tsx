@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SCREEN_STATUS, STATUSES } from "@/app/preview/_shared/status-registry";
-import type { ItemStatus } from "@/app/preview/_shared/status-registry";
+import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 
 // Screen components
@@ -73,14 +72,13 @@ const SCREENS: ScreenDef[] = [
   },
 ];
 
-function ScreenEntry({ screen, status, onCycleStatus }: { screen: ScreenDef; status: ItemStatus; onCycleStatus: () => void }) {
+function ScreenEntry({ screen }: { screen: ScreenDef }) {
   const [activeIdx, setActiveIdx] = useState(0);
 
   return (
     <PlaygroundCard
       name={screen.label}
-      status={status}
-      onCycleStatus={onCycleStatus}
+      status={resolveStatus(screen.id)}
       variants={screen.variants.map((v) => v.name)}
       activeVariantIndex={activeIdx}
       onVariantChange={setActiveIdx}
@@ -92,16 +90,6 @@ function ScreenEntry({ screen, status, onCycleStatus }: { screen: ScreenDef; sta
 }
 
 export default function ScreensPage() {
-  const [statuses, setStatuses] = useState<Record<string, ItemStatus>>(() => ({ ...SCREEN_STATUS }));
-
-  const cycleStatus = (id: string) => {
-    setStatuses((prev) => {
-      const cur = prev[id] ?? "exploring";
-      const idx = STATUSES.indexOf(cur);
-      return { ...prev, [id]: STATUSES[(idx + 1) % STATUSES.length] };
-    });
-  };
-
   return (
     <div className="px-8 py-8">
       <div className="mb-8">
@@ -113,12 +101,7 @@ export default function ScreensPage() {
 
       <div className="flex flex-col gap-6">
         {SCREENS.map((screen) => (
-          <ScreenEntry
-            key={screen.id}
-            screen={screen}
-            status={statuses[screen.id] ?? "exploring"}
-            onCycleStatus={() => cycleStatus(screen.id)}
-          />
+          <ScreenEntry key={screen.id} screen={screen} />
         ))}
       </div>
     </div>

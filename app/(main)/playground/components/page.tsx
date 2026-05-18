@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { COMPONENT_STATUS, STATUSES } from "@/app/preview/_shared/status-registry";
-import type { ItemStatus } from "@/app/preview/_shared/status-registry";
+import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 
 // Component imports
@@ -213,23 +212,14 @@ const COMPONENTS: ComponentDef[] = [
 
 // ── Page ──────────────────────────────────────────────────────
 
-function ComponentEntry({
-  comp,
-  status,
-  onCycleStatus,
-}: {
-  comp: ComponentDef;
-  status: ItemStatus;
-  onCycleStatus: () => void;
-}) {
+function ComponentEntry({ comp }: { comp: ComponentDef }) {
   const [activeIdx, setActiveIdx] = useState(0);
 
   return (
     <PlaygroundCard
       name={comp.label}
       description={comp.description}
-      status={status}
-      onCycleStatus={onCycleStatus}
+      status={resolveStatus(comp.id)}
       variants={comp.variants.map((v) => v.name)}
       activeVariantIndex={activeIdx}
       onVariantChange={setActiveIdx}
@@ -241,18 +231,6 @@ function ComponentEntry({
 }
 
 export default function ComponentsPage() {
-  const [statuses, setStatuses] = useState<Record<string, ItemStatus>>(
-    () => ({ ...COMPONENT_STATUS })
-  );
-
-  const cycleStatus = (id: string) => {
-    setStatuses((prev) => {
-      const cur = prev[id] ?? "exploring";
-      const idx = STATUSES.indexOf(cur);
-      return { ...prev, [id]: STATUSES[(idx + 1) % STATUSES.length] };
-    });
-  };
-
   return (
     <div className="px-8 py-8">
       <div className="mb-8">
@@ -264,12 +242,7 @@ export default function ComponentsPage() {
 
       <div className="flex flex-col gap-6">
         {COMPONENTS.map((comp) => (
-          <ComponentEntry
-            key={comp.id}
-            comp={comp}
-            status={statuses[comp.id] ?? "exploring"}
-            onCycleStatus={() => cycleStatus(comp.id)}
-          />
+          <ComponentEntry key={comp.id} comp={comp} />
         ))}
       </div>
     </div>

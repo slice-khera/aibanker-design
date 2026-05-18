@@ -3,8 +3,7 @@
 import { useState } from "react";
 import ChatCard from "@/app/components/ChatCards";
 import type { ChatCardData } from "@/app/components/ChatCards";
-import { VIZ_STATUS, STATUSES } from "@/app/preview/_shared/status-registry";
-import type { ItemStatus } from "@/app/preview/_shared/status-registry";
+import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 import {
   DBG_SPEND_OVERVIEW, DBG_CATEGORY_BAR,
@@ -76,14 +75,13 @@ const VIZ_ITEMS: VizItem[] = [
   },
 ];
 
-function VizEntry({ item, status, onCycleStatus }: { item: VizItem; status: ItemStatus; onCycleStatus: () => void }) {
+function VizEntry({ item }: { item: VizItem }) {
   const [activeIdx, setActiveIdx] = useState(0);
 
   return (
     <PlaygroundCard
       name={item.label}
-      status={status}
-      onCycleStatus={onCycleStatus}
+      status={resolveStatus(item.type)}
       variants={item.fixtures.map((f) => f.name)}
       activeVariantIndex={activeIdx}
       onVariantChange={setActiveIdx}
@@ -94,16 +92,6 @@ function VizEntry({ item, status, onCycleStatus }: { item: VizItem; status: Item
 }
 
 export default function VisualizationsPage() {
-  const [statuses, setStatuses] = useState<Record<string, ItemStatus>>(() => ({ ...VIZ_STATUS }));
-
-  const cycleStatus = (type: string) => {
-    setStatuses((prev) => {
-      const cur = prev[type] ?? "exploring";
-      const idx = STATUSES.indexOf(cur);
-      return { ...prev, [type]: STATUSES[(idx + 1) % STATUSES.length] };
-    });
-  };
-
   return (
     <div className="px-8 py-8">
       <div className="mb-8">
@@ -115,12 +103,7 @@ export default function VisualizationsPage() {
 
       <div className="flex flex-col gap-6">
         {VIZ_ITEMS.map((item) => (
-          <VizEntry
-            key={item.type}
-            item={item}
-            status={statuses[item.type] ?? "exploring"}
-            onCycleStatus={() => cycleStatus(item.type)}
-          />
+          <VizEntry key={item.type} item={item} />
         ))}
       </div>
     </div>

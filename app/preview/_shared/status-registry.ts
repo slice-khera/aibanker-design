@@ -1,66 +1,25 @@
 /**
- * Single source of truth for item statuses across playground sections.
- * Update statuses here — they propagate to visualizations, widgets, screens, and flows.
+ * Playground item status — derived from the codebase, not hand-toggled.
  *
- * Lifecycle: Exploring → Confirmed → Integrated
- * Discarded items: commit to git, then delete from code + this registry.
+ * Resolution at dev-server start (precedence top-down):
+ *   1. integrated — the item's source symbol is imported (or its ChatCard type is constructed)
+ *                   somewhere outside `app/(main)/playground` and `app/preview`.
+ *   2. confirmed  — design-lint has passed for this id and no source file has been edited since.
+ *   3. exploring  — default. Local WIP.
+ *
+ * The two ID sets come from `status-generated.ts`, which is regenerated on every
+ * `pnpm dev`/`pnpm build` by `scripts/scan-playground-status.mjs`.
+ *
+ * To change a chip: change the code (integration) or run design-lint (confirmation).
+ * Never edit `status-generated.ts` or this resolver by hand.
  */
+
+import { INTEGRATED_IDS, CONFIRMED_IDS } from "./status-generated";
 
 export type ItemStatus = "exploring" | "confirmed" | "integrated";
 
-/** Ordered lifecycle list — used for click-to-cycle in the playground. */
-export const STATUSES: ItemStatus[] = ["exploring", "confirmed", "integrated"];
-
-// Tag rendering config — maps status to DlsTag props
-export const STATUS_TAG_PROPS: Record<ItemStatus, { intent: "brand" | "positive" | "info"; emphasis: "subtle" | "bold" }> = {
-  exploring:  { intent: "brand",    emphasis: "subtle" },
-  confirmed:  { intent: "positive", emphasis: "subtle" },
-  integrated: { intent: "info",     emphasis: "bold" },
-};
-
-// ── Visualizations ────────────────────────────────────────────
-export const VIZ_STATUS: Record<string, ItemStatus> = {
-  "spend-overview":         "confirmed",
-  "category-breakdown":     "confirmed",
-  "merchant-concentration": "exploring",
-  "category-mom":           "exploring",
-  "spending-heatmap":       "exploring",
-  "payment-mode-donut-v2":  "exploring",
-  "transaction-table":      "exploring",
-  "spend-trend":            "exploring",
-  "goal-progress":          "confirmed",
-};
-
-// ── Widgets ───────────────────────────────────────────────────
-export const WIDGET_STATUS: Record<string, ItemStatus> = {
-  "investment-product":  "confirmed",
-  "obligations-list-v2": "confirmed",
-  "add-to-pot":          "exploring",
-};
-
-// ── Screens ───────────────────────────────────────────────────
-export const SCREEN_STATUS: Record<string, ItemStatus> = {
-  "feature-pdp":    "exploring",
-  "goal-list":      "confirmed",
-  "pot-detail":     "confirmed",
-};
-
-// ── Components ───────────────────────────────────────────────
-export const COMPONENT_STATUS: Record<string, ItemStatus> = {
-  "questionnaire-overlay": "exploring",
-  "plan-cruncher-v2":      "exploring",
-  "goal-tracker":          "exploring",
-  "persona-toggle":        "exploring",
-  "app-chrome":            "exploring",
-};
-
-// ── Flows ─────────────────────────────────────────────────────
-export const FLOW_STATUS: Record<string, ItemStatus> = {
-  "onboarding":        "confirmed",
-  "aa":                "confirmed",
-  "planmode-savings":  "exploring",
-  "degen-mode":        "exploring",
-  "reddit":            "exploring",
-  "refresh-session":   "exploring",
-  "drawer-experience": "exploring",
-};
+export function resolveStatus(id: string): ItemStatus {
+  if (INTEGRATED_IDS.has(id)) return "integrated";
+  if (CONFIRMED_IDS.has(id)) return "confirmed";
+  return "exploring";
+}

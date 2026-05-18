@@ -20,7 +20,6 @@ type Props = {
   name: string;
   description?: string;
   status: ItemStatus;
-  onCycleStatus: () => void;
   variants?: string[];
   activeVariantIndex?: number;
   onVariantChange?: (index: number) => void;
@@ -34,7 +33,6 @@ export default function PlaygroundCard({
   name,
   description,
   status,
-  onCycleStatus,
   variants,
   activeVariantIndex = 0,
   onVariantChange,
@@ -56,13 +54,13 @@ export default function PlaygroundCard({
               <CardDescription className="mt-0.5">{description}</CardDescription>
             )}
           </div>
-          <button
-            type="button"
-            onClick={onCycleStatus}
-            className="shrink-0 cursor-pointer border-none bg-transparent p-0"
+          <Badge
+            variant={STATUS_BADGE_VARIANT[status]}
+            className="shrink-0"
+            title="Auto-derived from code. Change the code or run design-lint to change this."
           >
-            <Badge variant={STATUS_BADGE_VARIANT[status]}>{status}</Badge>
-          </button>
+            {status}
+          </Badge>
         </div>
 
         <div className="flex items-center gap-2 pt-1">
