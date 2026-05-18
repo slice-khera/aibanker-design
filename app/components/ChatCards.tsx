@@ -484,7 +484,7 @@ const COLOR_TRACK: Record<string, string> = {
   [SLATE_300]: SLATE_50,
 };
 
-function trackColor(fill: string): string {
+export function trackColor(fill: string): string {
   return COLOR_TRACK[fill] ?? SLATE_50;
 }
 

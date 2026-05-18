@@ -291,6 +291,23 @@ export type UserState = {
   createdAt: string;
 };
 
+// ============ ANCHOR UNITS (Goal + Pool) ============
+
+// Per gbp_flow.md §2: one Goal + one Pool can be active at a time.
+// Goal: has deadline + target. Pool: open-ended, optional target.
+export type Pool = {
+  id: string;
+  name: string;
+  saved: number;
+  target?: number;
+  monthlyAmount: number;
+  icon: string;
+  ringColor: string;
+  gradient?: string;
+  heroEmoji?: string;
+  heroScene?: string;
+};
+
 // ============ FLOW ASSIST TYPES ============
 
 export type FlowAction =

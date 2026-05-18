@@ -5,11 +5,11 @@ import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 
 // Screen components
-import GoalListScreen from "@/app/components/GoalListScreen";
+import BudgetScreen from "@/app/components/BudgetScreen";
 import PotDetail from "@/app/components/PotDetail";
 import FeaturePDP from "@/app/components/FeaturePDP";
 
-import { GOAL_TRACKER_SCENARIOS } from "@/app/lib/debug-fixtures";
+import { BUDGET_SCENARIOS, GOAL_TRACKER_SCENARIOS } from "@/app/lib/debug-fixtures";
 
 // ── Screen definitions ────────────────────────────────────────
 type ScreenDef = {
@@ -53,12 +53,12 @@ const SCREENS: ScreenDef[] = [
     ],
   },
   {
-    id: "goal-list",
-    label: "Goal list",
+    id: "budget",
+    label: "Budget",
     variants: [
-      { name: "on-track", render: () => <GoalListScreen goals={goalOnTrack} onGoalTap={noop} onClose={noop} /> },
-      { name: "ahead", render: () => <GoalListScreen goals={goalAhead} onGoalTap={noop} onClose={noop} /> },
-      { name: "behind", render: () => <GoalListScreen goals={goalBehind} onGoalTap={noop} onClose={noop} /> },
+      { name: "goal-only",     render: () => <BudgetScreen goal={BUDGET_SCENARIOS["goal-only"].goal}     pool={BUDGET_SCENARIOS["goal-only"].pool}     budget={BUDGET_SCENARIOS["goal-only"].budget}     onClose={noop} /> },
+      { name: "goal-and-pool", render: () => <BudgetScreen goal={BUDGET_SCENARIOS["goal-and-pool"].goal} pool={BUDGET_SCENARIOS["goal-and-pool"].pool} budget={BUDGET_SCENARIOS["goal-and-pool"].budget} onClose={noop} /> },
+      { name: "pool-only",     render: () => <BudgetScreen goal={BUDGET_SCENARIOS["pool-only"].goal}     pool={BUDGET_SCENARIOS["pool-only"].pool}     budget={BUDGET_SCENARIOS["pool-only"].budget}     onClose={noop} /> },
     ],
   },
   {

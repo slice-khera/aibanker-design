@@ -6,6 +6,8 @@
 import type { ChatCardData } from "../components/ChatCards";
 import { CATEGORY_ICONS, CATEGORY_COLORS } from "../components/ChatCards";
 import type { GoalIndicatorData } from "../components/GoalTracker";
+import type { MonthlyBudgetSnapshot } from "../components/BudgetScreen";
+import type { Pool } from "./types";
 import type { Question } from "../components/QuestionnaireOverlay";
 import { VALENTINO_500 } from "../lib/colors";
 
@@ -240,6 +242,99 @@ export const DBG_BIG_EXPENSES: ChatCardData = {
     { date: "06 Nov 2025", merchant: "Transfer", amount: 30000, category: "P2P" },
     { date: "12 Nov 2025", merchant: "Jayram Pra", amount: 30000, category: "P2P" },
   ],
+};
+
+// ─── Budget screen fixtures ───────────────────────────────────
+
+const TRIP_GOAL: GoalIndicatorData = {
+  id: "goal-trip-japan",
+  name: "Trip to Japan",
+  pct: 42,
+  status: "on-track",
+  icon: "✈️",
+  daysLabel: "4 months left",
+  saved: 84000,
+  target: 200000,
+  ringColor: VALENTINO_500,
+  endDate: "Dec 2026",
+  monthlyAmount: 10000,
+  gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)",
+  heroEmoji: "✈️",
+  heroScene: "japan",
+};
+
+const EMERGENCY_POOL: Pool = {
+  id: "pool-emergency",
+  name: "Emergency fund",
+  saved: 45000,
+  monthlyAmount: 5000,
+  icon: "🛡️",
+  ringColor: "#ff9a17",
+  gradient: "linear-gradient(135deg, #fff3e3 0%, #ff9a17 100%)",
+  heroEmoji: "🛡️",
+};
+
+// Goal-only — mid-May, spending faster than ideal pace ("X days behind").
+const MAY_2026_BEHIND: MonthlyBudgetSnapshot = {
+  monthLabel: "May 2026",
+  daysElapsed: 18,
+  daysInMonth: 31,
+  totalSpent: 22600,
+  totalCap: 26000,
+  categories: [
+    { name: "Food & Drinks", spent: 9200, cap: 8000 },
+    { name: "Shopping",      spent: 4800, cap: 6000 },
+    { name: "Transport",     spent: 2400, cap: 3000 },
+    { name: "Groceries",     spent: 3600, cap: 5000 },
+    { name: "Subscription",  spent: 1500, cap: 1500 },
+    { name: "Entertainment", spent: 1100, cap: 2500 },
+  ],
+};
+
+// Goal-and-pool — mid-May, under-spending vs pace ("X days ahead").
+const MAY_2026_AHEAD: MonthlyBudgetSnapshot = {
+  monthLabel: "May 2026",
+  daysElapsed: 18,
+  daysInMonth: 31,
+  totalSpent: 11400,
+  totalCap: 26000,
+  categories: [
+    { name: "Food & Drinks", spent: 3800, cap: 8000 },
+    { name: "Shopping",      spent: 2200, cap: 6000 },
+    { name: "Transport",     spent: 1400, cap: 3000 },
+    { name: "Groceries",     spent: 2100, cap: 5000 },
+    { name: "Subscription",  spent: 1500, cap: 1500 },
+    { name: "Entertainment", spent: 400,  cap: 2500 },
+  ],
+};
+
+// Pool-only — late April, fully over budget across multiple categories.
+const APR_2026_OVER: MonthlyBudgetSnapshot = {
+  monthLabel: "Apr 2026",
+  daysElapsed: 28,
+  daysInMonth: 30,
+  totalSpent: 28700,
+  totalCap: 26000,
+  categories: [
+    { name: "Food & Drinks", spent: 10800, cap: 8000 },
+    { name: "Shopping",      spent: 7400,  cap: 6000 },
+    { name: "Transport",     spent: 2200,  cap: 3000 },
+    { name: "Groceries",     spent: 4600,  cap: 5000 },
+    { name: "Subscription",  spent: 1500,  cap: 1500 },
+    { name: "Entertainment", spent: 2200,  cap: 2500 },
+  ],
+};
+
+export type BudgetScenario = {
+  goal: GoalIndicatorData | null;
+  pool: Pool | null;
+  budget: MonthlyBudgetSnapshot;
+};
+
+export const BUDGET_SCENARIOS: Record<"goal-only" | "goal-and-pool" | "pool-only", BudgetScenario> = {
+  "goal-only":     { goal: TRIP_GOAL, pool: null,           budget: MAY_2026_BEHIND },
+  "goal-and-pool": { goal: TRIP_GOAL, pool: EMERGENCY_POOL, budget: MAY_2026_AHEAD  },
+  "pool-only":     { goal: null,      pool: EMERGENCY_POOL, budget: APR_2026_OVER   },
 };
 
 // ─── Goal questionnaire fixture ───────────────────────────────
