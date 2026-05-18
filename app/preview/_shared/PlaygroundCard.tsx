@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +16,23 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Pause, Play, RotateCcw } from "lucide-react";
 import type { ItemStatus } from "./status-registry";
 import DeviceFrame from "./DeviceFrame";
+
+// Context that lets a nested rendered component publish its control panel
+// into the parent card's right-side slot. Use via `useSlotControls(panel)`.
+const SlotControlsContext = createContext<((c: ReactNode) => void) | null>(null);
+
+/**
+ * Call from inside a variant-rendered component to publish a control panel
+ * into the parent PlaygroundCard's right slot. Pass `null` to clear.
+ */
+export function useSlotControls(panel: ReactNode) {
+  const set = useContext(SlotControlsContext);
+  useEffect(() => {
+    if (!set) return;
+    set(panel);
+    return () => set(null);
+  }, [set, panel]);
+}
 
 const STATUS_BADGE_VARIANT: Record<ItemStatus, "outline" | "secondary" | "default"> = {
   exploring: "outline",
@@ -26,6 +50,8 @@ type Props = {
   deviceFrame?: boolean;
   autoplay?: boolean;
   onToggleAutoplay?: () => void;
+  /** Optional control panel rendered to the right of the preview. */
+  controls?: ReactNode;
   children: ReactNode;
 };
 
@@ -39,10 +65,14 @@ export default function PlaygroundCard({
   deviceFrame = false,
   autoplay,
   onToggleAutoplay,
+  controls,
   children,
 }: Props) {
   const hasVariants = variants && variants.length > 1;
   const [resetKey, setResetKey] = useState(0);
+  const [slotControls, setSlotControlsState] = useState<ReactNode>(null);
+  const setSlotControls = useCallback((c: ReactNode) => setSlotControlsState(c), []);
+  const effectiveControls = slotControls ?? controls;
 
   return (
     <Card className="rounded-none shadow-none">
@@ -106,19 +136,20 @@ export default function PlaygroundCard({
 
       <Separator />
 
-      <CardContent className="p-0" key={resetKey}>
-        {deviceFrame ? (
-          <div className="flex justify-center p-6">
-            <DeviceFrame>{children}</DeviceFrame>
+      <SlotControlsContext.Provider value={setSlotControls}>
+        <CardContent className="p-0" key={resetKey}>
+          <div className="flex gap-6 p-6">
+            {deviceFrame ? (
+              <div className="flex justify-center">
+                <DeviceFrame>{children}</DeviceFrame>
+              </div>
+            ) : (
+              <div className="w-[360px]">{children}</div>
+            )}
+            {effectiveControls}
           </div>
-        ) : (
-          <div className="p-6">
-            <div className="w-[360px]">
-              {children}
-            </div>
-          </div>
-        )}
-      </CardContent>
+        </CardContent>
+      </SlotControlsContext.Provider>
     </Card>
   );
 }

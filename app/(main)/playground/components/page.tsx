@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 
@@ -11,6 +11,9 @@ import GoalTracker from "@/app/components/GoalTracker";
 import PersonaToggle from "@/app/components/PersonaToggle";
 import type { Persona } from "@/app/components/PersonaToggle";
 import { StatusBar, AppBar, NavButton, GestureNav } from "@/app/components/AppChrome";
+import SnackbarHost from "@/app/components/SnackbarHost";
+import { useControlPanel } from "@/app/preview/_shared/ControlPanel";
+import { useSlotControls } from "@/app/preview/_shared/PlaygroundCard";
 
 // Fixture data
 import { DBG_GOAL_QUESTIONS, GOAL_TRACKER_SCENARIOS } from "@/app/lib/debug-fixtures";
@@ -208,7 +211,88 @@ const COMPONENTS: ComponentDef[] = [
       { name: "degen", render: () => <AppChromeDegen /> },
     ],
   },
+  {
+    id: "snackbar",
+    label: "Snackbar",
+    description: "Toast bar that slides up from bottom; auto-dismisses 4s (persists with action)",
+    variants: [
+      { name: "playground", render: () => <SnackbarPlayground /> },
+    ],
+  },
 ];
+
+// Snackbar playground. Reads state from a control panel; replays the slide-up
+// animation on (a) type/icon/action change, (b) viewport re-entry, (c) restart.
+// Text edits update copy in place without replay.
+
+const TEXT_DEFAULTS = {
+  Default: "Saved to your pot",
+  Negative: "Couldn't save your changes",
+} as const;
+
+function SnackbarPlayground() {
+  const [state, panel] = useControlPanel({
+    type:   { kind: "select", label: "Type",   options: ["Default", "Negative"] as const, default: "Default" },
+    text:   { kind: "input",  label: "Text",   default: TEXT_DEFAULTS.Default },
+    icon:   { kind: "switch", label: "Icon",   default: false },
+    action: { kind: "switch", label: "Action", default: false },
+  });
+  useSlotControls(panel);
+
+  const ref = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(true);
+  const [runId, setRunId] = useState(0);
+
+  // Replay when type / icon / action toggles (not text).
+  useEffect(() => {
+    setOpen(true);
+    setRunId((n) => n + 1);
+  }, [state.type, state.icon, state.action]);
+
+  // Replay when scrolled back into view after auto-dismiss.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setOpen(true);
+          setRunId((n) => n + 1);
+        }
+      },
+      { threshold: 0.5 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  const variant = state.type === "Negative" ? "negative" : "default";
+
+  return (
+    <div ref={ref} style={{ position: "relative", height: 140, width: "100%" }}>
+      <SnackbarHost
+        key={runId}
+        open={open}
+        onClose={() => setOpen(false)}
+        variant={variant}
+        text={state.text}
+        icon={state.icon ? <ReloadIconWhite /> : undefined}
+        action={state.action ? { label: "Retry", onClick: () => {} } : undefined}
+      />
+    </div>
+  );
+}
+
+// White-filtered reload icon (reuses /icons/reload.svg, black SVG inverted)
+function ReloadIconWhite() {
+  return (
+    <img
+      alt=""
+      src="/icons/reload.svg"
+      style={{ width: 20, height: 20, filter: "brightness(0) invert(1)", display: "block" }}
+    />
+  );
+}
 
 // ── Page ──────────────────────────────────────────────────────
 
