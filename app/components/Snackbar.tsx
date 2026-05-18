@@ -1,73 +1,98 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { typography } from "../lib/typography";
-import { SLATE_800, ALPHA_WHITE_FF } from "../lib/colors";
+import {
+  SLATE_800,
+  RED_400,
+  ALPHA_WHITE_FF,
+} from "../lib/colors";
 import { ELEVATION_CARD } from "../lib/elevation";
+import { SPACE_XS, SPACE_M } from "../lib/spacing";
+
+// DLS 2.0 Snackbar. Figma nodes 670:240, 1910:22720.
+// 328w, radius 12, pr 8. Icon 20px (pl 16). Text 14/20 white. Action pill (8×16).
+
+export type SnackbarVariant = "default" | "negative";
 
 type SnackbarProps = {
-  message: string;
-  visible: boolean;
-  onDismiss: () => void;
-  durationMs?: number;
-  icon?: React.ReactNode;
+  variant?: SnackbarVariant;
+  icon?: ReactNode;
+  text: string;
+  action?: { label: string; onClick: () => void };
 };
 
-const DEFAULT_DURATION_MS = 3000;
+const NEGATIVE_SHADOW = "0px 2px 32px 0px rgba(0,0,0,0.3)";
 
 export default function Snackbar({
-  message,
-  visible,
-  onDismiss,
-  durationMs = DEFAULT_DURATION_MS,
+  variant = "default",
   icon,
+  text,
+  action,
 }: SnackbarProps) {
-  const [rendered, setRendered] = useState(visible);
-  const [animateIn, setAnimateIn] = useState(false);
-
-  useEffect(() => {
-    if (visible) {
-      setRendered(true);
-      const raf = requestAnimationFrame(() => setAnimateIn(true));
-      const dismissTimer = window.setTimeout(onDismiss, durationMs);
-      return () => {
-        cancelAnimationFrame(raf);
-        window.clearTimeout(dismissTimer);
-      };
-    }
-    setAnimateIn(false);
-    const exitTimer = window.setTimeout(() => setRendered(false), 250);
-    return () => window.clearTimeout(exitTimer);
-  }, [visible, durationMs, onDismiss]);
-
-  if (!rendered) return null;
+  const isNegative = variant === "negative";
 
   return (
     <div
       role="status"
-      aria-live="polite"
       style={{
-        position: "absolute",
-        bottom: 24,
-        left: "50%",
-        transform: `translate(-50%, ${animateIn ? "0" : "12px"})`,
-        opacity: animateIn ? 1 : 0,
-        transition: "opacity 250ms ease-out, transform 250ms ease-out",
         width: 328,
-        maxWidth: "calc(100% - 32px)",
-        borderRadius: 12,
-        backgroundColor: SLATE_800,
-        boxShadow: ELEVATION_CARD,
-        padding: 16,
-        zIndex: 20,
-        pointerEvents: "none",
         display: "flex",
         alignItems: "center",
-        gap: 12,
+        borderRadius: 12,
+        paddingRight: SPACE_XS,
+        backgroundColor: isNegative ? RED_400 : SLATE_800,
+        boxShadow: isNegative ? NEGATIVE_SHADOW : ELEVATION_CARD,
       }}
     >
-      {icon && <span style={{ display: "flex", flexShrink: 0 }}>{icon}</span>}
-      <span style={{ ...typography.bodySmall, color: ALPHA_WHITE_FF }}>{message}</span>
+      {icon && (
+        <div
+          aria-hidden="true"
+          style={{
+            paddingLeft: SPACE_M,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 20,
+            height: 20,
+            flexShrink: 0,
+            boxSizing: "content-box",
+          }}
+        >
+          <div style={{ width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {icon}
+          </div>
+        </div>
+      )}
+
+      <div
+        style={{
+          flex: 1,
+          padding: SPACE_M,
+          color: ALPHA_WHITE_FF,
+          ...typography.bodySmall,
+        }}
+      >
+        {text}
+      </div>
+
+      {action && (
+        <button
+          type="button"
+          onClick={action.onClick}
+          style={{
+            border: "none",
+            background: "transparent",
+            cursor: "pointer",
+            color: ALPHA_WHITE_FF,
+            padding: `${SPACE_XS}px ${SPACE_M}px`,
+            ...typography.buttonSmall,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {action.label}
+        </button>
+      )}
     </div>
   );
 }

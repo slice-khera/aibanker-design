@@ -8,6 +8,7 @@ import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 import BudgetScreen from "@/app/components/BudgetScreen";
 import PotDetail from "@/app/components/PotDetail";
 import FeaturePDP from "@/app/components/FeaturePDP";
+import ErrorScreen from "@/app/components/ErrorScreen";
 
 import { BUDGET_SCENARIOS, GOAL_TRACKER_SCENARIOS } from "@/app/lib/debug-fixtures";
 
@@ -68,6 +69,13 @@ const SCREENS: ScreenDef[] = [
       { name: "on-track", render: () => <PotDetail name={goalOnTrackData.name} saved={goalOnTrackData.saved} target={goalOnTrackData.target} pct={goalOnTrackData.pct} status={goalOnTrackData.status} daysLabel={goalOnTrackData.daysLabel} icon={goalOnTrackData.heroEmoji} heroScene={goalOnTrackData.heroScene} onBack={noop} /> },
       { name: "ahead", render: () => <PotDetail name={goalAheadData.name} saved={goalAheadData.saved} target={goalAheadData.target} pct={goalAheadData.pct} status={goalAheadData.status} daysLabel={goalAheadData.daysLabel} icon={goalAheadData.heroEmoji} heroScene={goalAheadData.heroScene} onBack={noop} /> },
       { name: "behind", render: () => <PotDetail name={goalBehindData.name} saved={goalBehindData.saved} target={goalBehindData.target} pct={goalBehindData.pct} status={goalBehindData.status} daysLabel={goalBehindData.daysLabel} icon={goalBehindData.heroEmoji} heroScene={goalBehindData.heroScene} onBack={noop} /> },
+    ],
+  },
+  {
+    id: "error-state",
+    label: "Error state",
+    variants: [
+      { name: "default", render: () => <ErrorScreen appBar reloadButton onBack={noop} onReload={noop} /> },
     ],
   },
 ];

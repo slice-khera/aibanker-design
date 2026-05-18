@@ -5,7 +5,7 @@ import { typography } from "../lib/typography";
 import { TEXT_PRIMARY, TEXT_TERTIARY, ALPHA_WHITE_FF } from "../lib/colors";
 import { SPACE_M } from "../lib/spacing";
 import { DISCLAIMERS, type Voice } from "../preview/fixtures/wrappedFixture";
-import Snackbar from "./Snackbar";
+import SnackbarHost from "./SnackbarHost";
 
 type Vote = "up" | "down" | null;
 
@@ -111,11 +111,12 @@ export default function FeedbackBar({
           {DISCLAIMERS[voice]}
         </p>
       )}
-      <Snackbar
-        message={snack ?? ""}
-        visible={snack !== null}
-        onDismiss={() => setSnack(null)}
+      <SnackbarHost
+        open={snack !== null}
+        onClose={() => setSnack(null)}
+        text={snack ?? ""}
         icon={<SnackbarTickIcon />}
+        duration={3000}
       />
     </div>
   );
