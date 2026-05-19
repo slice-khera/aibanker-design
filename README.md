@@ -17,13 +17,27 @@ An AI-powered personal banking assistant built with Next.js, Anthropic Claude, a
 npm install
 ```
 
-2. **Run the dev server**
+2. **Link the shared Claude memory (one-time)**
 
 ```bash
-npm run dev
+./scripts/link-claude-memory.sh
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+This makes Claude on your machine read the team-shared design rules, DLS specs, and copy rules that live at `docs/claude-memory/`. The script is idempotent — safe to re-run.
+
+3. **Run the dev server**
+
+```bash
+./scripts/dev.sh
+```
+
+(Picks a free port and writes it to `.env.local`. Avoid `npm run dev` directly if you need multiple worktrees running side-by-side.)
+
+4. Open the URL printed by the dev script in your browser.
+
+## Claude memory
+
+This repo ships its Claude memory in `docs/claude-memory/`. After running the link script above, anything Claude saves to memory during a session lands there too, so memory updates flow through git like any other change. The index lives at `docs/claude-memory/MEMORY.md`.
 
 ## Tech Stack
 

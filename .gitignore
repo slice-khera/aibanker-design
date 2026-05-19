@@ -46,6 +46,7 @@ next-env.d.ts
 PLAN.md
 changes.md
 full-snapshot.md
+docs/plan-*.md
 
 # runtime session data
 /data/
