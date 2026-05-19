@@ -324,8 +324,6 @@ export function calculateFeasibility(
   for (let i = 0; i < Math.min(categories.length, 6); i++) {
     const cat = categories[i];
     const cap = Math.ceil((cat.monthlyAverage * scaleFactor) / 500) * 500;
-    const rangeMin = Math.ceil(cap * 0.75 / 500) * 500;
-    const rangeMax = Math.ceil(cap * 1.25 / 500) * 500;
     const cutAmount = cat.monthlyAverage - cap;
 
     if (cutAmount > biggestCutAmount) {
@@ -336,8 +334,7 @@ export function calculateFeasibility(
     categoryBudgets.push({
       name: cat.name,
       cap,
-      rangeMin,
-      rangeMax,
+      currentSpend: Math.round(cat.monthlyAverage),
       isBiggestCut: false,
     });
   }

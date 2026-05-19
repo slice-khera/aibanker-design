@@ -160,12 +160,12 @@ export const LADDER_OPTIONS: LadderOption[] = [
 // ── Category budgets (for spending plan) ───────────────────────────
 
 export const CATEGORY_BUDGETS: CategoryBudget[] = [
-  { name: "Food & dining", cap: 8000, rangeMin: 6000, rangeMax: 10000, isBiggestCut: false },
-  { name: "Transport", cap: 3000, rangeMin: 2000, rangeMax: 4000, isBiggestCut: true },
-  { name: "Shopping", cap: 4000, rangeMin: 3000, rangeMax: 6000, isBiggestCut: false },
-  { name: "Subscriptions", cap: 1200, rangeMin: 1000, rangeMax: 1500, isBiggestCut: false },
-  { name: "Groceries", cap: 3500, rangeMin: 2500, rangeMax: 4500, isBiggestCut: false },
-  { name: "Misc", cap: 2300, rangeMin: 1500, rangeMax: 3000, isBiggestCut: false },
+  { name: "Food & dining", cap: 8000, currentSpend: 9000, isBiggestCut: false },
+  { name: "Transport", cap: 3000, currentSpend: 5000, isBiggestCut: true },
+  { name: "Shopping", cap: 4000, currentSpend: 4500, isBiggestCut: false },
+  { name: "Subscriptions", cap: 1200, currentSpend: 1200, isBiggestCut: false },
+  { name: "Groceries", cap: 3500, currentSpend: 3000, isBiggestCut: false },
+  { name: "Misc", cap: 2300, currentSpend: 2100, isBiggestCut: false },
 ];
 
 // ── Shortfall actions ──────────────────────────────────────────────

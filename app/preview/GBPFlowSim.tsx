@@ -14,7 +14,8 @@ import { StatusBar, ChatAppBar } from "../components/AppChrome";
 import { useTypewriter } from "../components/Chat";
 import QuestionnaireOverlay from "../components/QuestionnaireOverlay";
 import ChatCard from "../components/ChatCards";
-import SpendingPlanCard from "../components/SpendingPlanCard";
+import BudgetSummaryViz from "../components/BudgetSummaryViz";
+import CategoryBudgetsViz from "../components/CategoryBudgetsViz";
 import { SAVINGS_TIER_QUESTION } from "./fixtures/savingsTierQuestion";
 import type { SimMessage } from "./fixtures/savingsFlowFixture";
 import type { LadderTier } from "../lib/types";
@@ -158,7 +159,8 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
   const [showLadder, setShowLadder] = useState(false);
   const [activeBucketIndex, setActiveBucketIndex] = useState(0);
   const [showBucket, setShowBucket] = useState(false);
-  const [showSpendingPlan, setShowSpendingPlan] = useState(false);
+  const [showBudgetSummary, setShowBudgetSummary] = useState(false);
+  const [showCategoryBudgets, setShowCategoryBudgets] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -200,7 +202,8 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
     setShowLadder(false);
     setActiveBucketIndex(0);
     setShowBucket(false);
-    setShowSpendingPlan(false);
+    setShowBudgetSummary(false);
+    setShowCategoryBudgets(false);
     didBootRef.current = false;
   }, [story]);
 
@@ -430,13 +433,18 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
         scrollToBottom();
       }, 2000);
     } else {
-      // All buckets done → spending plan
+      // All buckets done → spending plan (summary first, categories second)
       schedule(() => {
         addMessages(STORY1_SPENDING_PLAN);
         setPhase("spending-plan");
-        setShowSpendingPlan(true);
+        setShowBudgetSummary(true);
         scrollToBottom();
       }, 2000);
+
+      schedule(() => {
+        setShowCategoryBudgets(true);
+        scrollToBottom();
+      }, 2800);
 
       // Verdict lands as Ryan's next chat bubble, not a separate banner
       schedule(() => {
@@ -445,7 +453,7 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
         setActiveChips(LOCK_IN_CHIPS);
         setShowChips(true);
         scrollToBottom();
-      }, 3500);
+      }, 4000);
     }
   }, [activeBucketIndex, scrollToBottom, schedule]);
 
@@ -512,9 +520,12 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
             <ChatCard card={BUCKET_CONFIRM_LIST[activeBucketIndex]} />
           )}
 
-          {/* Spending plan card */}
-          {showSpendingPlan && (
-            <SpendingPlanCard plan={SPENDING_PLAN_FIXTURE} />
+          {/* Spending plan — math first, then categories */}
+          {showBudgetSummary && (
+            <BudgetSummaryViz plan={SPENDING_PLAN_FIXTURE} />
+          )}
+          {showCategoryBudgets && (
+            <CategoryBudgetsViz plan={SPENDING_PLAN_FIXTURE} />
           )}
 
           {/* Chips */}

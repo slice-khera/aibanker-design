@@ -3,6 +3,8 @@
 import { useState } from "react";
 import ChatCard from "@/app/components/ChatCards";
 import type { ChatCardData } from "@/app/components/ChatCards";
+import BudgetSummaryViz from "@/app/components/BudgetSummaryViz";
+import CategoryBudgetsViz from "@/app/components/CategoryBudgetsViz";
 import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 import {
@@ -11,12 +13,17 @@ import {
   DBG_HEATMAP, DBG_DONUT_V2, DBG_TXN_TABLE,
   DBG_BIG_EXPENSES,
 } from "@/app/lib/debug-fixtures";
+import { SPENDING_PLAN_FIXTURE } from "@/app/preview/fixtures/gbpFlowFixture";
 
 // ── Visualization items with state variants ───────────────────
+type VizFixture =
+  | { name: string; data: ChatCardData }
+  | { name: string; render: () => React.ReactNode };
+
 type VizItem = {
   type: string;
   label: string;
-  fixtures: { name: string; data: ChatCardData }[];
+  fixtures: VizFixture[];
 };
 
 const VIZ_ITEMS: VizItem[] = [
@@ -63,7 +70,27 @@ const VIZ_ITEMS: VizItem[] = [
     label: "Spend trend",
     fixtures: [{ name: "default", data: { ...DBG_SPEND_TREND } }],
   },
+  {
+    type: "budget-summary",
+    label: "Budget summary",
+    fixtures: [
+      { name: "default", render: () => <BudgetSummaryViz plan={SPENDING_PLAN_FIXTURE} /> },
+    ],
+  },
+  {
+    type: "category-budgets",
+    label: "Category budgets",
+    fixtures: [
+      { name: "default", render: () => <CategoryBudgetsViz plan={SPENDING_PLAN_FIXTURE} /> },
+    ],
+  },
 ];
+
+function renderFixture(fixture: VizFixture): React.ReactNode {
+  return "data" in fixture
+    ? <ChatCard card={fixture.data} />
+    : fixture.render();
+}
 
 function VizEntry({ item }: { item: VizItem }) {
   const [activeIdx, setActiveIdx] = useState(0);
@@ -77,7 +104,7 @@ function VizEntry({ item }: { item: VizItem }) {
       activeVariantIndex={activeIdx}
       onVariantChange={setActiveIdx}
     >
-      <ChatCard card={item.fixtures[activeIdx].data} />
+      {renderFixture(item.fixtures[activeIdx])}
     </PlaygroundCard>
   );
 }

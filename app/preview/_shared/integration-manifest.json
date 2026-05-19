@@ -7,8 +7,7 @@
       "goal-tracker":          { "kind": "import", "symbols": ["GoalTracker"],         "sourcePaths": ["app/components/GoalTracker.tsx"] },
       "persona-toggle":        { "kind": "import", "symbols": ["PersonaToggle"],       "sourcePaths": ["app/components/PersonaToggle.tsx"] },
       "app-chrome":            { "kind": "import", "symbols": ["StatusBar", "AppBar", "NavButton", "GestureNav"], "sourcePaths": ["app/components/AppChrome.tsx"] },
-      "savings-ladder":        { "kind": "import", "symbols": ["SavingsLadder"],       "sourcePaths": ["app/components/SavingsLadder.tsx"] },
-      "spending-plan-card":    { "kind": "import", "symbols": ["SpendingPlanCard"],    "sourcePaths": ["app/components/SpendingPlanCard.tsx"] }
+      "savings-ladder":        { "kind": "import", "symbols": ["SavingsLadder"],       "sourcePaths": ["app/components/SavingsLadder.tsx"] }
     },
     "visualizations": {
       "spend-overview":         { "kind": "cardType", "cardType": "spend-overview",         "sourcePaths": ["app/components/ChatCards.tsx"] },
@@ -18,7 +17,9 @@
       "spending-heatmap":       { "kind": "cardType", "cardType": "spending-heatmap",       "sourcePaths": ["app/components/ChatCards.tsx"] },
       "payment-mode-donut-v2":  { "kind": "cardType", "cardType": "payment-mode-donut-v2",  "sourcePaths": ["app/components/ChatCards.tsx"] },
       "transaction-table":      { "kind": "cardType", "cardType": "transaction-table",      "sourcePaths": ["app/components/ChatCards.tsx"] },
-      "spend-trend":            { "kind": "cardType", "cardType": "spend-trend",            "sourcePaths": ["app/components/ChatCards.tsx"] }
+      "spend-trend":            { "kind": "cardType", "cardType": "spend-trend",            "sourcePaths": ["app/components/ChatCards.tsx"] },
+      "budget-summary":         { "kind": "import", "symbols": ["BudgetSummaryViz"],       "sourcePaths": ["app/components/BudgetSummaryViz.tsx"] },
+      "category-budgets":       { "kind": "import", "symbols": ["CategoryBudgetsViz"],     "sourcePaths": ["app/components/CategoryBudgetsViz.tsx"] }
     },
     "widgets": {
       "investment-product":  { "kind": "cardType", "cardType": "investment-product",  "sourcePaths": ["app/components/ChatCards.tsx"] },

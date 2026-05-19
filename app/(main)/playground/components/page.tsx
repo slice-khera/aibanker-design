@@ -23,7 +23,6 @@ import { useControlPanel } from "@/app/preview/_shared/ControlPanel";
 import { useSlotControls } from "@/app/preview/_shared/PlaygroundCard";
 
 // GBP components
-import SpendingPlanCard from "@/app/components/SpendingPlanCard";
 import ChatCard, { type ChatCardData } from "@/app/components/ChatCards";
 
 // Fixture data
@@ -32,7 +31,6 @@ import { TEXT_PRIMARY, VALENTINO_50, VALENTINO_500 } from "@/app/lib/colors";
 import { RADIUS_M } from "@/app/lib/radii";
 import { typography } from "@/app/lib/typography";
 import {
-  SPENDING_PLAN_FIXTURE,
   BUCKET_CONFIRM_INCOME,
   BUCKET_CONFIRM_OBLIGATIONS,
   BUCKET_CONFIRM_P2P,
@@ -313,14 +311,6 @@ function AppChromeChatDegen() {
 
 // ── GBP component wrappers ──────────────────────────────────
 
-function SpendingPlanWrapper() {
-  return (
-    <div style={{ padding: 16 }}>
-      <SpendingPlanCard plan={SPENDING_PLAN_FIXTURE} />
-    </div>
-  );
-}
-
 function FootprintCard({ data }: { data: ChatCardData }) {
   const [submitted, setSubmitted] = useState(false);
   const cardData =
@@ -582,14 +572,6 @@ const COMPONENTS: ComponentDef[] = [
     deviceFrame: true,
     variants: [
       { name: "in scrollable chat", render: () => <JumpToRecentWrapper /> },
-    ],
-  },
-  {
-    id: "spending-plan-card",
-    label: "Spending plan card",
-    description: "Income/obligations/savings math + category budgets with ranges",
-    variants: [
-      { name: "v1", render: () => <SpendingPlanWrapper /> },
     ],
   },
   {

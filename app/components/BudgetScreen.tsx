@@ -409,7 +409,7 @@ function AnchorCarousel({ goal, pool }: { goal: GoalIndicatorData | null; pool: 
 
 // Single 8px bar, no variable-width segments. Fills 0-100% with the category color
 // when under cap; flips to a full-width red fill when over.
-function BudgetBar({
+export function BudgetBar({
   spent,
   cap,
   fillColor,

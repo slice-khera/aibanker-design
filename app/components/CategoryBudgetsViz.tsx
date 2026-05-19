@@ -1,0 +1,93 @@
+"use client";
+
+import { typography } from "../lib/typography";
+import {
+  TEXT_PRIMARY, TEXT_TERTIARY,
+  BG_PRIMARY,
+  SLATE_30,
+  RED_400,
+  GREEN_500,
+} from "../lib/colors";
+import { RADIUS_CIRCLE } from "../lib/radii";
+import type { SpendingPlan, CategoryBudget } from "../lib/types";
+import { CATEGORY_ICONS } from "./ChatCards";
+
+function formatINR(amount: number): string {
+  return `₹${amount.toLocaleString("en-IN")}`;
+}
+
+function CategoryRow({ budget }: { budget: CategoryBudget }) {
+  const icon = CATEGORY_ICONS[budget.name] ?? CATEGORY_ICONS["Miscellaneous"];
+
+  const isOver = budget.currentSpend > budget.cap;
+  const isUnder = budget.currentSpend < budget.cap;
+  const delta = Math.abs(budget.currentSpend - budget.cap);
+
+  const deltaLine = isOver
+    ? { text: formatINR(delta), color: RED_400 }
+    : isUnder
+    ? { text: formatINR(delta), color: GREEN_500 }
+    : { text: "No change", color: TEXT_TERTIARY };
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        paddingTop: 14,
+        paddingBottom: 14,
+      }}
+    >
+      <div
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: RADIUS_CIRCLE,
+          backgroundColor: BG_PRIMARY,
+          border: `1px solid ${SLATE_30}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          overflow: "hidden",
+        }}
+      >
+        {icon}
+      </div>
+
+      <div style={{ flex: "1 1 0", minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+        <p style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, margin: 0 }}>
+          {budget.name}
+        </p>
+        <p style={{ ...typography.caption, color: TEXT_TERTIARY, margin: 0 }}>
+          {formatINR(budget.currentSpend)} → {formatINR(budget.cap)}
+        </p>
+      </div>
+
+      <p style={{ ...typography.bodyNormal, color: deltaLine.color, textAlign: "right", whiteSpace: "nowrap", margin: 0, flexShrink: 0 }}>
+        {deltaLine.text}
+      </p>
+    </div>
+  );
+}
+
+export type CategoryBudgetsVizProps = {
+  plan: Pick<SpendingPlan, "categoryBudgets">;
+};
+
+export default function CategoryBudgetsViz({ plan }: CategoryBudgetsVizProps) {
+  return (
+    <div style={{ padding: "4px 0 8px" }}>
+      <div style={{ marginBottom: 4 }}>
+        <span style={{ ...typography.metadata, textTransform: "uppercase", color: TEXT_TERTIARY }}>
+          Category budgets
+        </span>
+      </div>
+
+      {plan.categoryBudgets.map((b) => (
+        <CategoryRow key={b.name} budget={b} />
+      ))}
+    </div>
+  );
+}

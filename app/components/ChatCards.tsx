@@ -410,6 +410,7 @@ export const CATEGORY_ICONS: Record<string, ReactNode> = {
   "Food Delivery (Swiggy)":    <CatImg src={`${CAT_ICON_PATH}/food-drinks.svg`} />,
   "Dining Out (Swiggy Dineout)": <CatImg src={`${CAT_ICON_PATH}/food-drinks.svg`} />,
   "Food & Dining":             <CatImg src={`${CAT_ICON_PATH}/food-drinks.svg`} />,
+  "Food & dining":             <CatImg src={`${CAT_ICON_PATH}/food-drinks.svg`} />,
   "Food":                      <CatImg src={`${CAT_ICON_PATH}/food-drinks.svg`} />,
   "Transport":                 <CatImg src={`${CAT_ICON_PATH}/transport.svg`} />,
   "Groceries":                 <CatImg src={`${CAT_ICON_PATH}/groceries.svg`} />,
@@ -427,6 +428,7 @@ export const CATEGORY_ICONS: Record<string, ReactNode> = {
   "Utilities":                 <CatImg src={`${CAT_ICON_PATH}/bills.svg`} />,
   "Services":                  <CatImg src={`${CAT_ICON_PATH}/services.svg`} />,
   "Subscription":              <CatImg src={`${CAT_ICON_PATH}/subscription.svg`} />,
+  "Subscriptions":             <CatImg src={`${CAT_ICON_PATH}/subscription.svg`} />,
   "Repayment":                 <CatImg src={`${CAT_ICON_PATH}/repayment.svg`} />,
   "Self Transfer":             <CatImg src={`${CAT_ICON_PATH}/self-transfer.svg`} />,
   "Gaming":                    <CatImg src={`${CAT_ICON_PATH}/gaming.svg`} />,
@@ -435,6 +437,7 @@ export const CATEGORY_ICONS: Record<string, ReactNode> = {
   "Investment":                <CatImg src={`${CAT_ICON_PATH}/investment.svg`} />,
   "Other / Uncategorized":     <CatImg src={`${CAT_ICON_PATH}/miscellaneous.svg`} />,
   "Miscellaneous":             <CatImg src={`${CAT_ICON_PATH}/miscellaneous.svg`} />,
+  "Misc":                      <CatImg src={`${CAT_ICON_PATH}/miscellaneous.svg`} />,
 };
 
 // Bar-chart fill colors - mapped to closest DLS 2.0 primitives
@@ -443,6 +446,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
   "Food Delivery (Swiggy)":    ORANGE_500,
   "Dining Out (Swiggy Dineout)": RED_500,
   "Food & Dining":             ORANGE_500,
+  "Food & dining":             ORANGE_500,
   "Food":                      ORANGE_500,
   "Transport":                 VALENTINO_400,
   "Groceries":                 GREEN_500,
@@ -460,6 +464,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
   "Utilities":                 ORANGE_400,
   "Services":                  RED_400,
   "Subscription":              BLUE_400,
+  "Subscriptions":             BLUE_400,
   "Repayment":                 GREEN_500,
   "Self Transfer":             GREEN_400,
   "Gaming":                    SLATE_500,
@@ -468,6 +473,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
   "Investment":                RED_400,
   "Other / Uncategorized":     SLATE_300,
   "Miscellaneous":             SLATE_300,
+  "Misc":                      SLATE_300,
 };
 
 // Map fill color → /50 track shade from the same DLS palette

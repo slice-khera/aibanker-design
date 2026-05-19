@@ -69,6 +69,10 @@
 ## Taxonomy
 - [reference_viz_widget_taxonomy.md](reference_viz_widget_taxonomy.md) - Visualizations (10 data displays, flat on surface) vs Widgets (4 actionable, enclosed)
 
+## Visualizations (per-viz specs)
+- [reference_viz_budget_summary.md](reference_viz_budget_summary.md) - Income/obligations/savings/daily-pool math, four rows in a card
+- [reference_viz_category_budgets.md](reference_viz_category_budgets.md) - Per-category caps positioned in a range, biggest-cut highlight
+
 ## Chrome & Tooling
 - [feedback_shadcn_chrome.md](feedback_shadcn_chrome.md) - All chrome UI uses ShadCN defaults, no brand colors, no raw hex, no inline styles
 - [feedback_dev_port.md](feedback_dev_port.md) - Always use port from `.env.local` (set by `./scripts/dev.sh`), never hardcode 3000

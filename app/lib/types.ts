@@ -372,12 +372,11 @@ export type FootprintBucket = {
   items: FootprintItem[];
 };
 
-/** Category budget with cap and range */
+/** Category budget — new cap vs. user's current monthly spend */
 export type CategoryBudget = {
   name: string;
   cap: number;
-  rangeMin: number;
-  rangeMax: number;
+  currentSpend: number;
   isBiggestCut: boolean;
 };
 
