@@ -28,7 +28,7 @@ export type ChatCardData =
   | { type: "spending-heatmap"; month: string; year: number; startDay: number; dailySpend: (number | null)[]; maxSpend: number }
   | { type: "payment-mode-donut-v2"; month: string; totalSpend: number; modes: { name: string; amount: number; pct: number; color: string }[] }
   | { type: "transaction-table"; title: string; transactions: { date: string; merchant: string; amount: number; category: string }[] }
-  | { type: "confirm-list"; label?: string; items: { id: string; payee: string; amount: number; type: string }[]; monthlyIncome?: number; onSubmit?: (selected: { id: string; amount: number; type: string }[]) => void; submitted?: boolean; onArrowTap?: () => void }
+  | { type: "confirm-list"; label?: string; items: { id: string; payee: string; amount: number; type: string; subtext?: string }[]; monthlyIncome?: number; onSubmit?: (selected: { id: string; amount: number; type: string }[]) => void; submitted?: boolean; onArrowTap?: () => void }
   | { type: "spend-trend"; month: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number }
   | { type: "add-to-pot"; goalName: string; amount: number; fromAccount: string; activated?: boolean; onAdd?: () => void };
 
@@ -611,7 +611,7 @@ function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4 }}>
-              PAYING FROM
+              Paying from
             </p>
             <p style={{ ...typography.buttonSmall, color: TEXT_SECONDARY }}>
               {accountLabel}
@@ -673,7 +673,7 @@ function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-po
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4 }}>
-              ADDING FROM
+              Adding from
             </p>
             <p style={{ ...typography.buttonSmall, color: TEXT_SECONDARY }}>
               {fromAccount}
@@ -1610,7 +1610,7 @@ function ConfirmListCard({ data }: { data: Extract<ChatCardData, { type: "confir
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
               <p style={{ ...typography.caption, color: TEXT_SECONDARY, margin: 0 }}>
-                {getType(item)}
+                {item.subtext ? `${getType(item)} · ${item.subtext}` : getType(item)}
               </p>
             </div>
           </div>
@@ -1685,10 +1685,10 @@ function ConfirmListCard({ data }: { data: Extract<ChatCardData, { type: "confir
                     {formatINRFull(currentAmount)}
                   </span>
                 </div>
-                {/* Row 2: Category + Edit */}
+                {/* Row 2: Category (+ optional subtext) + Edit */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
                   <p style={{ ...typography.caption, color: TEXT_SECONDARY, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
-                    {currentType}
+                    {item.subtext ? `${currentType} · ${item.subtext}` : currentType}
                   </p>
                   <span
                     style={{

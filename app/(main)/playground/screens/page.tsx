@@ -85,6 +85,7 @@ function ScreenEntry({ screen }: { screen: ScreenDef }) {
 
   return (
     <PlaygroundCard
+      id={screen.id}
       name={screen.label}
       status={resolveStatus(screen.id)}
       variants={screen.variants.map((v) => v.name)}

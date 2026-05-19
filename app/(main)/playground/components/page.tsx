@@ -20,6 +20,7 @@ import { useSlotControls } from "@/app/preview/_shared/PlaygroundCard";
 // GBP components
 import SavingsLadder from "@/app/components/SavingsLadder";
 import SpendingPlanCard from "@/app/components/SpendingPlanCard";
+import ChatCard, { type ChatCardData } from "@/app/components/ChatCards";
 
 // Fixture data
 import { DBG_GOAL_QUESTIONS, GOAL_TRACKER_SCENARIOS } from "@/app/lib/debug-fixtures";
@@ -30,6 +31,10 @@ import { typography } from "@/app/lib/typography";
 import {
   LADDER_OPTIONS,
   SPENDING_PLAN_FIXTURE,
+  BUCKET_CONFIRM_INCOME,
+  BUCKET_CONFIRM_OBLIGATIONS,
+  BUCKET_CONFIRM_P2P,
+  BUCKET_CONFIRM_OTHERS,
 } from "@/app/preview/fixtures/gbpFlowFixture";
 import type { LadderTier } from "@/app/lib/types";
 
@@ -227,6 +232,19 @@ function SpendingPlanWrapper() {
   );
 }
 
+function FootprintCard({ data }: { data: ChatCardData }) {
+  const [submitted, setSubmitted] = useState(false);
+  const cardData =
+    data.type === "confirm-list"
+      ? { ...data, submitted, onSubmit: () => setSubmitted(true) }
+      : data;
+  return (
+    <div style={{ padding: 16 }}>
+      <ChatCard card={cardData} />
+    </div>
+  );
+}
+
 // ── Component definitions ────────────────────────────────────
 
 type ComponentDef = {
@@ -354,6 +372,17 @@ const COMPONENTS: ComponentDef[] = [
       { name: "v1", render: () => <SpendingPlanWrapper /> },
     ],
   },
+  {
+    id: "footprint-card",
+    label: "Footprint card",
+    description: "Chat-embedded list where Ryan confirms each chunk of the user's cashflow footprint",
+    variants: [
+      { name: "Income",      render: () => <FootprintCard key="income"      data={BUCKET_CONFIRM_INCOME} /> },
+      { name: "Obligations", render: () => <FootprintCard key="obligations" data={BUCKET_CONFIRM_OBLIGATIONS} /> },
+      { name: "P2P",         render: () => <FootprintCard key="p2p"         data={BUCKET_CONFIRM_P2P} /> },
+      { name: "Others",      render: () => <FootprintCard key="others"      data={BUCKET_CONFIRM_OTHERS} /> },
+    ],
+  },
 ];
 
 // Snackbar playground. Reads state from a control panel; replays the slide-up
@@ -436,6 +465,7 @@ function ComponentEntry({ comp }: { comp: ComponentDef }) {
 
   return (
     <PlaygroundCard
+      id={comp.id}
       name={comp.label}
       description={comp.description}
       status={resolveStatus(comp.id)}

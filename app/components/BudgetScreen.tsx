@@ -571,8 +571,8 @@ function MonthHeader({ label }: { label: string }) {
     <p
       style={{
         ...typography.metadata,
-        color: TEXT_TERTIARY,
         textTransform: "uppercase",
+        color: TEXT_TERTIARY,
         margin: 0,
         paddingLeft: 24,
         paddingRight: 24,

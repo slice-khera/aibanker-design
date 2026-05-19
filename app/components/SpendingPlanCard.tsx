@@ -101,10 +101,10 @@ function CategoryBudgetRow({ budget, isLast }: { budget: CategoryBudget; isLast:
 
       {/* Range labels */}
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-        <span style={{ ...typography.metadata, color: TEXT_TERTIARY }}>
+        <span style={{ ...typography.metadata, textTransform: "uppercase", color: TEXT_TERTIARY }}>
           {formatINR(budget.rangeMin)}
         </span>
-        <span style={{ ...typography.metadata, color: TEXT_TERTIARY }}>
+        <span style={{ ...typography.metadata, textTransform: "uppercase", color: TEXT_TERTIARY }}>
           {formatINR(budget.rangeMax)}
         </span>
       </div>

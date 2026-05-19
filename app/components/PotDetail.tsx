@@ -157,8 +157,8 @@ function SectionHeader({ label }: { label: string }) {
       <p
         style={{
           ...typography.metadata,
-          color: TEXT_TERTIARY,
           textTransform: "uppercase",
+          color: TEXT_TERTIARY,
           margin: 0,
           position: "relative",
         }}
@@ -235,7 +235,7 @@ function Tag({ label, color, bg }: { label: string; color: string; bg: string })
         paddingBottom: 4,
       }}
     >
-      <p style={{ ...typography.metadata, color, textTransform: "uppercase", margin: 0 }}>{label}</p>
+      <p style={{ ...typography.metadata, textTransform: "uppercase", color, margin: 0 }}>{label}</p>
     </div>
   );
 }
@@ -366,8 +366,8 @@ export default function PotDetail({
           <p
             style={{
               ...typography.metadata,
-              color: TEXT_PRIMARY,
               textTransform: "uppercase",
+              color: TEXT_PRIMARY,
               margin: 0,
             }}
           >

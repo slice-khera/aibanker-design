@@ -41,6 +41,7 @@ const STATUS_BADGE_VARIANT: Record<ItemStatus, "outline" | "secondary" | "defaul
 };
 
 type Props = {
+  id?: string;
   name: string;
   description?: string;
   status: ItemStatus;
@@ -56,6 +57,7 @@ type Props = {
 };
 
 export default function PlaygroundCard({
+  id,
   name,
   description,
   status,
@@ -74,8 +76,26 @@ export default function PlaygroundCard({
   const setSlotControls = useCallback((c: ReactNode) => setSlotControlsState(c), []);
   const effectiveControls = slotControls ?? controls;
 
+  // The page renders inside a custom scrollable container (flex-1 overflow-y-auto),
+  // so the browser's default hash-jump doesn't reach in. Listen for hash matches
+  // and use scrollIntoView, which traverses nested scrollable ancestors.
+  useEffect(() => {
+    if (!id) return;
+    const scrollIfMatched = () => {
+      if (typeof window === "undefined") return;
+      if (window.location.hash === `#${id}`) {
+        requestAnimationFrame(() => {
+          document.getElementById(id)?.scrollIntoView({ block: "start", behavior: "smooth" });
+        });
+      }
+    };
+    scrollIfMatched();
+    window.addEventListener("hashchange", scrollIfMatched);
+    return () => window.removeEventListener("hashchange", scrollIfMatched);
+  }, [id]);
+
   return (
-    <Card className="rounded-none shadow-none">
+    <Card id={id} className="rounded-none shadow-none scroll-mt-4">
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
