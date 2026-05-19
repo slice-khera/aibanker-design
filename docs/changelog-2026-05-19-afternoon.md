@@ -1,12 +1,12 @@
 # What changed since the morning push: 2026-05-19 afternoon
 
-Everything that landed on `main` *after* the 10:38 AM push (`f11d42d Add 48-hour changelog`) up to the current local tip (`7dfcd77 Split spending plan card into two flat visualizations`). Nine commits, made between 12:58 PM and 2:45 PM IST.
+Everything that landed on `main` *after* the 10:38 AM push (`f11d42d Add 48-hour changelog`). Ten commits in total, made between 12:58 PM and 2:45 PM IST.
 
-This document exists because those nine commits were pushed to GitHub in one unintended batch at 2:13 PM, and we want a single written record of what was in that batch rather than relying on the commit list. Skim the headings for the gist; drop into the bullets for detail.
+This document exists because the afternoon work was first pushed to GitHub in one unintended batch at 2:13 PM, then rolled back, then re-pushed cleanly along with this doc. The doc itself sits in the history *before* the work it describes (a quirk of the rollback), but everything listed here is on `main` right now.
 
 ## TL;DR
 
-The afternoon was almost entirely about the **spending-plan flow** and the **playground**. The standalone `SpendingPlanCard` and `SavingsLadder` were both retired; their jobs are now done by the overlay system and by two new flat visualizations on the chat surface. The widgets / screens / components playground gained the missing pay screen, fixed several "looks broken" interactions, and stopped reusing stale state across variants. The Ryan chip's pulsing-alert animation, which had been spec'd but never actually rendered on `PayScreen`, finally fires. Plus a date-format standardization pass across the entire app, a `BudgetScreen` viz tightening, and removal of the AI disclaimer from the feedback bar.
+The afternoon was almost entirely about the **spending-plan flow** and the **playground**. The standalone `SpendingPlanCard` and `SavingsLadder` were both retired; their jobs are now done by the overlay system and by two new flat visualizations on the chat surface. The widgets / screens / components playground gained the missing pay screen, fixed several "looks broken" interactions, and stopped reusing stale state across variants. The Ryan chip's pulsing-alert animation, which had been spec'd but never actually rendered on `PayScreen`, finally fires. Plus a date-format standardization pass across the entire app, a `BudgetScreen` viz tightening, removal of the AI disclaimer from the feedback bar, and a Refresh-Session simplification (one variant only, "Roast me" replaces "Save taxes" / "Surprise me", mosaic restructured to a 2×2 grid).
 
 ---
 
@@ -92,9 +92,22 @@ The AI disclaimer caption is gone from `FeedbackBar` and from every sim that had
 
 ---
 
+## 7. Refresh-Session simplification + "Roast me" (`83d892c`)
+
+The Refresh Session flow had two parallel variants (V1 and V2) that the team had to keep in sync. V1 is retired; V2 is now the only Refresh-Session variant. The V2 popover also got a copy + interaction refresh:
+
+- **`RefreshSessionSimV1.tsx` deleted.** V2 is the single source of truth.
+- **V2 chrome**: swap the plus icon for `placeholder.svg` inlined with `TEXT_PRIMARY` fill; switch to the `degen` `ChatAppBar` so the Ryan / Byron persona toggle sits in the header.
+- **"Roast me" replaces "Save taxes" + "Surprise me"** as the single quick-action in the V2 popover, in `Chat.tsx`'s on-track mosaic, and in the `DegenModeSimV1` mosaic.
+- **Mosaic restructure**: the on-track mosaic moves from the older "tall card + two stacked halves" layout to a clean 2×2 grid.
+
+Integration manifest and the relevant docs are updated to reflect the single-variant flow.
+
+---
+
 ## File-level inventory
 
-40 files changed, +679 / -673 lines.
+Across all ten commits: roughly 45 files touched, balancing additions and deletions (the bulk of deletions come from removing `SpendingPlanCard`, `SavingsLadder`, and `RefreshSessionSimV1`).
 
 **New components**
 - `app/components/BudgetSummaryViz.tsx`
@@ -126,9 +139,11 @@ The AI disclaimer caption is gone from `FeedbackBar` and from every sim that had
 
 ---
 
-## Commit list (oldest → newest)
+## Commit list (oldest → newest, by author time)
 
-| Hash | Time | Message |
+Note: hashes below are the *original* commit hashes from when the work was authored. Because the work was rolled back and re-applied, the hashes you see on `main` today are different (cherry-picks). The content is identical.
+
+| Original hash | Time | Message |
 |------|------|---------|
 | `622772c` | 12:58 | Retire SavingsLadder, use QuestionnaireOverlay for tier picker |
 | `f2b97e7` | 13:21 | Add pay screen to playground + wire Ryan chip alert pulse |
@@ -138,4 +153,5 @@ The AI disclaimer caption is gone from `FeedbackBar` and from every sim that had
 | `0b47ec8` | 13:27 | Remount playground children when variant changes |
 | `084b858` | 13:48 | Wire callbacks into widgets playground so cards are actually interactive |
 | `dc59bca` | 14:11 | Surface missing playground items + fix onboarding jump-to-recent pill |
+| `83d892c` | 14:20 | Drop refresh-button sim variant and shorten Ryan capability list |
 | `7dfcd77` | 14:45 | Split spending plan card into two flat visualizations |
