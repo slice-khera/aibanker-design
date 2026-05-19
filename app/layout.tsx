@@ -15,7 +15,7 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-  title: "Slice Banker Prototype",
+  title: "slice banker prototype",
   description: "Chat-first personal banker prototype",
 };
 

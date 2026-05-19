@@ -290,7 +290,7 @@ export default function SavingsFlowSimBottom() {
     setPhase("working");
     setMessages((prev) => [
       ...prev,
-      { id: "nudge", role: "assistant", text: "No worries - whenever you're ready, just say \"savings goal\" and we'll pick up where we left off." },
+      { id: "nudge", role: "assistant", text: "No worries. Whenever you're ready, just say \"savings goal\" and we'll pick up where we left off." },
     ]);
     scrollToBottom();
   }, [scrollToBottom]);
@@ -332,7 +332,7 @@ export default function SavingsFlowSimBottom() {
       setShowThinking(false);
       setMessages((prev) => [
         ...prev,
-        { id: "pq-summary", role: "assistant", text: "Got it - let me check your finances and put together a plan." },
+        { id: "pq-summary", role: "assistant", text: "Got it. Let me check your finances and put together a plan." },
       ]);
       scrollToBottom();
     }, 1400);
@@ -394,7 +394,7 @@ export default function SavingsFlowSimBottom() {
         setInputBarVisible(false);
         setMessages((prev) => [
           ...prev,
-          { id: "pq-final", role: "assistant", text: "Thanks - this might take a moment while I crunch the numbers. I\u2019ll notify you when your plan is ready, so no need to wait here." },
+          { id: "pq-final", role: "assistant", text: "Thanks. This might take a moment while I crunch the numbers. I\u2019ll notify you when your plan is ready, so no need to wait here." },
         ]);
         scrollToBottom();
       }, 1000);

@@ -16,7 +16,7 @@ import { highlightValues } from "../lib/chat-highlight";
 // ── Hardcoded content ───────────────────────────────────────────
 
 const ASSISTANT_TEXT =
-  "Rajan, your Japan trip is veering off course \u2014 you\u2019ve overspent by \u20B915,000 against what we budgeted. Let\u2019s do some damage control while we still can.";
+  "Rajan, your Japan trip is veering off course. You\u2019ve overspent by \u20B915,000 against what we budgeted. Let\u2019s do some damage control while we still can.";
 
 const CHIP_OPTIONS = [
   "Add \u20B95,000 to pot",
@@ -26,11 +26,11 @@ const CHIP_OPTIONS = [
 
 const MOCK_RESPONSES: Record<string, string> = {
   "Add \u20B95,000 to pot":
-    "Done \u2014 \u20B95,000 moved to your Japan trip pot. You\u2019re now \u20B910,000 behind instead of \u20B915,000. I\u2019ve also tightened your dining budget by \u20B92,000 this month to help close the gap faster.",
+    "Done. \u20B95,000 moved to your Japan trip pot. You\u2019re now \u20B910,000 behind instead of \u20B915,000. I\u2019ve also tightened your dining budget by \u20B92,000 this month to help close the gap faster.",
   "I\u2019ll handle it myself":
-    "Got it, I\u2019ll leave it with you. Just a heads up \u2014 if the gap grows past \u20B920,000, your December target starts looking tight. I\u2019ll check in again next week.",
+    "Got it, I\u2019ll leave it with you. Just a heads up: if the gap grows past \u20B920,000, your December target starts looking tight. I\u2019ll check in again next week.",
   "Show me where I overspent":
-    "Here\u2019s the breakdown \u2014 dining out was \u20B98,200 (double your usual), shopping hit \u20B94,300, and subscriptions crept up by \u20B92,500. Dining is the big one to rein in.",
+    "Here\u2019s the breakdown. Dining out was \u20B98,200 (double your usual), shopping hit \u20B94,300, and subscriptions crept up by \u20B92,500. Dining is the big one to rein in.",
   "Roast me": getPlaygroundByronRoast(0),
 };
 
@@ -354,7 +354,7 @@ export default function RefreshSessionSimV2() {
             >
               <div className="flex items-center w-full h-full" style={{ backgroundColor: BG_PRIMARY, borderRadius: RADIUS_CIRCLE, paddingLeft: 16, paddingRight: 8, paddingTop: 8, paddingBottom: 8 }}>
                 <span className="flex-1" style={{ ...typography.bodySmall, color: ALPHA_BLACK_30 }}>
-                  Reply to Ryan...
+                  {`Reply to ${persona === "byron" ? "Byron" : "Ryan"}...`}
                 </span>
               </div>
             </div>

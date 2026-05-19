@@ -323,7 +323,7 @@ export default function RedditSimV1({ autoplay = false }: { autoplay?: boolean }
     setPhase("working");
     setMessages((prev) => [
       ...prev,
-      { id: "nudge", role: "assistant", text: "No worries \u2014 whenever you are ready, just tell me and we will pick up where we left off." },
+      { id: "nudge", role: "assistant", text: "No worries. Whenever you\u2019re ready, just tell me and we\u2019ll pick up where we left off." },
     ]);
     scrollToBottom();
   }, [scrollToBottom]);

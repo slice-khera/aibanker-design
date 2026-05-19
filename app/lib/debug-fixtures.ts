@@ -37,11 +37,11 @@ export const DBG_CATEGORY_BAR: ChatCardData = {
   subtext: "across 12 categories",
   showAll: true,
   categories: [
-    { name: "Food & Delivery", amount: 22400, pct: 29, color: CATEGORY_COLORS["Food & Drinks"], icon: CATEGORY_ICONS["Food & Drinks"] },
+    { name: "Food & delivery", amount: 22400, pct: 29, color: CATEGORY_COLORS["Food & delivery"], icon: CATEGORY_ICONS["Food & delivery"] },
     { name: "Shopping", amount: 18600, pct: 24, color: CATEGORY_COLORS["Shopping"], icon: CATEGORY_ICONS["Shopping"] },
     { name: "Transport", amount: 11200, pct: 14, color: CATEGORY_COLORS["Transport"], icon: CATEGORY_ICONS["Transport"] },
     { name: "Subscriptions", amount: 8400, pct: 11, color: CATEGORY_COLORS["Subscription"], icon: CATEGORY_ICONS["Subscription"] },
-    { name: "Other", amount: 17800, pct: 23, color: CATEGORY_COLORS["Other / Uncategorized"], icon: CATEGORY_ICONS["Other / Uncategorized"] },
+    { name: "Other", amount: 17800, pct: 23, color: CATEGORY_COLORS["Other / uncategorized"], icon: CATEGORY_ICONS["Other / uncategorized"] },
   ],
 };
 
@@ -232,8 +232,8 @@ export const DBG_DONUT_V2: ChatCardData = {
   totalSpend: 78400,
   modes: [
     { name: "UPI", amount: 41200, pct: 53, color: VALENTINO_500 },
-    { name: "Credit Card", amount: 22100, pct: 28, color: "#2b6acf" },
-    { name: "Debit Card", amount: 9400, pct: 12, color: "#ff9a17" },
+    { name: "Credit card", amount: 22100, pct: 28, color: "#2b6acf" },
+    { name: "Debit card", amount: 9400, pct: 12, color: "#ff9a17" },
     { name: "NEFT/IMPS", amount: 3800, pct: 5, color: "#00a63e" },
     { name: "Cash", amount: 1900, pct: 2, color: "#8e949d" },
   ],
@@ -312,7 +312,7 @@ const MAY_2026_BEHIND: MonthlyBudgetSnapshot = {
   totalSpent: 22600,
   totalCap: 26000,
   categories: [
-    { name: "Food & Drinks", spent: 9200, cap: 8000 },
+    { name: "Food & drinks", spent: 9200, cap: 8000 },
     { name: "Shopping",      spent: 4800, cap: 6000 },
     { name: "Transport",     spent: 2400, cap: 3000 },
     { name: "Groceries",     spent: 3600, cap: 5000 },
@@ -329,7 +329,7 @@ const MAY_2026_AHEAD: MonthlyBudgetSnapshot = {
   totalSpent: 11400,
   totalCap: 26000,
   categories: [
-    { name: "Food & Drinks", spent: 3800, cap: 8000 },
+    { name: "Food & drinks", spent: 3800, cap: 8000 },
     { name: "Shopping",      spent: 2200, cap: 6000 },
     { name: "Transport",     spent: 1400, cap: 3000 },
     { name: "Groceries",     spent: 2100, cap: 5000 },
@@ -346,7 +346,7 @@ const APR_2026_OVER: MonthlyBudgetSnapshot = {
   totalSpent: 28700,
   totalCap: 26000,
   categories: [
-    { name: "Food & Drinks", spent: 10800, cap: 8000 },
+    { name: "Food & drinks", spent: 10800, cap: 8000 },
     { name: "Shopping",      spent: 7400,  cap: 6000 },
     { name: "Transport",     spent: 2200,  cap: 3000 },
     { name: "Groceries",     spent: 4600,  cap: 5000 },

@@ -48,7 +48,7 @@ export const AA_CONSENT_DETAILS = [
     rows: [
       { label: "Purpose", value: "To analyse your spending patterns" },
       { label: "Consent type", value: "Profile, summary, transactions" },
-      { label: "Time period", value: "13 Jan '25 - 14 Mar '25", hasInfo: true, tooltipKey: "Statement period" },
+      { label: "Time period", value: "13 Jan '25 to 14 Mar '25", hasInfo: true, tooltipKey: "Statement period" },
       { label: "Frequency", value: "Once" },
       { label: "Consent validity", value: "1 month" },
       { label: "Data life", value: "1 month", hasInfo: true },
@@ -59,7 +59,7 @@ export const AA_CONSENT_DETAILS = [
     rows: [
       { label: "Purpose", value: "To keep your financial insights current" },
       { label: "Consent type", value: "Profile, summary, transactions" },
-      { label: "Time period", value: "13 Jan '25 - 14 Mar '25", hasInfo: true, tooltipKey: "Statement period" },
+      { label: "Time period", value: "13 Jan '25 to 14 Mar '25", hasInfo: true, tooltipKey: "Statement period" },
       { label: "Frequency", value: "Periodic (max 5x per month)" },
       { label: "Consent validity", value: "12 months" },
       { label: "Data life", value: "1 month", hasInfo: true },
@@ -71,9 +71,9 @@ export const AA_CONSENT_DETAILS = [
 
 export const AA_LEARN_MORE = {
   title: "Understanding account aggregator",
-  subtitle: "Account aggregator is a RBI regulated consent based financial data sharing system.",
+  subtitle: "Account aggregator is an RBI-regulated, consent-based financial data sharing system.",
   benefits: [
-    { title: "Safe", subtitle: "Your information is encrypted end to end and only used for your financial insights" },
+    { title: "Safe", subtitle: "Your information is encrypted end-to-end and only used for your financial insights." },
     { title: "Trust", subtitle: "The AA framework is jointly created by RBI, SEBI, IRDAI & PFRDA" },
     { title: "Privacy", subtitle: "You are in charge of your data and can choose to share it" },
     { title: "Ease of access", subtitle: "AA allows you to manage all banking data in one place" },
@@ -99,7 +99,7 @@ export const AA_LEARN_MORE = {
 export const BANKS = [
   { id: "hdfc", label: "HDFC Bank", logo: "/icons/banks/hdfc.png" },
   { id: "axis", label: "Axis Bank", logo: "/icons/banks/axis.png" },
-  { id: "ippb", label: "India Post Payments Ba...", logo: "/icons/banks/ippb.png" },
+  { id: "ippb", label: "India Post Payments Bank", logo: "/icons/banks/ippb.png" },
   { id: "kotak", label: "Kotak Mahindra Bank", logo: "/icons/banks/kotak.png" },
   { id: "kvb", label: "Karur Vyasa Bank", logo: "/icons/banks/kvb.png" },
   { id: "other", label: "Other bank", logo: "/icons/banks/other.svg" },
@@ -151,4 +151,4 @@ export const AA_NO_ACCOUNTS = {
 
 // ── AA OTP error state ──────────────────────────────────────────
 
-export const AA_OTP_ERROR = "OUT OF ATTEMPTS";
+export const AA_OTP_ERROR = "Out of attempts";

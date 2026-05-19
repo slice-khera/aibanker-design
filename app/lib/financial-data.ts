@@ -38,6 +38,23 @@ export function parseINR(str: string): number {
   return parseFloat(cleaned) || 0;
 }
 
+// Upstream JSON data uses Title Case category keys (e.g. "Food & Drinks").
+// UI labels are sentence case. This converts the taxonomy key into a display
+// label without losing proper nouns inside parentheses.
+const CATEGORY_DISPLAY_OVERRIDES: Record<string, string> = {
+  "Food & Drinks": "Food & drinks",
+  "Food & Dining": "Food & dining",
+  "Food Delivery (Swiggy)": "Food delivery (Swiggy)",
+  "Dining Out (Swiggy Dineout)": "Dining out (Swiggy Dineout)",
+  "Cash Withdrawals (ATM)": "Cash withdrawals (ATM)",
+  "Self Transfer": "Self transfer",
+  "Other / Uncategorized": "Other / uncategorized",
+};
+
+export function displayCategoryName(catName: string): string {
+  return CATEGORY_DISPLAY_OVERRIDES[catName] ?? catName;
+}
+
 export function formatINR(amount: number): string {
   if (amount >= 100000) {
     const lakhs = amount / 100000;
@@ -69,7 +86,7 @@ export function getLifestyleCategories(): CategorySummary[] {
   for (const [name, catData] of Object.entries(data.categoryWiseSpend)) {
     if (EXCLUDED_CATEGORIES.includes(name)) continue;
     categories.push({
-      name,
+      name: displayCategoryName(name),
       totalAmount: catData.totalAmount,
       transactionCount: catData.transactionCount,
       avgPerTransaction: catData.avgPerTransaction,
@@ -226,7 +243,7 @@ export function computeWrappedSlides(): WrappedSlide[] {
       id: "wrapped-5",
       headline: `${sipCount} debits fire without you`,
       punchline:
-        "SIPs, mandates, mutual funds \u2014 your money has a day job you don\u2019t think about.",
+        "SIPs, mandates, mutual funds. Your money has a day job you don\u2019t think about.",
       stat: {
         label: "",
         value: formatINR(totalInvested),
@@ -361,7 +378,7 @@ function generateReceipts(): MockProfile["receipts"] {
       receipts.push({
         id: `r-${txn.date}-${txn.amount}`,
         time: formatDateShort(date),
-        category: catName.includes("Food") || catName.includes("Groceries") || catName.includes("Dining") ? "Food & Delivery" : catName.includes("Shopping") ? "Shopping" : "Other",
+        category: catName.includes("Food") || catName.includes("Groceries") || catName.includes("Dining") ? "Food & delivery" : catName.includes("Shopping") ? "Shopping" : "Other",
         amount: formatINR(txn.amount),
         merchant,
       });
@@ -637,15 +654,16 @@ export function computeLeakInsights(): LeakInsight[] {
     const troughEntry = sorted[sorted.length - 1];
 
     const suggestedCut = Math.round(avg * 0.25);
+    const displayName = displayCategoryName(catName);
     insights.push({
-      category: catName,
+      category: displayName,
       monthlyAvg: Math.round(avg),
       volatility: Math.round(cv * 100) / 100,
       peakMonth: peakEntry[0],
       peakAmount: Math.round(peakEntry[1]),
       troughMonth: troughEntry[0],
       troughAmount: Math.round(troughEntry[1]),
-      suggestion: `${catName} swings between ${formatINR(troughEntry[1])} and ${formatINR(peakEntry[1])} monthly. Stabilize at ~${formatINR(Math.round(avg))} to save ${formatINR(suggestedCut)}/month.`,
+      suggestion: `${displayName} swings between ${formatINR(troughEntry[1])} and ${formatINR(peakEntry[1])} monthly. Stabilize at ~${formatINR(Math.round(avg))} to save ${formatINR(suggestedCut)}/month.`,
       suggestedCut,
     });
   }
@@ -682,7 +700,7 @@ export function getRecentTransactionsForRating(): RatingTransaction[] {
       transactions.push({
         id: `rtxn-${txn.date}-${txn.amount}`,
         time: formatDateShort(date),
-        category: catName,
+        category: displayCategoryName(catName),
         amount: formatINR(txn.amount),
         amountNum: txn.amount,
         merchant,

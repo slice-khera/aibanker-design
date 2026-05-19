@@ -310,11 +310,11 @@ function Home() {
         amount: 78400,
         subtext: "across 12 categories",
         categories: [
-          { name: "Food & Delivery", amount: 22400, pct: 29, color: CATEGORY_COLORS["Food & Drinks"], icon: CATEGORY_ICONS["Food & Drinks"] },
+          { name: "Food & delivery", amount: 22400, pct: 29, color: CATEGORY_COLORS["Food & delivery"], icon: CATEGORY_ICONS["Food & delivery"] },
           { name: "Shopping", amount: 18600, pct: 24, color: CATEGORY_COLORS["Shopping"], icon: CATEGORY_ICONS["Shopping"] },
           { name: "Transport", amount: 11200, pct: 14, color: CATEGORY_COLORS["Transport"], icon: CATEGORY_ICONS["Transport"] },
           { name: "Subscriptions", amount: 8400, pct: 11, color: CATEGORY_COLORS["Subscription"], icon: CATEGORY_ICONS["Subscription"] },
-          { name: "Other", amount: 17800, pct: 23, color: CATEGORY_COLORS["Other / Uncategorized"], icon: CATEGORY_ICONS["Other / Uncategorized"] },
+          { name: "Other", amount: 17800, pct: 23, color: CATEGORY_COLORS["Other / uncategorized"], icon: CATEGORY_ICONS["Other / uncategorized"] },
         ],
       },
     },
