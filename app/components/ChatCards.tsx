@@ -21,7 +21,7 @@ import { formatDateRange } from "../lib/format-date";
 export type ChatCardData =
   | { type: "spend-overview"; month: string; amount: number; comparisonText: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number }
   | { type: "category-breakdown"; month: string; amount: number; subtext: string; showAll?: boolean; categories: { name: string; amount: number; pct: number; color: string; icon: ReactNode }[] }
-  | { type: "investment-product"; productType: string; amount: number; rate: string; tenure: string; amountOptions: { label: string; value: number }[]; accountLabel: string; activated?: boolean; onContinue?: () => void; onInvest?: (amount: number) => void; onAmountSelect?: (amount: number) => void; onArrowTap?: () => void }
+  | { type: "investment-product"; productType: string; amount: number; rate: string; tenure: string; amountOptions: { label: string; value: number }[]; accountLabel: string; activated?: boolean; variant?: "single" | "chips"; recommendedAmount?: number; onContinue?: () => void; onInvest?: (amount: number) => void; onAmountSelect?: (amount: number) => void; onArrowTap?: () => void }
   | { type: "goal-progress"; name: string; pct: number; saved: number; target: number; daysLabel: string; status: "ahead" | "behind" | "on-track"; onArrowTap?: () => void }
   | { type: "savings-plan"; name: string; target: number; timeline: string; existingSavings: number; monthlyAmount: number; productType: string; productLabel: string; rate: string; pct: number; timelineLabel: string }
   | { type: "merchant-concentration"; month: string; totalSpend: number; totalMerchants?: number; merchants: { name: string; amount: number; pct: number; color: string }[] }
@@ -31,7 +31,7 @@ export type ChatCardData =
   | { type: "transaction-table"; title: string; transactions: { date: string; merchant: string; amount: number; category: string }[] }
   | { type: "confirm-list"; label?: string; items: { id: string; payee: string; amount: number; type: string; subtext?: string }[]; monthlyIncome?: number; onSubmit?: (selected: { id: string; amount: number; type: string }[]) => void; submitted?: boolean; onArrowTap?: () => void }
   | { type: "spend-trend"; month: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number }
-  | { type: "add-to-pot"; goalName: string; amount: number; fromAccount: string; activated?: boolean; onAdd?: () => void };
+  | { type: "add-to-pot"; goalName: string; amount: number; fromAccount: string; activated?: boolean; variant?: "single" | "chips"; recommendedAmount?: number; amountOptions?: { label: string; value: number }[]; onAdd?: () => void };
 
 // ─── Taxonomy aliases ─────────────────────────────────────
 // Visualizations: 8 data displays (flat on surface, no bounding box)
@@ -593,29 +593,172 @@ function CategoryBreakdownCard({ data }: { data: Extract<ChatCardData, { type: "
   );
 }
 
+// ─── Amount chooser (shared, chips variant) ─────────────────
+// Headline amount + suggestion chips (2 alternatives + Custom).
+// Tapping a value chip swaps the headline; tapping Custom turns the
+// headline into an editable numeric input that opens the device numpad.
+
+type AmountOption = { label: string; value: number };
+
+function AmountChooser({
+  recommendedAmount,
+  amountOptions,
+  metaLine,
+  onChange,
+}: {
+  recommendedAmount: number;
+  amountOptions: AmountOption[];
+  metaLine?: ReactNode;
+  onChange: (amount: number) => void;
+}) {
+  const chipOptions = amountOptions.filter((o) => o.value !== recommendedAmount).slice(0, 2);
+
+  const [selectedKey, setSelectedKey] = useState<string>("recommended");
+  const [customValue, setCustomValue] = useState<string>("");
+
+  const customNumber = customValue === "" ? 0 : Number(customValue) || 0;
+  const isCustom = selectedKey === "custom";
+
+  const currentAmount = isCustom
+    ? customNumber
+    : selectedKey === "recommended"
+      ? recommendedAmount
+      : Number(selectedKey);
+
+  const lastAmountRef = useRef<number | null>(null);
+  if (lastAmountRef.current !== currentAmount) {
+    lastAmountRef.current = currentAmount;
+    queueMicrotask(() => onChange(currentAmount));
+  }
+
+  const selectChip = (key: string) => {
+    setSelectedKey(key);
+    if (key !== "custom") setCustomValue("");
+  };
+
+  const chipStyle = (active: boolean): React.CSSProperties => ({
+    ...typography.bodySmall,
+    height: 32,
+    padding: "0 16px",
+    borderRadius: RADIUS_PILL,
+    border: active ? `1px solid ${VALENTINO_500}` : `1px solid ${ALPHA_BLACK_20}`,
+    backgroundColor: active ? VALENTINO_50 : BG_PRIMARY,
+    color: active ? VALENTINO_500 : TEXT_PRIMARY,
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    flexShrink: 0,
+    transition: "all 150ms ease",
+  });
+
+  return (
+    <>
+      {isCustom ? (
+        <input
+          autoFocus
+          inputMode="numeric"
+          pattern="[0-9]*"
+          value={customValue}
+          onChange={(e) => setCustomValue(e.target.value.replace(/[^0-9]/g, ""))}
+          placeholder="0"
+          style={{
+            ...typography.headerH1,
+            color: TEXT_PRIMARY,
+            marginBottom: 4,
+            border: "none",
+            outline: "none",
+            background: "transparent",
+            padding: 0,
+            width: "100%",
+            caretColor: VALENTINO_500,
+          }}
+        />
+      ) : (
+        <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 4 }}>
+          {formatINRFull(currentAmount)}
+        </p>
+      )}
+
+      {metaLine ? <div style={{ marginBottom: 16 }}>{metaLine}</div> : <div style={{ marginBottom: 16 }} />}
+
+      <div style={{ height: 1, backgroundColor: OUTLINE_SUBTLE, marginBottom: 16 }} />
+
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          overflowX: "auto",
+          flexWrap: "nowrap",
+          msOverflowStyle: "none",
+          scrollbarWidth: "none",
+          marginRight: -16,
+          paddingRight: 16,
+          marginBottom: 16,
+        }}
+      >
+        {chipOptions.map((opt) => {
+          const key = String(opt.value);
+          const active = selectedKey === key;
+          return (
+            <button key={key} type="button" onClick={() => selectChip(key)} style={chipStyle(active)}>
+              {opt.label}
+            </button>
+          );
+        })}
+        <button type="button" onClick={() => selectChip("custom")} style={chipStyle(isCustom)}>
+          Custom
+        </button>
+      </div>
+    </>
+  );
+}
+
+
 // ─── 3. Investment Product Card ────────────────────────────
 // Matches Figma: Chatbot / node 16703:18825
 
 function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "investment-product" }> }) {
-  const { productType, amount, rate, tenure, accountLabel, activated, onContinue, onArrowTap } = data;
+  const { productType, amount, rate, tenure, amountOptions, accountLabel, activated, variant, recommendedAmount, onContinue, onArrowTap } = data;
+  const isChips = variant === "chips";
+  const baseAmount = recommendedAmount ?? amount;
 
-  const content = (
-    <>
-      {/* Amount */}
-      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 4 }}>
-        {formatINRFull(amount)}
-      </p>
+  const [selectedAmount, setSelectedAmount] = useState<number>(baseAmount);
+  const [tapped, setTapped] = useState(false);
+  const done = activated || tapped;
 
-      {/* Rate + tenure */}
-      <p style={{ ...typography.caption, color: GREEN_500, marginBottom: 16 }}>
-        {rate} · {tenure}
-      </p>
+  const shell = { backgroundColor: BG_PRIMARY, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW };
 
-      {/* Divider */}
-      <div style={{ height: 1, backgroundColor: OUTLINE_SUBTLE, marginBottom: 16 }} />
+  const rateLine = (
+    <p style={{ ...typography.caption, color: GREEN_500 }}>{rate} · {tenure}</p>
+  );
 
-      {activated ? (
-        <ConfirmedRow label={`${productType} set up`} onArrowTap={onArrowTap} />
+  return (
+    <div style={shell}>
+      <CardHeader label={productType} onArrowTap={onArrowTap} arrowInvisible={!done} />
+
+      {isChips ? (
+        <AmountChooser
+          recommendedAmount={baseAmount}
+          amountOptions={amountOptions}
+          metaLine={rateLine}
+          onChange={setSelectedAmount}
+        />
+      ) : (
+        <>
+          <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 4 }}>
+            {formatINRFull(amount)}
+          </p>
+          <p style={{ ...typography.caption, color: GREEN_500, marginBottom: 16 }}>
+            {rate} · {tenure}
+          </p>
+          <div style={{ height: 1, backgroundColor: OUTLINE_SUBTLE, marginBottom: 16 }} />
+        </>
+      )}
+
+      {done ? (
+        <ConfirmedRow
+          label={isChips ? `${productType} + monthly autopay set up` : `${productType} set up`}
+          onArrowTap={onArrowTap}
+        />
       ) : (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
@@ -628,7 +771,7 @@ function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "
           </div>
           <button
             type="button"
-            onClick={onContinue}
+            onClick={() => { if (isChips) setTapped(true); onContinue?.(); }}
             style={{
               ...typography.buttonSmall,
               border: "none",
@@ -639,19 +782,10 @@ function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "
               flexShrink: 0,
             }}
           >
-            Set up
+            {isChips ? "Add & set up autopay" : "Set up"}
           </button>
         </div>
       )}
-    </>
-  );
-
-  const shell = { backgroundColor: BG_PRIMARY, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW };
-
-  return (
-    <div style={shell}>
-      <CardHeader label={productType} onArrowTap={onArrowTap} arrowInvisible={!activated} />
-      {content}
     </div>
   );
 }
@@ -659,7 +793,11 @@ function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "
 // ─── Add to Pot Card (simplified one-tap action) ──────────
 
 function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-pot" }> }) {
-  const { goalName, amount, fromAccount, activated, onAdd } = data;
+  const { goalName, amount, fromAccount, activated, variant, recommendedAmount, amountOptions, onAdd } = data;
+  const isChips = variant === "chips";
+  const baseAmount = recommendedAmount ?? amount;
+
+  const [selectedAmount, setSelectedAmount] = useState<number>(baseAmount);
   const [tapped, setTapped] = useState(false);
   const done = activated || tapped;
 
@@ -669,21 +807,28 @@ function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-po
     <div style={shell}>
       <CardHeader label={goalName} />
 
-      {/* Amount */}
-      <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 16 }}>
-        {formatINRFull(amount)}
-      </p>
-
-      {/* Divider */}
-      <div style={{ height: 1, backgroundColor: OUTLINE_SUBTLE, marginBottom: 16 }} />
+      {isChips ? (
+        <AmountChooser
+          recommendedAmount={baseAmount}
+          amountOptions={amountOptions ?? []}
+          onChange={setSelectedAmount}
+        />
+      ) : (
+        <>
+          <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, marginBottom: 16 }}>
+            {formatINRFull(amount)}
+          </p>
+          <div style={{ height: 1, backgroundColor: OUTLINE_SUBTLE, marginBottom: 16 }} />
+        </>
+      )}
 
       {done ? (
-        <ConfirmedRow label="Added to pot" />
+        <ConfirmedRow label={isChips ? `Added ${formatINRFull(selectedAmount)} + monthly autopay set up` : "Added to pot"} />
       ) : (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4 }}>
-              Adding from
+              Paying from
             </p>
             <p style={{ ...typography.buttonSmall, color: TEXT_SECONDARY }}>
               {fromAccount}
@@ -695,15 +840,14 @@ function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-po
             style={{
               ...typography.buttonSmall,
               border: "none",
-              background: VALENTINO_500,
-              color: BG_PRIMARY,
+              background: "transparent",
+              color: VALENTINO_500,
               cursor: "pointer",
-              padding: "8px 20px",
-              borderRadius: RADIUS_CIRCLE,
+              padding: "4px 0",
               flexShrink: 0,
             }}
           >
-            Add
+            {isChips ? "Add & set up autopay" : "Add"}
           </button>
         </div>
       )}

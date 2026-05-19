@@ -6,27 +6,64 @@ import type { ChatCardData } from "@/app/components/ChatCards";
 import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 import {
-  DBG_FD_SETUP, DBG_FD_ACTIVATED,
+  DBG_FD_SETUP, DBG_FD_CHIPS,
+  DBG_POT_CHIPS,
   DBG_OBLIGATIONS_V2,
   DBG_GOAL_AHEAD, DBG_GOAL_BEHIND, DBG_GOAL_ONTRACK,
 } from "@/app/lib/debug-fixtures";
 
-// ── Widget items with state variants ──────────────────────────
+// ── Widget playgrounds with variant switchers ────────────────
+
+function InvestmentProductPlayground() {
+  const [variantIdx, setVariantIdx] = useState(0);
+  const data = variantIdx === 0 ? DBG_FD_SETUP : DBG_FD_CHIPS;
+  return (
+    <PlaygroundCard
+      id="investment-product"
+      name="Investment product"
+      status={resolveStatus("investment-product")}
+      variants={["single", "chips"]}
+      activeVariantIndex={variantIdx}
+      onVariantChange={setVariantIdx}
+    >
+      <ChatCard card={data} />
+    </PlaygroundCard>
+  );
+}
+
+const POT_SINGLE_BASE: ChatCardData = {
+  type: "add-to-pot",
+  goalName: "Trip to Japan",
+  amount: 5000,
+  fromAccount: "Savings xx1234",
+};
+
+function AddToPotPlayground() {
+  const [variantIdx, setVariantIdx] = useState(0);
+  const data = variantIdx === 0 ? POT_SINGLE_BASE : DBG_POT_CHIPS;
+  return (
+    <PlaygroundCard
+      id="add-to-pot"
+      name="Add to pot"
+      status={resolveStatus("add-to-pot")}
+      variants={["single", "chips"]}
+      activeVariantIndex={variantIdx}
+      onVariantChange={setVariantIdx}
+    >
+      <ChatCard card={data} />
+    </PlaygroundCard>
+  );
+}
+
+// ── Simple widget entries (no custom variant switchers) ──────
+
 type WidgetItem = {
   type: string;
   label: string;
   fixtures: { name: string; data: ChatCardData }[];
 };
 
-const WIDGET_ITEMS: WidgetItem[] = [
-  {
-    type: "investment-product",
-    label: "Investment product",
-    fixtures: [
-      { name: "setup", data: { ...DBG_FD_SETUP } },
-      { name: "activated", data: { ...DBG_FD_ACTIVATED } },
-    ],
-  },
+const SIMPLE_WIDGET_ITEMS: WidgetItem[] = [
   {
     type: "confirm-list",
     label: "Obligations list",
@@ -42,31 +79,6 @@ const WIDGET_ITEMS: WidgetItem[] = [
       { name: "ahead", data: { ...DBG_GOAL_AHEAD } },
       { name: "behind", data: { ...DBG_GOAL_BEHIND } },
       { name: "on-track", data: { ...DBG_GOAL_ONTRACK } },
-    ],
-  },
-  {
-    type: "add-to-pot",
-    label: "Add to pot",
-    fixtures: [
-      {
-        name: "default",
-        data: {
-          type: "add-to-pot",
-          goalName: "Trip to Japan",
-          amount: 5000,
-          fromAccount: "Savings xx1234",
-        },
-      },
-      {
-        name: "activated",
-        data: {
-          type: "add-to-pot",
-          goalName: "Trip to Japan",
-          amount: 5000,
-          fromAccount: "Savings xx1234",
-          activated: true,
-        },
-      },
     ],
   },
   {
@@ -111,7 +123,6 @@ const WIDGET_ITEMS: WidgetItem[] = [
 
 function InteractiveWidgetFixture({ data }: { data: ChatCardData }) {
   const [submitted, setSubmitted] = useState(false);
-  const [activated, setActivated] = useState(false);
 
   const augmented = useMemo<ChatCardData>(() => {
     if (data.type === "confirm-list") {
@@ -121,26 +132,13 @@ function InteractiveWidgetFixture({ data }: { data: ChatCardData }) {
         onSubmit: () => setSubmitted(true),
       };
     }
-    if (data.type === "investment-product") {
-      return {
-        ...data,
-        activated: data.activated || activated,
-        onContinue: () => setActivated(true),
-      };
-    }
-    if (data.type === "add-to-pot") {
-      return {
-        ...data,
-        onAdd: () => setActivated(true),
-      };
-    }
     return data;
-  }, [data, submitted, activated]);
+  }, [data, submitted]);
 
   return <ChatCard card={augmented} />;
 }
 
-function WidgetEntry({ item }: { item: WidgetItem }) {
+function SimpleWidgetEntry({ item }: { item: WidgetItem }) {
   const [activeIdx, setActiveIdx] = useState(0);
 
   return (
@@ -168,8 +166,13 @@ export default function WidgetsPage() {
       </div>
 
       <div className="flex flex-col gap-6">
-        {WIDGET_ITEMS.map((item) => (
-          <WidgetEntry key={item.type} item={item} />
+        <InvestmentProductPlayground />
+        {SIMPLE_WIDGET_ITEMS.slice(0, 2).map((item) => (
+          <SimpleWidgetEntry key={item.type} item={item} />
+        ))}
+        <AddToPotPlayground />
+        {SIMPLE_WIDGET_ITEMS.slice(2).map((item) => (
+          <SimpleWidgetEntry key={item.type} item={item} />
         ))}
       </div>
     </div>

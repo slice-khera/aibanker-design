@@ -138,6 +138,36 @@ export const DBG_FD_ACTIVATED: ChatCardData = {
   activated: true,
 };
 
+export const DBG_FD_CHIPS: ChatCardData = {
+  type: "investment-product",
+  productType: "Fixed Deposit",
+  amount: 15000,
+  rate: "7.25% p.a.",
+  tenure: "1 year",
+  recommendedAmount: 15000,
+  variant: "chips",
+  amountOptions: [
+    { label: "₹25,000", value: 25000 },
+    { label: "₹50,000", value: 50000 },
+  ],
+  accountLabel: "Savings xx1234",
+  activated: false,
+};
+
+export const DBG_POT_CHIPS: ChatCardData = {
+  type: "add-to-pot",
+  goalName: "Trip to Japan",
+  amount: 5000,
+  fromAccount: "Savings xx1234",
+  recommendedAmount: 5000,
+  variant: "chips",
+  amountOptions: [
+    { label: "₹10,000", value: 10000 },
+    { label: "₹15,000", value: 15000 },
+  ],
+  activated: false,
+};
+
 // ─── Visualization fixtures ───────────────────────────────────
 
 export const DBG_MERCHANT_BAR: ChatCardData = {
