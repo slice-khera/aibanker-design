@@ -5,7 +5,7 @@ import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 
 // Component imports
-import QuestionnaireOverlay, { type Question } from "@/app/components/QuestionnaireOverlay";
+import QuestionnaireOverlay from "@/app/components/QuestionnaireOverlay";
 import ListItemControl from "@/app/components/ListItemControl";
 import InputField from "@/app/components/InputField";
 import OtpInput from "@/app/components/OtpInput";
@@ -21,7 +21,6 @@ import { useControlPanel } from "@/app/preview/_shared/ControlPanel";
 import { useSlotControls } from "@/app/preview/_shared/PlaygroundCard";
 
 // GBP components
-import SavingsLadder from "@/app/components/SavingsLadder";
 import SpendingPlanCard from "@/app/components/SpendingPlanCard";
 import ChatCard, { type ChatCardData } from "@/app/components/ChatCards";
 
@@ -31,14 +30,13 @@ import { TEXT_PRIMARY, VALENTINO_500 } from "@/app/lib/colors";
 import { RADIUS_M } from "@/app/lib/radii";
 import { typography } from "@/app/lib/typography";
 import {
-  LADDER_OPTIONS,
   SPENDING_PLAN_FIXTURE,
   BUCKET_CONFIRM_INCOME,
   BUCKET_CONFIRM_OBLIGATIONS,
   BUCKET_CONFIRM_P2P,
   BUCKET_CONFIRM_OTHERS,
 } from "@/app/preview/fixtures/gbpFlowFixture";
-import type { LadderTier } from "@/app/lib/types";
+import { SAVINGS_TIER_QUESTION } from "@/app/preview/fixtures/savingsTierQuestion";
 
 // ── Cruncher status texts (from flows) ───────────────────────
 
@@ -88,30 +86,6 @@ function QuestionnaireWrapper() {
     </div>
   );
 }
-
-const TIER_INTENT_RICH: Record<LadderTier, "positive" | "warning" | "negative"> = {
-  comfortable: "positive",
-  realistic: "warning",
-  stretch: "negative",
-};
-
-function formatINRShort(amount: number): string {
-  if (amount >= 100000) return `₹${(amount / 100000).toFixed(amount % 100000 === 0 ? 0 : 1)}L`;
-  if (amount >= 1000) return `₹${(amount / 1000).toFixed(amount % 1000 === 0 ? 0 : 1)}k`;
-  return `₹${amount.toLocaleString("en-IN")}`;
-}
-
-const SAVINGS_TIER_QUESTION: Question = {
-  id: "savings-tier",
-  text: "Which tier feels right?",
-  options: LADDER_OPTIONS.map((opt) => ({
-    id: opt.tier,
-    label: opt.tier,
-    title: `${formatINRShort(opt.monthlyAmount)}/mo`,
-    subtext: opt.description,
-    tag: { label: opt.tier.toUpperCase(), intent: TIER_INTENT_RICH[opt.tier] },
-  })),
-};
 
 function QuestionnaireRichWrapper() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -296,7 +270,7 @@ function FeedbackBarScreen() {
             ? "Look, you spend ₹18,200/month on food. That's not a budget problem, that's a personality. Pick one cuisine and commit."
             : "Looking at your last three months, you're spending about ₹18,200/month on food. Trimming that to ₹14,000 would free up around ₹4,000 a month for savings."}
         </p>
-        <FeedbackBar voice={persona} />
+        <FeedbackBar />
       </div>
       <GestureNav />
     </div>
@@ -336,15 +310,6 @@ function AppChromeChatDegen() {
 }
 
 // ── GBP component wrappers ──────────────────────────────────
-
-function SavingsLadderWrapper() {
-  const [selected, setSelected] = useState<LadderTier | null>(null);
-  return (
-    <div style={{ padding: 16 }}>
-      <SavingsLadder options={LADDER_OPTIONS} selected={selected} onSelect={setSelected} />
-    </div>
-  );
-}
 
 function SpendingPlanWrapper() {
   return (
@@ -493,7 +458,7 @@ const COMPONENTS: ComponentDef[] = [
   {
     id: "feedback-bar",
     label: "Feedback bar",
-    description: "Thumbs up / down + AI disclaimer under banker messages. Switch persona via the toggle, tap a thumb to vote.",
+    description: "Thumbs up / down under banker messages. Tap a thumb to vote.",
     deviceFrame: true,
     variants: [{ name: "v1", render: () => <FeedbackBarScreen /> }],
   },
@@ -503,14 +468,6 @@ const COMPONENTS: ComponentDef[] = [
     description: "Toast bar that slides up from bottom; auto-dismisses 4s (persists with action)",
     variants: [
       { name: "playground", render: () => <SnackbarPlayground /> },
-    ],
-  },
-  {
-    id: "savings-ladder",
-    label: "Savings ladder",
-    description: "3-tier picker - comfortable, realistic, stretch",
-    variants: [
-      { name: "v1", render: () => <SavingsLadderWrapper /> },
     ],
   },
   {

@@ -12,9 +12,10 @@ import { RADIUS_PILL } from "../lib/radii";
 import { SPACE_XS, SPACE_S, SPACE_M, SPACE_L } from "../lib/spacing";
 import { StatusBar, ChatAppBar } from "../components/AppChrome";
 import { useTypewriter } from "../components/Chat";
-import SavingsLadder from "../components/SavingsLadder";
+import QuestionnaireOverlay from "../components/QuestionnaireOverlay";
 import ChatCard from "../components/ChatCards";
 import SpendingPlanCard from "../components/SpendingPlanCard";
+import { SAVINGS_TIER_QUESTION } from "./fixtures/savingsTierQuestion";
 import type { SimMessage } from "./fixtures/savingsFlowFixture";
 import type { LadderTier } from "../lib/types";
 import {
@@ -506,15 +507,6 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
           {/* Thinking indicator */}
           {showThinking && <ThinkingIndicator />}
 
-          {/* Savings ladder */}
-          {showLadder && (
-            <SavingsLadder
-              options={LADDER_OPTIONS}
-              selected={ladderSelected}
-              onSelect={handleLadderSelect}
-            />
-          )}
-
           {/* Confirm list (footprint walk) */}
           {showBucket && BUCKET_CONFIRM_LIST[activeBucketIndex] && (
             <ChatCard card={BUCKET_CONFIRM_LIST[activeBucketIndex]} />
@@ -531,6 +523,21 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
           )}
         </div>
       </div>
+
+      {/* Savings tier overlay */}
+      {showLadder && (
+        <div className="absolute bottom-0 left-0 right-0 z-20">
+          <QuestionnaireOverlay
+            questions={[SAVINGS_TIER_QUESTION]}
+            currentIndex={0}
+            answers={ladderSelected ? { [SAVINGS_TIER_QUESTION.id]: ladderSelected } : {}}
+            onSelectOption={(_qId, opt) => handleLadderSelect(opt.id as LadderTier)}
+            onSubmitFreeText={() => {}}
+            onNavigate={() => {}}
+            onClose={() => setShowLadder(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }
