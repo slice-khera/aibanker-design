@@ -211,11 +211,6 @@ export const TIER_CHIPS = [
 
 export const RATE_CHIP = { id: "rate", label: "Save X% of income" };
 
-export const BUCKET_CONFIRM_CHIPS = [
-  { id: "confirm", label: "Looks right" },
-  { id: "edit", label: "Something's off" },
-];
-
 export const VERDICT_PROCEED_CHIPS = [
   { id: "proceed", label: "Let's do it" },
   { id: "adjust", label: "Adjust" },
@@ -318,14 +313,14 @@ export const STORY1_LOCK_IN: SimMessage[] = [
 
 export const STORY2_ENTRY: SimMessage[] = [
   { id: "s2-u1", role: "user", text: "I want to save more" },
-  { id: "s2-a1", role: "assistant", text: "You've got the Europe trip running at ₹25k/month. Two options:\n\n**Hit your trip sooner?** - Bump the contribution to reach ₹2L faster.\n\n**Save for something else too?** - Stack a pool alongside your trip." },
+  { id: "s2-a1", role: "assistant", text: "You've got the Europe trip running at ₹25k/month. Want to hit it sooner, or save for something else too?" },
 ];
 
 // ── Sim messages - Story 3 (pool exists, wants a goal) ─────────────
 
 export const STORY3_ENTRY: SimMessage[] = [
   { id: "s3-u1", role: "user", text: "I want to save for a trip" },
-  { id: "s3-a1", role: "assistant", text: "You've got your emergency fund running at ₹5k/month. Three paths:\n\n**Bump the pool** - Increase the emergency fund.\n\n**Stack a goal alongside** - Both run in parallel.\n\n**Merge pool into goal** - Redirect pool funds to the trip." },
+  { id: "s3-a1", role: "assistant", text: "You've got your emergency fund running at ₹5k/month. Want to bump the pool, stack a goal alongside it, or merge the pool into the goal?" },
 ];
 
 export const STORY3_MERGE_OFFER: SimMessage[] = [

@@ -20,6 +20,7 @@ import QuestionnaireOverlay from "../components/QuestionnaireOverlay";
 import type { QuestionOption } from "../components/QuestionnaireOverlay";
 import MockKeyboard from "../components/MockKeyboard";
 import { useTypewriter } from "../components/Chat";
+import { highlightValues } from "../lib/chat-highlight";
 import {
   INITIAL_MESSAGES,
   GOAL_QUESTIONS,
@@ -70,7 +71,7 @@ function Bubble({ msg, typewrite = false }: { msg: SimMessage; typewrite?: boole
   return (
     <div className="flex flex-col items-start">
       <p className="whitespace-pre-line text-[var(--chat-text-primary)] w-full" style={typography.bodySmall}>
-        {text}
+        {highlightValues(text)}
       </p>
     </div>
   );

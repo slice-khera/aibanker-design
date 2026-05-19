@@ -15,29 +15,7 @@ import {
 import { RADIUS_M, RADIUS_PILL, RADIUS_CIRCLE } from "../lib/radii";
 import { SPACE_XS, SPACE_M } from "../lib/spacing";
 import FeedbackBar from "./FeedbackBar";
-
-// ── Highlight currency, percentage, and **bold** markers in assistant text ──
-const HIGHLIGHT_RE = /\*\*(.+?)\*\*|₹[\d,.]+\s*[Lk]?|[\d,.]+%/g;
-
-function highlightValues(text: string): React.ReactNode {
-  const parts: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-  while ((match = HIGHLIGHT_RE.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
-    }
-    const boldText = match[1] ?? match[0];
-    parts.push(
-      <span key={match.index} style={typography.buttonSmall}>{boldText}</span>
-    );
-    lastIndex = match.index + match[0].length;
-  }
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
-  }
-  return parts.length > 0 ? parts : text;
-}
+import { highlightValues } from "../lib/chat-highlight";
 
 // ── Token-speed typewriter for scripted assistant messages ──
 // Reveals text ~3-5 chars at a time at ~30ms, matching Claude's streaming cadence.

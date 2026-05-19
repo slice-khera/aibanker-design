@@ -21,6 +21,7 @@ import PlanCruncherV2 from "../components/PlanCruncherV2";
 import type { Persona } from "../components/PersonaToggle";
 import { TypeBox } from "../components/Chat";
 import ChatCard from "../components/ChatCards";
+import { highlightValues } from "../lib/chat-highlight";
 
 import WrappedCard from "./WrappedCard";
 import WrappedStory from "./WrappedStory";
@@ -60,22 +61,6 @@ const OVERLAY_DURATION = 460;
 // ══════════════════════════════════════════════════════════════════
 //  Helpers - copied from the locked RefreshSession pattern
 // ══════════════════════════════════════════════════════════════════
-
-const HIGHLIGHT_RE = /\*\*(.+?)\*\*|₹[\d,.]+\s*[Lk]?|[\d,.]+%/g;
-
-function highlightValues(text: string): React.ReactNode {
-  const parts: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-  while ((match = HIGHLIGHT_RE.exec(text)) !== null) {
-    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
-    const boldText = match[1] ?? match[0];
-    parts.push(<span key={match.index} style={typography.buttonSmall}>{boldText}</span>);
-    lastIndex = match.index + match[0].length;
-  }
-  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
-  return parts.length > 0 ? parts : text;
-}
 
 function useTypewriter(fullText: string, active: boolean, onComplete?: () => void) {
   const [displayed, setDisplayed] = useState(active ? "" : fullText);

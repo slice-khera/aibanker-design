@@ -11,6 +11,7 @@ import { StatusBar, GestureNav, FooterInset, ChatAppBar } from "../components/Ap
 import GoalTracker from "../components/GoalTracker";
 import type { GoalIndicatorData } from "../components/GoalTracker";
 import { getPlaygroundByronRoast } from "./fixtures/wrappedFixture";
+import { highlightValues } from "../lib/chat-highlight";
 
 // ── Hardcoded content ───────────────────────────────────────────
 
@@ -62,24 +63,6 @@ function FeedbackRow() {
       </div>
     </div>
   );
-}
-
-// ── Highlight ₹ values and **bold** ─────────────────────────────
-
-const HIGHLIGHT_RE = /\*\*(.+?)\*\*|₹[\d,.]+\s*[Lk]?|[\d,.]+%/g;
-
-function highlightValues(text: string): React.ReactNode {
-  const parts: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-  while ((match = HIGHLIGHT_RE.exec(text)) !== null) {
-    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
-    const boldText = match[1] ?? match[0];
-    parts.push(<span key={match.index} style={typography.buttonSmall}>{boldText}</span>);
-    lastIndex = match.index + match[0].length;
-  }
-  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
-  return parts.length > 0 ? parts : text;
 }
 
 // ── Typewriter hook ─────────────────────────────────────────────

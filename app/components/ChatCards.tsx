@@ -32,7 +32,7 @@ export type ChatCardData =
   | { type: "spending-heatmap"; month: string; year: number; startDay: number; dailySpend: (number | null)[]; maxSpend: number }
   | { type: "payment-mode-donut-v2"; month: string; totalSpend: number; modes: { name: string; amount: number; pct: number; color: string }[] }
   | { type: "transaction-table"; title: string; transactions: { date: string; merchant: string; amount: number; category: string }[] }
-  | { type: "confirm-list"; label?: string; items: { id: string; payee: string; amount: number; type: string; subtext?: string }[]; monthlyIncome?: number; onSubmit?: (selected: { id: string; amount: number; type: string }[]) => void; submitted?: boolean; onArrowTap?: () => void }
+  | { type: "confirm-list"; label?: string; items: { id: string; payee: string; amount: number; type: string; subtext?: string }[]; monthlyIncome?: number; onSubmit?: (selected: { id: string; amount: number; type: string }[]) => void; submitted?: boolean; defaultAllSelected?: boolean; onArrowTap?: () => void }
   | { type: "spend-trend"; month: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number }
   | { type: "add-to-pot"; goalName: string; amount: number; fromAccount: string; activated?: boolean; variant?: "single" | "chips"; recommendedAmount?: number; amountOptions?: { label: string; value: number }[]; onAdd?: () => void }
   | { type: "budget-summary"; plan: Pick<SpendingPlan, "income" | "obligations" | "savingsTarget" | "dailyPool"> }
@@ -1708,11 +1708,13 @@ function getSnapStep(amount: number): number {
 }
 
 function ConfirmListCard({ data }: { data: Extract<ChatCardData, { type: "confirm-list" }> }) {
-  const { items, onSubmit, submitted, onArrowTap, label: headerLabel } = data;
+  const { items, onSubmit, submitted, defaultAllSelected, onArrowTap, label: headerLabel } = data;
   const displayLabel = headerLabel ?? "Your items";
   const display = items.slice(0, 5);
 
-  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [selected, setSelected] = useState<Set<string>>(() =>
+    defaultAllSelected ? new Set(display.map((i) => i.id)) : new Set()
+  );
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editedAmounts, setEditedAmounts] = useState<Record<string, number>>({});
   const [editedTypes, setEditedTypes] = useState<Record<string, string>>({});

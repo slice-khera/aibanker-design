@@ -16,6 +16,7 @@ import QuestionnaireOverlay from "../components/QuestionnaireOverlay";
 import ChatCard from "../components/ChatCards";
 import BudgetSummaryViz from "../components/BudgetSummaryViz";
 import CategoryBudgetsViz from "../components/CategoryBudgetsViz";
+import { highlightValues } from "../lib/chat-highlight";
 import { SAVINGS_TIER_QUESTION } from "./fixtures/savingsTierQuestion";
 import type { SimMessage } from "./fixtures/savingsFlowFixture";
 import type { LadderTier } from "../lib/types";
@@ -43,7 +44,6 @@ import {
   STORY4_ENTRY,
   STORY5_ENTRY,
   STORY6_ENTRY,
-  BUCKET_CONFIRM_CHIPS,
   DESTINATION_CHIPS,
   LOCK_IN_CHIPS,
   INFEASIBLE_CHIPS,
@@ -67,13 +67,22 @@ type Phase =
 
 // ── Bubble ──────────────────────────────────────────────────────
 
-function Bubble({ msg, typewrite = false }: { msg: SimMessage; typewrite?: boolean }) {
-  const streamed = useTypewriter(msg.text, typewrite && msg.role === "assistant");
-  const text = typewrite && msg.role === "assistant" ? streamed : msg.text;
+function Bubble({
+  msg,
+  typewrite = false,
+  onStreamComplete,
+}: {
+  msg: SimMessage;
+  typewrite?: boolean;
+  onStreamComplete?: () => void;
+}) {
+  const active = typewrite && msg.role === "assistant";
+  const streamed = useTypewriter(msg.text, active, active ? onStreamComplete : undefined);
+  const text = active ? streamed : msg.text;
 
   if (msg.role === "user") {
     return (
-      <div className="flex flex-col items-end">
+      <div className="flex flex-col items-end animate-chat-message-in">
         <div
           className="max-w-[75%] rounded-[16px] rounded-tr-lg"
           style={{ backgroundColor: VALENTINO_50, padding: "12px 16px" }}
@@ -87,9 +96,9 @@ function Bubble({ msg, typewrite = false }: { msg: SimMessage; typewrite?: boole
   }
 
   return (
-    <div className="flex flex-col items-start">
+    <div className="flex flex-col items-start animate-chat-message-in">
       <p className="whitespace-pre-line w-full" style={{ ...typography.bodySmall, color: TEXT_PRIMARY, margin: 0 }}>
-        {text}
+        {highlightValues(text)}
       </p>
     </div>
   );
@@ -161,6 +170,16 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
   const [showBucket, setShowBucket] = useState(false);
   const [showBudgetSummary, setShowBudgetSummary] = useState(false);
   const [showCategoryBudgets, setShowCategoryBudgets] = useState(false);
+  const [streamedIds, setStreamedIds] = useState<Set<string>>(new Set());
+
+  // Anchor ids for streaming-gated UI: each element is tied to the assistant
+  // message that must finish streaming before it appears. Once streamed, the
+  // gate latches open and the element stays mounted even if a new Ryan message
+  // starts streaming below.
+  const [chipsAnchorId, setChipsAnchorId] = useState<string | null>(null);
+  const [bucketAnchorId, setBucketAnchorId] = useState<string | null>(null);
+  const [budgetSummaryAnchorId, setBudgetSummaryAnchorId] = useState<string | null>(null);
+  const [categoryBudgetsAnchorId, setCategoryBudgetsAnchorId] = useState<string | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -187,6 +206,26 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
     scrollToBottom();
   }, [scrollToBottom]);
 
+  // When a new message arrives, any previously-streaming assistant message
+  // snaps to its full text (Bubble's typewrite=true only applies to the last
+  // message). Mark all non-last assistant messages as streamed so anchored
+  // UI tied to them isn't left waiting on an onComplete that will never fire.
+  useEffect(() => {
+    if (messages.length <= 1) return;
+    setStreamedIds((prev) => {
+      let changed = false;
+      const next = new Set(prev);
+      for (let i = 0; i < messages.length - 1; i++) {
+        const m = messages[i];
+        if (m.role === "assistant" && !next.has(m.id)) {
+          next.add(m.id);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [messages]);
+
   // ── Reset on story change ────────────────────────────────────
   useEffect(() => {
     // Clean up timers
@@ -204,6 +243,11 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
     setShowBucket(false);
     setShowBudgetSummary(false);
     setShowCategoryBudgets(false);
+    setStreamedIds(new Set());
+    setChipsAnchorId(null);
+    setBucketAnchorId(null);
+    setBudgetSummaryAnchorId(null);
+    setCategoryBudgetsAnchorId(null);
     didBootRef.current = false;
   }, [story]);
 
@@ -246,6 +290,7 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
       setPhase("destination-pick");
       setActiveChips(DESTINATION_CHIPS);
       setShowChips(true);
+      setChipsAnchorId(STORY1_GOAL_SETUP[1].id);
     }, 1600);
   }
 
@@ -261,6 +306,7 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
         { id: "stack", label: "Save for something else" },
       ]);
       setShowChips(true);
+      setChipsAnchorId(STORY2_ENTRY[1].id);
     }, 1600);
   }
 
@@ -273,6 +319,7 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
       setPhase("blocked");
       setActiveChips(MERGE_CHIPS);
       setShowChips(true);
+      setChipsAnchorId(STORY3_ENTRY[1].id);
     }, 1600);
   }
 
@@ -289,6 +336,7 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
         { id: "wait", label: "Wait until trip's done" },
       ]);
       setShowChips(true);
+      setChipsAnchorId(STORY4_ENTRY[1].id);
     }, 1600);
   }
 
@@ -301,6 +349,7 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
       setPhase("blocked");
       setActiveChips(INFEASIBLE_CHIPS);
       setShowChips(true);
+      setChipsAnchorId(STORY5_ENTRY[1].id);
     }, 1600);
   }
 
@@ -313,6 +362,7 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
       setPhase("blocked");
       setActiveChips([{ id: "review", label: "Walk me through it" }]);
       setShowChips(true);
+      setChipsAnchorId(STORY6_ENTRY[1].id);
     }, 1600);
   }
 
@@ -320,6 +370,7 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
 
   const handleChip = useCallback((chip: { id: string; label: string }) => {
     setShowChips(false);
+    setChipsAnchorId(null);
 
     if (phase === "destination-pick") {
       // User picked "just save more" → show ladder
@@ -327,18 +378,18 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
       schedule(() => { setShowThinking(true); scrollToBottom(); }, 300);
       schedule(() => {
         setShowThinking(false);
-        addMessages(STORY1_LADDER_INTRO);
+        // Drop leading user echo - the handler already added it above.
+        addMessages(STORY1_LADDER_INTRO.filter((m) => m.role !== "user"));
         setPhase("ladder");
         setShowLadder(true);
         scrollToBottom();
       }, 1200);
-    } else if (phase === "footprint-walk") {
-      handleBucketConfirm(chip);
     } else if (phase === "verdict") {
       handleVerdictAction(chip);
     } else if (phase === "blocked") {
       // Terminal stories - just echo the choice
       addMessages([{ id: `u-blocked-${chip.id}`, role: "user", text: chip.label }]);
+      setChipsAnchorId(null);
       schedule(() => { setShowThinking(true); scrollToBottom(); }, 300);
       schedule(() => {
         setShowThinking(false);
@@ -353,7 +404,7 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
         startFootprintWalk();
       }, 1200);
     }
-  }, [phase, activeBucketIndex, scrollToBottom, schedule]);
+  }, [phase, scrollToBottom, schedule]);
 
   // ── Ladder selection handler ──────────────────────────────────
 
@@ -369,14 +420,16 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
     schedule(() => { setShowThinking(true); scrollToBottom(); }, 300);
     schedule(() => {
       setShowThinking(false);
-      addMessages(STORY1_LADDER_PICKED);
+      // Drop the leading user echo - the handler already added it above.
+      addMessages(STORY1_LADDER_PICKED.filter((m) => m.role !== "user"));
       scrollToBottom();
     }, 1200);
 
-    // Start footprint walk after a beat
+    // Start footprint walk after the ladder ack has time to stream out.
+    // The ack runs ~200 chars; at ~10ms/char that's ~2s of streaming.
     schedule(() => {
       startFootprintWalk();
-    }, 2400);
+    }, 3600);
   }, [scrollToBottom, schedule]);
 
   // ── Footprint walk ───────────────────────────────────────────
@@ -386,13 +439,15 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
     setActiveBucketIndex(0);
     setShowBucket(true);
     addMessages(STORY1_BUCKET_INCOME);
-    setActiveChips(BUCKET_CONFIRM_CHIPS);
-    setShowChips(true);
+    setBucketAnchorId(STORY1_BUCKET_INCOME[0].id);
+    // No separate chip set: the confirm-list card's own "Looks right"
+    // CTA is the action. Chips below would be a redundant duplicate.
     scrollToBottom();
   }, [scrollToBottom]);
 
-  const handleBucketConfirm = useCallback((chip: { id: string; label: string }) => {
+  const handleBucketConfirm = useCallback(() => {
     setShowBucket(false);
+    setBucketAnchorId(null);
 
     // Progression messages by bucket index
     const confirmMessages = [
@@ -407,7 +462,9 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
       STORY1_BUCKET_SPORADIC,
     ];
 
-    addMessages([{ id: `u-bucket-${activeBucketIndex}`, role: "user", text: chip.label }]);
+    // The user's "Looks right" intent is conveyed by tapping the card's
+    // CTA. Echo it as a user bubble for chat continuity.
+    addMessages([{ id: `u-bucket-${activeBucketIndex}`, role: "user", text: "Looks right" }]);
 
     schedule(() => { setShowThinking(true); scrollToBottom(); }, 300);
 
@@ -424,12 +481,12 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
     if (nextIdx < BUCKET_CONFIRM_LIST.length) {
       schedule(() => {
         setActiveBucketIndex(nextIdx);
-        if (nextBucketMessages[activeBucketIndex]) {
-          addMessages(nextBucketMessages[activeBucketIndex]);
+        const nextMsg = nextBucketMessages[activeBucketIndex];
+        if (nextMsg) {
+          addMessages(nextMsg);
         }
         setShowBucket(true);
-        setActiveChips(BUCKET_CONFIRM_CHIPS);
-        setShowChips(true);
+        if (nextMsg) setBucketAnchorId(nextMsg[0].id);
         scrollToBottom();
       }, 2000);
     } else {
@@ -438,11 +495,13 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
         addMessages(STORY1_SPENDING_PLAN);
         setPhase("spending-plan");
         setShowBudgetSummary(true);
+        setBudgetSummaryAnchorId(STORY1_SPENDING_PLAN[0].id);
         scrollToBottom();
       }, 2000);
 
       schedule(() => {
         setShowCategoryBudgets(true);
+        setCategoryBudgetsAnchorId(STORY1_SPENDING_PLAN[0].id);
         scrollToBottom();
       }, 2800);
 
@@ -452,6 +511,7 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
         setPhase("verdict");
         setActiveChips(LOCK_IN_CHIPS);
         setShowChips(true);
+        setChipsAnchorId(STORY1_VERDICT_FEASIBLE[0].id);
         scrollToBottom();
       }, 4000);
     }
@@ -461,6 +521,8 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
 
   const handleVerdictAction = useCallback((chip: { id: string; label: string }) => {
     addMessages([{ id: "u-verdict", role: "user", text: chip.label }]);
+    setShowChips(false);
+    setChipsAnchorId(null);
 
     schedule(() => { setShowThinking(true); scrollToBottom(); }, 300);
     schedule(() => {
@@ -472,6 +534,18 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
   }, [scrollToBottom, schedule]);
 
   // ── Render ───────────────────────────────────────────────────
+
+  // Streaming gates: each piece of actionable UI is anchored to the specific
+  // assistant message it follows. The gate latches open once that message is
+  // fully streamed and stays open, even when a new Ryan message starts
+  // streaming below. Matches the universal rule in
+  // feedback_chat_streaming_scroll.md.
+  const chipsReady = chipsAnchorId !== null && streamedIds.has(chipsAnchorId);
+  const bucketReady = bucketAnchorId !== null && streamedIds.has(bucketAnchorId);
+  const budgetSummaryReady =
+    budgetSummaryAnchorId !== null && streamedIds.has(budgetSummaryAnchorId);
+  const categoryBudgetsReady =
+    categoryBudgetsAnchorId !== null && streamedIds.has(categoryBudgetsAnchorId);
 
   return (
     <div
@@ -509,28 +583,53 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
               key={msg.id}
               msg={msg}
               typewrite={i === messages.length - 1}
+              onStreamComplete={() => {
+                setStreamedIds((prev) => {
+                  if (prev.has(msg.id)) return prev;
+                  const next = new Set(prev);
+                  next.add(msg.id);
+                  return next;
+                });
+                scrollToBottom();
+              }}
             />
           ))}
 
           {/* Thinking indicator */}
           {showThinking && <ThinkingIndicator />}
 
-          {/* Confirm list (footprint walk) */}
-          {showBucket && BUCKET_CONFIRM_LIST[activeBucketIndex] && (
-            <ChatCard card={BUCKET_CONFIRM_LIST[activeBucketIndex]} />
+          {/* Confirm list (footprint walk) - waits for Ryan's text to finish
+              streaming. The card's own "Looks right" CTA advances the bucket;
+              there's no redundant chip set below it. */}
+          {showBucket && bucketReady && BUCKET_CONFIRM_LIST[activeBucketIndex] && (
+            <div key={`bucket-${activeBucketIndex}`} className="animate-chat-message-in">
+              <ChatCard
+                card={{
+                  ...BUCKET_CONFIRM_LIST[activeBucketIndex],
+                  defaultAllSelected: true,
+                  onSubmit: () => handleBucketConfirm(),
+                }}
+              />
+            </div>
           )}
 
-          {/* Spending plan — math first, then categories */}
-          {showBudgetSummary && (
-            <BudgetSummaryViz plan={SPENDING_PLAN_FIXTURE} />
+          {/* Spending plan — math first, then categories. Each gated on its anchor message. */}
+          {showBudgetSummary && budgetSummaryReady && (
+            <div className="animate-chat-message-in">
+              <BudgetSummaryViz plan={SPENDING_PLAN_FIXTURE} />
+            </div>
           )}
-          {showCategoryBudgets && (
-            <CategoryBudgetsViz plan={SPENDING_PLAN_FIXTURE} />
+          {showCategoryBudgets && categoryBudgetsReady && (
+            <div className="animate-chat-message-in">
+              <CategoryBudgetsViz plan={SPENDING_PLAN_FIXTURE} />
+            </div>
           )}
 
-          {/* Chips */}
-          {showChips && activeChips.length > 0 && (
-            <ChipList chips={activeChips} onSelect={handleChip} />
+          {/* Chips - never appear before their anchor Ryan message finishes streaming */}
+          {showChips && chipsReady && activeChips.length > 0 && (
+            <div className="animate-chat-message-in">
+              <ChipList chips={activeChips} onSelect={handleChip} />
+            </div>
           )}
         </div>
       </div>
