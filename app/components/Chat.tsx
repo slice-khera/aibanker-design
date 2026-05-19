@@ -10,7 +10,7 @@ import {
   VALENTINO_500, VALENTINO_50, GREEN_500, GREEN_50, ORANGE_500, ORANGE_50,
   BG_PRIMARY, BG_SURFACE, BG_SURFACE_2, BG_SECONDARY, BLUE_50, RED_50,
   OUTLINE_SUBTLE, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_TERTIARY,
-  ALPHA_BLACK_20,
+  ALPHA_BLACK_20, ALPHA_BLACK_60,
 } from "../lib/colors";
 import { ELEVATION_CARD } from "../lib/elevation";
 import { RADIUS_M, RADIUS_PILL, RADIUS_CIRCLE } from "../lib/radii";
@@ -801,7 +801,7 @@ function New5TextOnly({
                 className="transition-transform active:scale-[0.97]"
                 style={{
                   ...typography.caption,
-                  color: "rgba(0,0,0,0.6)",
+                  color: ALPHA_BLACK_60,
                   backgroundColor: BG_PRIMARY,
                   border: "1px solid rgba(0,0,0,0.08)",
                   borderRadius: RADIUS_CIRCLE,

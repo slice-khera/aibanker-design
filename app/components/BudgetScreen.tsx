@@ -15,6 +15,7 @@ import {
   OUTLINE_BOLD,
   SLATE_10,
   SLATE_30,
+  ALPHA_WHITE_80,
 } from "../lib/colors";
 import { RADIUS_M, RADIUS_CIRCLE } from "../lib/radii";
 import { CATEGORY_ICONS, CATEGORY_COLORS, DlsTag, trackColor } from "./ChatCards";
@@ -240,7 +241,7 @@ function AnchorCardGoal({ goal }: { goal: GoalIndicatorData }) {
           >
             {goal.name}
           </p>
-          <p style={{ ...typography.caption, color: "rgba(255,255,255,0.8)", margin: 0 }}>
+          <p style={{ ...typography.caption, color: ALPHA_WHITE_80, margin: 0 }}>
             {formatINRFull(goal.saved)} / {formatINRFull(goal.target)}
             {goal.endDate ? ` · ${goal.endDate}` : ""}
           </p>
@@ -322,7 +323,7 @@ function AnchorCardPool({ pool }: { pool: Pool }) {
           >
             {pool.name}
           </p>
-          <p style={{ ...typography.caption, color: "rgba(255,255,255,0.8)", margin: 0 }}>
+          <p style={{ ...typography.caption, color: ALPHA_WHITE_80, margin: 0 }}>
             {hasTarget
               ? `${formatINRFull(pool.saved)} / ${formatINRFull(pool.target as number)}`
               : `${formatINRFull(pool.saved)} saved`}

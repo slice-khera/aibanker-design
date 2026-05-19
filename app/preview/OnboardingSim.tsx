@@ -12,6 +12,7 @@ import {
   BG_CARD,
   BG_SECONDARY,
   SLATE_10,
+  VALENTINO_50,
 } from "../lib/colors";
 import { SPACE_XS, SPACE_M, SPACE_L } from "../lib/spacing";
 import { RADIUS_M, RADIUS_CIRCLE } from "../lib/radii";
@@ -860,7 +861,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
               return (
                 <div key={`aa-chips-${i}`}>
                   <div ref={userBubbleRef} className="flex justify-end animate-chat-message-in" style={{ marginTop: SPACE_L }}>
-                    <div className="max-w-[75%] rounded-[16px] rounded-tr-lg" style={{ backgroundColor: "#FAE2FA", padding: "12px 16px" }}>
+                    <div className="max-w-[75%] rounded-[16px] rounded-tr-lg" style={{ backgroundColor: VALENTINO_50, padding: "12px 16px" }}>
                       <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>Connect other accounts</p>
                     </div>
                   </div>
@@ -945,7 +946,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
                 >
                   <div
                     className="max-w-[75%] rounded-[16px] rounded-tr-lg"
-                    style={{ backgroundColor: "#FAE2FA", padding: "12px 16px" }}
+                    style={{ backgroundColor: VALENTINO_50, padding: "12px 16px" }}
                   >
                     <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>Shared preferences</p>
                   </div>
@@ -998,7 +999,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
               const chip = cq.chips.find((c) => c.id === clarifyPicked[qIdx]);
               return (
                 <div ref={userBubbleRef} key={`clarify-${qIdx}-${i}`} className="flex justify-end animate-chat-message-in" style={{ marginTop: SPACE_L }}>
-                  <div className="max-w-[75%] rounded-[16px] rounded-tr-lg" style={{ backgroundColor: "#FAE2FA", padding: "12px 16px" }}>
+                  <div className="max-w-[75%] rounded-[16px] rounded-tr-lg" style={{ backgroundColor: VALENTINO_50, padding: "12px 16px" }}>
                     <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>{chip?.label}</p>
                   </div>
                 </div>
@@ -1063,7 +1064,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
                       >
                         <div
                           className="max-w-[75%] rounded-[16px] rounded-tr-lg"
-                          style={{ backgroundColor: "#FAE2FA", padding: "12px 16px" }}
+                          style={{ backgroundColor: VALENTINO_50, padding: "12px 16px" }}
                         >
                           <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>{evt.label}</p>
                         </div>

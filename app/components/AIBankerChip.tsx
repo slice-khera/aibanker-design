@@ -1,7 +1,8 @@
 "use client";
 
 import { typography } from "../lib/typography";
-import { ALPHA_WHITE_05 } from "../lib/colors";
+import { ALPHA_WHITE_05, ALPHA_WHITE_90, VALENTINO_500 } from "../lib/colors";
+import { RADIUS_XL } from "../lib/radii";
 
 export type AIBankerChipState = "firstTime" | "alert" | "default";
 
@@ -11,9 +12,8 @@ const DEFAULT_LABEL: Record<AIBankerChipState, string> = {
   default: "Chat with Ryan",
 };
 
-// Exact fill used on the live pay-screen chip. No matching DLS token yet.
-const CHIP_BG = "#d827dc";
-const CHIP_RADIUS = 32;
+const CHIP_BG = VALENTINO_500;
+const CHIP_RADIUS = RADIUS_XL;
 const ICON = "/icons/placeholder.svg";
 
 export default function AIBankerChip({
@@ -54,7 +54,7 @@ export default function AIBankerChip({
         <span
           style={{
             ...typography.caption,
-            color: "rgba(255,255,255,0.9)",
+            color: ALPHA_WHITE_90,
             whiteSpace: "nowrap",
           }}
         >

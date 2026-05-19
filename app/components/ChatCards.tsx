@@ -3,7 +3,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { typography } from "../lib/typography";
 import {
-  VALENTINO_50, VALENTINO_400, VALENTINO_500, VALENTINO_700,
+  VALENTINO_50, VALENTINO_200, VALENTINO_400, VALENTINO_500, VALENTINO_700,
   GREEN_50, GREEN_400, GREEN_500,
   RED_50, RED_400, RED_500,
   ORANGE_50, ORANGE_400, ORANGE_500, ORANGE_600,
@@ -524,7 +524,7 @@ function CategoryBreakdownCard({ data }: { data: Extract<ChatCardData, { type: "
               height: 40,
               borderRadius: RADIUS_CIRCLE,
               backgroundColor: BG_PRIMARY,
-              border: "1px solid #f0f4f7",
+              border: `1px solid ${SLATE_30}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -840,7 +840,7 @@ function MerchantConcentrationCard({ data }: { data: Extract<ChatCardData, { typ
     const rest = merchants.slice(4);
     const otherAmount = rest.reduce((s, m) => s + m.amount, 0);
     const otherPct = rest.reduce((s, m) => s + m.pct, 0);
-    return [...top4, { name: "Other", amount: otherAmount, pct: otherPct, color: "#8e949d" }];
+    return [...top4, { name: "Other", amount: otherAmount, pct: otherPct, color: SLATE_300 }];
   })();
 
   const rows = (
@@ -851,7 +851,7 @@ function MerchantConcentrationCard({ data }: { data: Extract<ChatCardData, { typ
           <div style={{
             width: 40, height: 40, borderRadius: RADIUS_CIRCLE,
             backgroundColor: m.color || PALETTE[i % PALETTE.length],
-            border: "1px solid #f0f4f7",
+            border: `1px solid ${SLATE_30}`,
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
           }}>
             <span style={{ ...typography.buttonSmall, color: BG_PRIMARY }}>
@@ -914,7 +914,7 @@ function CategoryMomCard({ data }: { data: Extract<ChatCardData, { type: "catego
     const rest = rawCategories.slice(4);
     const otherThis = rest.reduce((s, c) => s + c.thisValue, 0);
     const otherLast = rest.reduce((s, c) => s + c.lastValue, 0);
-    return [...top4, { name: "Other", thisValue: otherThis, lastValue: otherLast, color: "#8e949d" }];
+    return [...top4, { name: "Other", thisValue: otherThis, lastValue: otherLast, color: SLATE_300 }];
   })();
 
   const [selectedCat, setSelectedCat] = useState<number | null>(null);
@@ -1021,11 +1021,11 @@ function CategoryMomCard({ data }: { data: Extract<ChatCardData, { type: "catego
       {/* Legend — below graph, caption/sentence case, mini bar swatches */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginTop: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <div style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: "#fae2fa" }} />
+          <div style={{ width: 10, height: 10, borderRadius: 4, backgroundColor: VALENTINO_50 }} />
           <span style={{ ...typography.caption, color: TEXT_TERTIARY }}>{lastMonth}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <div style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: VALENTINO_500 }} />
+          <div style={{ width: 10, height: 10, borderRadius: 4, backgroundColor: VALENTINO_500 }} />
           <span style={{ ...typography.caption, color: TEXT_TERTIARY }}>{thisMonth}</span>
         </div>
       </div>
@@ -1210,15 +1210,15 @@ function SpendingHeatmapCard({ data }: { data: Extract<ChatCardData, { type: "sp
 
   const intensityColor = (val: number | null): string => {
     if (val === null) return "transparent";
-    if (val === 0) return "#eaebed";
+    if (val === 0) return SLATE_50;
     const t = Math.min(val / maxSpend, 1);
-    if (t < 0.25) return "#fae2fa";
-    if (t < 0.5) return "#ea89ec";
+    if (t < 0.25) return VALENTINO_50;
+    if (t < 0.5) return VALENTINO_200;
     if (t < 0.75) return VALENTINO_500;
-    return "#87068a";
+    return VALENTINO_700;
   };
 
-  const intensityLevels = ["#eaebed", "#fae2fa", "#ea89ec", VALENTINO_500, "#87068a"];
+  const intensityLevels = [SLATE_50, VALENTINO_50, VALENTINO_200, VALENTINO_500, VALENTINO_700];
 
   // Build grid cells: leading empties for startDay offset, then day cells
   const cells: (number | null)[] = [];
@@ -1273,7 +1273,7 @@ function SpendingHeatmapCard({ data }: { data: Extract<ChatCardData, { type: "sp
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, marginTop: 24 }}>
         <span style={{ ...typography.caption, color: tertiary, marginRight: 4 }}>{"\u20B9"}</span>
         {intensityLevels.map((color) => (
-          <div key={color} style={{ width: 14, height: 14, borderRadius: 3, backgroundColor: color }} />
+          <div key={color} style={{ width: 14, height: 14, borderRadius: 4, backgroundColor: color }} />
         ))}
         <span style={{ ...typography.caption, color: tertiary, marginLeft: 4 }}>{"\u20B9\u20B9\u20B9\u20B9"}</span>
       </div>
@@ -1310,7 +1310,7 @@ function PaymentModeDonutCardV2({ data }: { data: Extract<ChatCardData, { type: 
     const rest = rawModes.slice(4);
     const otherAmount = rest.reduce((s, m) => s + m.amount, 0);
     const otherPct = rest.reduce((s, m) => s + m.pct, 0);
-    return [...top4, { name: "Other", amount: otherAmount, pct: otherPct, color: "#8e949d" }];
+    return [...top4, { name: "Other", amount: otherAmount, pct: otherPct, color: SLATE_300 }];
   })();
 
   const size = 240;
@@ -1324,7 +1324,7 @@ function PaymentModeDonutCardV2({ data }: { data: Extract<ChatCardData, { type: 
   // Bundle modes < 10% into "Others"
   const bigModes = modes.filter((m) => m.pct >= 10);
   const smallModes = modes.filter((m) => m.pct < 10);
-  const othersColor = "#8e949d"; // Slate/300
+  const othersColor = SLATE_300;
   const arcModes = smallModes.length > 0
     ? [...bigModes, { name: "Others", amount: smallModes.reduce((s, m) => s + m.amount, 0), pct: smallModes.reduce((s, m) => s + m.pct, 0), color: othersColor }]
     : bigModes;
@@ -1455,7 +1455,7 @@ function TransactionTableCard({ data }: { data: Extract<ChatCardData, { type: "t
               height: 40,
               borderRadius: RADIUS_CIRCLE,
               backgroundColor: avatarColor,
-              border: "1px solid #f0f4f7",
+              border: `1px solid ${SLATE_30}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

@@ -2,10 +2,15 @@
 
 // ── Valentino (Brand Purple) ───────────────────────────────────
 export const VALENTINO_50 = "#FAE2FA";
+export const VALENTINO_100 = "#F3BAF4";
+export const VALENTINO_200 = "#EA89EC";
+export const VALENTINO_300 = "#E362E5";
 export const VALENTINO_400 = "#DE45E1";
 export const VALENTINO_500 = "#D30AD7";
 export const VALENTINO_600 = "#A008A3";
 export const VALENTINO_700 = "#87068A";
+export const VALENTINO_800 = "#650567";
+export const VALENTINO_900 = "#3F0341";
 export const VALENTINO_950 = "#260227";
 
 // ── Slate (Neutral Gray) ──────────────────────────────────────
@@ -48,8 +53,11 @@ export const ORANGE_600 = "#C27511";
 export const ORANGE_950 = "#2E1C04";
 
 // ── Alpha / Black ──────────────────────────────────────────────
+export const ALPHA_BLACK_FF = "#000000";
 export const ALPHA_BLACK_90 = "rgba(0,0,0,0.9)";
+export const ALPHA_BLACK_80 = "rgba(0,0,0,0.8)";
 export const ALPHA_BLACK_70 = "rgba(0,0,0,0.7)";
+export const ALPHA_BLACK_60 = "rgba(0,0,0,0.6)";
 export const ALPHA_BLACK_50 = "rgba(0,0,0,0.5)";
 export const ALPHA_BLACK_40 = "rgba(0,0,0,0.4)";
 export const ALPHA_BLACK_30 = "rgba(0,0,0,0.3)";
@@ -59,6 +67,8 @@ export const ALPHA_BLACK_05 = "rgba(0,0,0,0.05)";
 
 // ── Alpha / White ──────────────────────────────────────────────
 export const ALPHA_WHITE_FF = "#FFFFFF";
+export const ALPHA_WHITE_90 = "rgba(255,255,255,0.9)";
+export const ALPHA_WHITE_80 = "rgba(255,255,255,0.8)";
 export const ALPHA_WHITE_70 = "rgba(255,255,255,0.7)";
 export const ALPHA_WHITE_60 = "rgba(255,255,255,0.6)";
 export const ALPHA_WHITE_50 = "rgba(255,255,255,0.5)";
@@ -67,6 +77,7 @@ export const ALPHA_WHITE_30 = "rgba(255,255,255,0.3)";
 export const ALPHA_WHITE_20 = "rgba(255,255,255,0.2)";
 export const ALPHA_WHITE_10 = "rgba(255,255,255,0.1)";
 export const ALPHA_WHITE_05 = "rgba(255,255,255,0.05)";
+export const ALPHA_WHITE_00 = "rgba(255,255,255,0)";
 
 // ── Semantic: Text & Icons ─────────────────────────────────────
 export const TEXT_PRIMARY = ALPHA_BLACK_90;

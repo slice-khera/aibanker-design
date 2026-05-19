@@ -9,6 +9,7 @@ import {
 } from "../lib/colors";
 import { ELEVATION_CARD } from "../lib/elevation";
 import { SPACE_XS, SPACE_M } from "../lib/spacing";
+import { RADIUS_SM } from "../lib/radii";
 
 // DLS 2.0 Snackbar. Figma nodes 670:240, 1910:22720.
 // 328w, radius 12, pr 8. Icon 20px (pl 16). Text 14/20 white. Action pill (8×16).
@@ -39,7 +40,7 @@ export default function Snackbar({
         width: 328,
         display: "flex",
         alignItems: "center",
-        borderRadius: 12,
+        borderRadius: RADIUS_SM,
         paddingRight: SPACE_XS,
         backgroundColor: isNegative ? RED_400 : SLATE_800,
         boxShadow: isNegative ? NEGATIVE_SHADOW : ELEVATION_CARD,

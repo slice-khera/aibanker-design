@@ -1,8 +1,9 @@
 "use client";
 
 import { typography } from "../lib/typography";
-import { ALPHA_WHITE_05, ALPHA_WHITE_FF } from "../lib/colors";
+import { ALPHA_WHITE_05, ALPHA_WHITE_90, ALPHA_WHITE_FF, VALENTINO_500 } from "../lib/colors";
 import { SPACE_S, SPACE_M } from "../lib/spacing";
+import { RADIUS_XL } from "../lib/radii";
 
 // ── Pill data ────────────────────────────────────────────────
 export type PillDef = { id: string; icon: string; label: string; tappable: boolean };
@@ -73,9 +74,9 @@ export default function PayScreen({
               className="flex items-center shrink-0 transition-transform active:scale-[0.97]"
               style={{
                 gap: 4,
-                backgroundColor: "#d827dc",
+                backgroundColor: VALENTINO_500,
                 border: `1.5px solid ${ALPHA_WHITE_05}`,
-                borderRadius: 32,
+                borderRadius: RADIUS_XL,
                 padding: "10px 16px",
                 cursor: pill.tappable ? "pointer" : "default",
               }}
@@ -84,7 +85,7 @@ export default function PayScreen({
               <span
                 style={{
                   ...typography.caption,
-                  color: "rgba(255,255,255,0.9)",
+                  color: ALPHA_WHITE_90,
                   whiteSpace: "nowrap",
                 }}
               >

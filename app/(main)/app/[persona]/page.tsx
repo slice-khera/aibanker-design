@@ -68,10 +68,15 @@ import { getEffectiveBudget } from "@/app/lib/budget-utils";
 import { useUserState } from "@/app/hooks/useUserState";
 import { typography } from "@/app/lib/typography";
 import {
-  VALENTINO_500, BG_PRIMARY,
+  VALENTINO_50, VALENTINO_500, BG_PRIMARY, BG_SECONDARY,
   TEXT_PRIMARY, TEXT_SECONDARY, TEXT_TERTIARY,
   ALPHA_BLACK_20, ALPHA_BLACK_30, ALPHA_BLACK_40,
   OUTLINE_SUBTLE,
+  BLUE_50, BLUE_500,
+  GREEN_50, GREEN_500,
+  RED_50, RED_500,
+  ORANGE_50, ORANGE_500,
+  SLATE_30, SLATE_800,
 } from "@/app/lib/colors";
 import { RADIUS_L, RADIUS_PILL, RADIUS_CIRCLE } from "@/app/lib/radii";
 import {
@@ -3852,9 +3857,9 @@ Be insightful, not just descriptive.`;
                             ...typography.bodySmall,
                             padding: "8px 16px",
                             borderRadius: RADIUS_PILL,
-                            border: fdSelectedAmount === opt.value ? "1px solid #d30ad7" : `1px solid ${ALPHA_BLACK_20}`,
+                            border: fdSelectedAmount === opt.value ? `1px solid ${VALENTINO_500}` : `1px solid ${ALPHA_BLACK_20}`,
                             color: TEXT_PRIMARY,
-                            backgroundColor: fdSelectedAmount === opt.value ? "#fae2fa" : BG_PRIMARY,
+                            backgroundColor: fdSelectedAmount === opt.value ? VALENTINO_50 : BG_PRIMARY,
                             cursor: "pointer",
                             transition: "all 150ms ease",
                           }}
@@ -3868,7 +3873,7 @@ Be insightful, not just descriptive.`;
                     <div style={{ display: "flex", gap: 24, marginBottom: 24 }}>
                       <div>
                         <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4 }}>RATE</p>
-                        <p style={{ ...typography.buttonSmall, color: "#00a63e" }}>{fdSheetData.rate}</p>
+                        <p style={{ ...typography.buttonSmall, color: GREEN_500 }}>{fdSheetData.rate}</p>
                       </div>
                       <div>
                         <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4 }}>TENURE</p>
@@ -3953,8 +3958,8 @@ Be insightful, not just descriptive.`;
                           display: "inline-block",
                           padding: "4px 8px",
                           borderRadius: RADIUS_CIRCLE,
-                          backgroundColor: obligSheetItem.type === "Rent/EMI" ? "#F6F9FC" : obligSheetItem.type === "Subscription" ? "#E6EDF9" : obligSheetItem.type === "Utility" ? "#E6EDF9" : "#FAE2FA",
-                          color: obligSheetItem.type === "Rent/EMI" ? "#252A31" : obligSheetItem.type === "Subscription" ? "#2B6ACF" : obligSheetItem.type === "Utility" ? "#2B6ACF" : VALENTINO_500,
+                          backgroundColor: obligSheetItem.type === "Rent/EMI" ? BG_SECONDARY : obligSheetItem.type === "Subscription" ? BLUE_50 : obligSheetItem.type === "Utility" ? BLUE_50 : VALENTINO_50,
+                          color: obligSheetItem.type === "Rent/EMI" ? SLATE_800 : obligSheetItem.type === "Subscription" ? BLUE_500 : obligSheetItem.type === "Utility" ? BLUE_500 : VALENTINO_500,
                           ...typography.metadata,
                           textTransform: "uppercase",
                         }}
@@ -3983,7 +3988,7 @@ Be insightful, not just descriptive.`;
                     <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 8, margin: "0 0 8px" }}>
                       USE AMOUNT
                     </p>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32, borderBottom: "2px solid #d30ad7", height: 48 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32, borderBottom: `2px solid ${VALENTINO_500}`, height: 48 }}>
                       <span style={{ ...typography.headerH4, color: TEXT_PRIMARY }}>₹</span>
                       <input
                         type="number"
@@ -4030,7 +4035,7 @@ Be insightful, not just descriptive.`;
                           height: 48,
                           padding: "0 24px",
                           borderRadius: RADIUS_CIRCLE,
-                          backgroundColor: "#F0F4F7",
+                          backgroundColor: SLATE_30,
                           color: TEXT_PRIMARY,
                           border: "none",
                           cursor: "pointer",
@@ -4187,10 +4192,10 @@ Be insightful, not just descriptive.`;
                           padding: "4px 8px",
                           borderRadius: RADIUS_CIRCLE,
                           backgroundColor: goalDetail.status === "ahead"
-                            ? "#e0f4e8"
+                            ? GREEN_50
                             : goalDetail.status === "behind"
-                              ? "#f9e4e5"
-                              : "#fff3e3",
+                              ? RED_50
+                              : ORANGE_50,
                         }}
                       >
                         <span
@@ -4198,10 +4203,10 @@ Be insightful, not just descriptive.`;
                             ...typography.metadata,
                             textTransform: "uppercase",
                             color: goalDetail.status === "ahead"
-                              ? "#00a63e"
+                              ? GREEN_500
                               : goalDetail.status === "behind"
-                                ? "#ce1d26"
-                                : "#ff9a17",
+                                ? RED_500
+                                : ORANGE_500,
                           }}
                         >
                           {goalDetail.daysLabel}
@@ -4265,7 +4270,7 @@ Be insightful, not just descriptive.`;
                     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                       <div style={{ display: "flex", justifyContent: "space-between" }}>
                         <span style={{ ...typography.bodySmall, color: TEXT_TERTIARY }}>Rate</span>
-                        <span style={{ ...typography.buttonSmall, color: "#00a63e" }}>7.25% p.a.</span>
+                        <span style={{ ...typography.buttonSmall, color: GREEN_500 }}>7.25% p.a.</span>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between" }}>
                         <span style={{ ...typography.bodySmall, color: TEXT_TERTIARY }}>Tenure</span>
@@ -4277,7 +4282,7 @@ Be insightful, not just descriptive.`;
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between" }}>
                         <span style={{ ...typography.bodySmall, color: TEXT_TERTIARY }}>Status</span>
-                        <span style={{ ...typography.buttonSmall, color: "#00a63e" }}>Active</span>
+                        <span style={{ ...typography.buttonSmall, color: GREEN_500 }}>Active</span>
                       </div>
                     </div>
                   </div>

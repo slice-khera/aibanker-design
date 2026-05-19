@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { BG_PRIMARY } from "../../lib/colors";
+import { RADIUS_XL } from "../../lib/radii";
 
 /**
  * Device frame — matches main app bezel (360×780, rounded corners, dark housing).
@@ -12,7 +13,7 @@ export default function DeviceFrame({ children }: { children: ReactNode }) {
     <div
       style={{
         width: 372, /* 360 + 6px padding each side */
-        borderRadius: 32,
+        borderRadius: RADIUS_XL,
         backgroundColor: "#1a1a1e",
         padding: 6,
         boxShadow: "none",

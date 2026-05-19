@@ -15,4 +15,18 @@ export const INTEGRATED_IDS: ReadonlySet<string> = new Set([
   "spend-overview"
 ]);
 
-export const CONFIRMED_IDS: ReadonlySet<string> = new Set([]);
+export const CONFIRMED_IDS: ReadonlySet<string> = new Set([
+  "aa",
+  "degen-mode",
+  "drawer-experience",
+  "feature-pdp",
+  "gbp-flow",
+  "persona-toggle",
+  "plan-cruncher-v2",
+  "planmode-savings",
+  "reddit",
+  "refresh-session",
+  "savings-ladder",
+  "spending-plan-card",
+  "verdict-banner"
+]);

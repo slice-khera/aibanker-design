@@ -25,6 +25,7 @@ import VerdictBanner from "@/app/components/VerdictBanner";
 // Fixture data
 import { DBG_GOAL_QUESTIONS, GOAL_TRACKER_SCENARIOS } from "@/app/lib/debug-fixtures";
 import { TEXT_PRIMARY, OUTLINE_SUBTLE, VALENTINO_500 } from "@/app/lib/colors";
+import { RADIUS_M } from "@/app/lib/radii";
 import { ELEVATION_CARD } from "@/app/lib/elevation";
 import { typography } from "@/app/lib/typography";
 import {
@@ -122,7 +123,7 @@ function PayScreenBackdrop({ children }: { children: React.ReactNode }) {
       style={{
         backgroundColor: VALENTINO_500,
         padding: "56px 24px",
-        borderRadius: 16,
+        borderRadius: RADIUS_M,
         minHeight: 160,
       }}
     >

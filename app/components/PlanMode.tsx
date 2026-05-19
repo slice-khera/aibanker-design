@@ -6,6 +6,7 @@ import {
   VALENTINO_500,
   GREEN_500,
   GREEN_50,
+  ORANGE_500,
   BG_PRIMARY,
   BG_SURFACE,
   BG_SURFACE_2,
@@ -156,7 +157,7 @@ function CelebrationParticles({ active }: { active: boolean }) {
 
   const particles = Array.from({ length: 8 }, (_, i) => {
     const angle = (i / 8) * 360;
-    const colors = [VALENTINO_500, GREEN_500, "#FFD700", "#FF6B6B", VALENTINO_500, GREEN_500, "#5B9BD5", "#FF9A17"];
+    const colors = [VALENTINO_500, GREEN_500, "#FFD700", "#FF6B6B", VALENTINO_500, GREEN_500, "#5B9BD5", ORANGE_500];
     return (
       <span
         key={i}
@@ -341,7 +342,7 @@ export default function PlanMode({ steps, visible, completed }: PlanModeProps) {
                   height: "100%",
                   width: `${progress * 100}%`,
                   backgroundColor: VALENTINO_500,
-                  borderRadius: 1,
+                  borderRadius: 2,
                   transition: "width 500ms ease-out",
                 }}
               />

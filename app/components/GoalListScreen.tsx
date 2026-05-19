@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { BOTTOM_INSET, NavButton, StatusBar } from "./AppChrome";
 import { typography } from "../lib/typography";
 import { formatINR } from "../lib/financial-data";
-import { GREEN_500, GREEN_50, RED_500, RED_50, ORANGE_500, ORANGE_50, TEXT_PRIMARY, TEXT_TERTIARY, BG_PRIMARY } from "../lib/colors";
+import { GREEN_500, GREEN_50, RED_500, RED_50, ORANGE_500, ORANGE_50, TEXT_PRIMARY, TEXT_TERTIARY, TEXT_ON_COLOR_SECONDARY, BG_PRIMARY } from "../lib/colors";
 import type { GoalIndicatorData, GoalStatus } from "./GoalTracker";
 import { RADIUS_M, RADIUS_CIRCLE } from "../lib/radii";
 
@@ -248,7 +248,7 @@ function GoalCardTall({
           </p>
 
           {/* Save X by Y */}
-          <p style={{ ...typography.caption, color: "rgba(255,255,255,0.7)", margin: 0 }}>
+          <p style={{ ...typography.caption, color: TEXT_ON_COLOR_SECONDARY, margin: 0 }}>
             Save {formatINR(goal.target)} by {goal.endDate ?? "target date"}
           </p>
         </div>
