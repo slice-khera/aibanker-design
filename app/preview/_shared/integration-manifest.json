@@ -29,6 +29,7 @@
     "screens": {
       "feature-pdp": { "kind": "import", "symbols": ["FeaturePDP"],      "sourcePaths": ["app/components/FeaturePDP.tsx"] },
       "goal-list":   { "kind": "import", "symbols": ["GoalListScreen"],  "sourcePaths": ["app/components/GoalListScreen.tsx"] },
+      "pay":         { "kind": "import", "symbols": ["PayScreen"],       "sourcePaths": ["app/components/PayScreen.tsx"] },
       "pot-detail":  { "kind": "import", "symbols": ["PotDetail"],       "sourcePaths": ["app/components/PotDetail.tsx"] }
     },
     "flows": {

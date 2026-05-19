@@ -4,6 +4,7 @@ import { typography } from "../lib/typography";
 import { ALPHA_WHITE_05, ALPHA_WHITE_90, ALPHA_WHITE_FF, VALENTINO_500 } from "../lib/colors";
 import { SPACE_S, SPACE_M } from "../lib/spacing";
 import { RADIUS_XL } from "../lib/radii";
+import AIBankerChip from "./AIBankerChip";
 
 // ── Pill data ────────────────────────────────────────────────
 export type PillDef = { id: string; icon: string; label: string; tappable: boolean };
@@ -66,33 +67,45 @@ export default function PayScreen({
           className="flex items-center overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
           style={{ gap: SPACE_S, paddingLeft: SPACE_M, paddingRight: SPACE_M }}
         >
-          {pills.map((pill, idx) => (
-            <button
-              key={pill.id}
-              type="button"
-              onClick={pill.tappable ? onPillTap : undefined}
-              className="flex items-center shrink-0 transition-transform active:scale-[0.97]"
-              style={{
-                gap: 4,
-                backgroundColor: VALENTINO_500,
-                border: `1.5px solid ${ALPHA_WHITE_05}`,
-                borderRadius: RADIUS_XL,
-                padding: "10px 16px",
-                cursor: pill.tappable ? "pointer" : "default",
-              }}
-            >
-              <img src={pill.icon} alt="" style={{ width: 16, height: 16 }} />
-              <span
+          {pills.map((pill, idx) => {
+            if (idx === 0 && pill.tappable) {
+              return (
+                <AIBankerChip
+                  key={pill.id}
+                  state={animate ? "alert" : "firstTime"}
+                  label={pillLabel ?? pill.label}
+                  onTap={onPillTap}
+                />
+              );
+            }
+            return (
+              <button
+                key={pill.id}
+                type="button"
+                onClick={pill.tappable ? onPillTap : undefined}
+                className="flex items-center shrink-0 transition-transform active:scale-[0.97]"
                 style={{
-                  ...typography.caption,
-                  color: ALPHA_WHITE_90,
-                  whiteSpace: "nowrap",
+                  gap: 4,
+                  backgroundColor: VALENTINO_500,
+                  border: `1.5px solid ${ALPHA_WHITE_05}`,
+                  borderRadius: RADIUS_XL,
+                  padding: "10px 16px",
+                  cursor: pill.tappable ? "pointer" : "default",
                 }}
               >
-                {idx === 0 && pillLabel ? pillLabel : pill.label}
-              </span>
-            </button>
-          ))}
+                <img src={pill.icon} alt="" style={{ width: 16, height: 16 }} />
+                <span
+                  style={{
+                    ...typography.caption,
+                    color: ALPHA_WHITE_90,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {pill.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

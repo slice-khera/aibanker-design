@@ -9,6 +9,7 @@ import BudgetScreen from "@/app/components/BudgetScreen";
 import PotDetail from "@/app/components/PotDetail";
 import FeaturePDP from "@/app/components/FeaturePDP";
 import ErrorScreen from "@/app/components/ErrorScreen";
+import PayScreen from "@/app/components/PayScreen";
 
 import { BUDGET_SCENARIOS, GOAL_TRACKER_SCENARIOS } from "@/app/lib/debug-fixtures";
 
@@ -35,6 +36,15 @@ const PDP_FEATURES = [
 ];
 
 const SCREENS: ScreenDef[] = [
+  {
+    id: "pay",
+    label: "Pay screen",
+    variants: [
+      { name: "first time",     render: () => <PayScreen pillLabel="Meet Ryan"      animate={false} onPillTap={noop} /> },
+      { name: "Ryan is ready",  render: () => <PayScreen pillLabel="Ryan is ready"  animate={true}  onPillTap={noop} /> },
+      { name: "default",        render: () => <PayScreen pillLabel="Chat with Ryan" animate={false} onPillTap={noop} /> },
+    ],
+  },
   {
     id: "feature-pdp",
     label: "Feature page",
