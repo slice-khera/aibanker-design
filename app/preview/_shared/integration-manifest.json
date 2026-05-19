@@ -39,7 +39,7 @@
       "planmode-savings":  { "kind": "import", "symbols": ["SavingsFlowSimBottom"],  "sourcePaths": ["app/preview/SavingsFlowSimBottom.tsx"] },
       "degen-mode":        { "kind": "import", "symbols": ["DegenModeSimV1"],        "sourcePaths": ["app/preview/DegenModeSimV1.tsx"] },
       "reddit":            { "kind": "import", "symbols": ["RedditSimV1", "RedditSimV2"], "sourcePaths": ["app/preview/RedditSimV1.tsx", "app/preview/RedditSimV2.tsx"] },
-      "refresh-session":   { "kind": "import", "symbols": ["RefreshSessionSimV1", "RefreshSessionSimV2"], "sourcePaths": ["app/preview/RefreshSessionSimV1.tsx", "app/preview/RefreshSessionSimV2.tsx"] },
+      "refresh-session":   { "kind": "import", "symbols": ["RefreshSessionSimV2"], "sourcePaths": ["app/preview/RefreshSessionSimV2.tsx"] },
       "drawer-experience": { "kind": "import", "symbols": ["DrawerExperienceSim"],   "sourcePaths": ["app/preview/DrawerExperienceSim.tsx"] },
       "gbp-flow":          { "kind": "import", "symbols": ["GBPFlowSim"],            "sourcePaths": ["app/preview/GBPFlowSim.tsx"] }
     }

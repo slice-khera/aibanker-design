@@ -539,18 +539,14 @@ const MOSAIC_ROW1: QuickAction[] = [
 ];
 // Row 2 left: tall card
 const MOSAIC_TALL: QuickAction = { category: "Feedback", title: "Make Ryan smarter", illustration: ILLUST_FEEDBACK, bg: "linear-gradient(160deg, #ffffff 40%, #fae2fa 100%)" };
-// Row 2 right: two half-height cards stacked
-const MOSAIC_HALF: QuickAction[] = [
-  { category: "For you", title: "Save taxes", bg: "linear-gradient(160deg, #ffffff 40%, #e0f4e8 100%)" },
-  { category: "Explore", title: "Surprise me", bg: "linear-gradient(160deg, #ffffff 40%, #e0e3e6 100%)" },
-];
+// Row 2 right: tall card
+const MOSAIC_TALL_RIGHT: QuickAction = { category: "Just for laughs", title: "Roast me", bg: "linear-gradient(160deg, #ffffff 40%, #f9e4e5 100%)" };
 
 const ONTRACK_MOCK_RESPONSES: Record<string, string> = {
   "Can I afford it?": "Balance is \u20B919,883 but whether you can afford something depends on what it is, when you need to pay, and what bills are coming up. What are you thinking of buying?",
   "Analyse my spends": "Last month you spent \u20B947,200 total. Dining was the biggest at \u20B912,400, then groceries at \u20B98,900 and transport at \u20B96,100. Overall **8% less** than the month before. Whatever you did, it\u2019s working.",
   "Make Ryan smarter": "You can rate my responses with the thumbs up or down after each reply. The more you interact, the sharper I get. Let\u2019s keep going.",
-  "Save taxes": "You could save up to \u20B945,000 this year. You\u2019re not fully using your **80C limit** \u2014 an ELSS fund or extra PPF contribution before March would help. Want to look at the options?",
-  "Surprise me": "\u20B9799 a month on subscriptions you did not use last month. That\u2019s \u20B99,588 a year on autopilot. Want to see the full list and kill the ones you do not actually use?",
+  "Roast me": "Where do I start. You spent \u20B91,240 on coffee last month and your emergency fund is still \u20B92,500. Bold strategy. Want the full inventory or are we good?",
 };
 
 function MosaicCard({
@@ -638,16 +634,10 @@ function ReviewOnTrackScreen({
               <MosaicCard key={a.title} action={a} onSelect={() => handleSelect(a.title)} style={{ aspectRatio: "1 / 1" }} />
             ))}
           </div>
-          {/* Row 2: tall card (1:1 square) + two half-height cards stacked */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 16 }}>
-            <MosaicCard
-              action={MOSAIC_TALL}
-              onSelect={() => handleSelect(MOSAIC_TALL.title)}
-              style={{ gridRow: "1 / 3", aspectRatio: "1 / 1" }}
-            />
-            {MOSAIC_HALF.map((a) => (
-              <MosaicCard key={a.title} action={a} onSelect={() => handleSelect(a.title)} />
-            ))}
+          {/* Row 2: two tall cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <MosaicCard action={MOSAIC_TALL} onSelect={() => handleSelect(MOSAIC_TALL.title)} style={{ aspectRatio: "1 / 1" }} />
+            <MosaicCard action={MOSAIC_TALL_RIGHT} onSelect={() => handleSelect(MOSAIC_TALL_RIGHT.title)} style={{ aspectRatio: "1 / 1" }} />
           </div>
         </div>
       )}

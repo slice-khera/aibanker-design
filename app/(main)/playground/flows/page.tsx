@@ -11,7 +11,6 @@ import SavingsFlowSimBottom from "@/app/preview/SavingsFlowSimBottom";
 import DegenModeSimV1 from "@/app/preview/DegenModeSimV1";
 import RedditSimV1 from "@/app/preview/RedditSimV1";
 import RedditSimV2 from "@/app/preview/RedditSimV2";
-import RefreshSessionSimV1 from "@/app/preview/RefreshSessionSimV1";
 import RefreshSessionSimV2 from "@/app/preview/RefreshSessionSimV2";
 import DrawerExperienceSim from "@/app/preview/DrawerExperienceSim";
 import GBPFlowSim from "@/app/preview/GBPFlowSim";
@@ -77,8 +76,7 @@ const FLOWS: FlowDef[] = [
     label: "Refresh session",
     description: "Re-engagement after inactivity",
     variants: [
-      { name: "v1", render: () => <RefreshSessionSimV1 /> },
-      { name: "v2", render: () => <RefreshSessionSimV2 /> },
+      { name: "v1", render: () => <RefreshSessionSimV2 /> },
     ],
   },
   {

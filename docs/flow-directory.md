@@ -130,5 +130,5 @@ Design variants still being iterated on:
 | AppEntryPoint | full-sim | `/preview?component=AppEntryPoint` |
 | DegenMode | v1 | `/preview?component=DegenMode` |
 | Reddit | recording, screenshot | `/preview?component=Reddit` |
-| RefreshSession | v1, v2 | `/preview?component=RefreshSession` |
+| RefreshSession | v1 | `/preview?component=RefreshSession` |
 | DrawerExperience | v1 | `/preview?component=DrawerExperience` |

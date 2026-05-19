@@ -75,10 +75,7 @@ const MOSAIC_ROW1: QuickAction[] = [
   { category: "Last month", title: "Analyse my spends", illustration: ILLUST_MY_SPENDS, bg: "linear-gradient(160deg, #ffffff 40%, #fff3e3 100%)" },
 ];
 const MOSAIC_TALL: QuickAction = { category: "Feedback", title: "Make Ryan smarter", illustration: ILLUST_FEEDBACK, bg: "linear-gradient(160deg, #ffffff 40%, #fae2fa 100%)" };
-const MOSAIC_HALF: QuickAction[] = [
-  { category: "For you", title: "Save taxes", bg: "linear-gradient(160deg, #ffffff 40%, #e0f4e8 100%)" },
-  { category: "Explore", title: "Surprise me", bg: "linear-gradient(160deg, #ffffff 40%, #e0e3e6 100%)" },
-];
+const MOSAIC_TALL_RIGHT: QuickAction = { category: "Just for laughs", title: "Roast me", bg: "linear-gradient(160deg, #ffffff 40%, #f9e4e5 100%)" };
 
 // ── Feedback row icons (inline SVGs for direct token coloring) ──
 
@@ -464,15 +461,10 @@ export default function DegenModeSimV1() {
                     <MosaicCard key={a.title} action={a} style={{ aspectRatio: "1 / 1" }} />
                   ))}
                 </div>
-                {/* Row 2: tall card + two half-height stacked */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: SPACE_M }}>
-                  <MosaicCard
-                    action={MOSAIC_TALL}
-                    style={{ gridRow: "1 / 3", aspectRatio: "1 / 1" }}
-                  />
-                  {MOSAIC_HALF.map((a) => (
-                    <MosaicCard key={a.title} action={a} />
-                  ))}
+                {/* Row 2: two tall cards */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: SPACE_M }}>
+                  <MosaicCard action={MOSAIC_TALL} style={{ aspectRatio: "1 / 1" }} />
+                  <MosaicCard action={MOSAIC_TALL_RIGHT} style={{ aspectRatio: "1 / 1" }} />
                 </div>
               </div>
             </div>

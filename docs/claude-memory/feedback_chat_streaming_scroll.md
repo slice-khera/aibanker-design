@@ -20,7 +20,7 @@ Ryan's text must ALWAYS finish streaming before any actionable element (button, 
 **Never render a `RyanLine` and an actionable element as siblings without one of these gates.**
 
 Existing correct implementations to reference:
-- `typingDone` / `followupDone` gates in RefreshSessionSimV1/V2, DegenModeSimV1
+- `typingDone` / `followupDone` gates in RefreshSessionSimV2, DegenModeSimV1
 - `surfaceDone` gate in Chat.tsx's AssistantOptionsCard
 - `showClarifyChips` timer in SavingsFlowSim/RedditSim
 - `aaNudgeStreamed` / `prefNudgeStreamed` gates in OnboardingSim
