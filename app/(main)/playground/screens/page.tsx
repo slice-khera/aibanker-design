@@ -10,6 +10,8 @@ import PotDetail from "@/app/components/PotDetail";
 import FeaturePDP from "@/app/components/FeaturePDP";
 import ErrorScreen from "@/app/components/ErrorScreen";
 import PayScreen from "@/app/components/PayScreen";
+import GoalListScreen from "@/app/components/GoalListScreen";
+import ChatInitialScreen, { getSuggestions } from "@/app/components/ChatInitialScreen";
 
 import { BUDGET_SCENARIOS, GOAL_TRACKER_SCENARIOS } from "@/app/lib/debug-fixtures";
 
@@ -89,6 +91,23 @@ const SCREENS: ScreenDef[] = [
     label: "Error state",
     variants: [
       { name: "default", render: () => <ErrorScreen appBar reloadButton onBack={noop} onReload={noop} /> },
+    ],
+  },
+  {
+    id: "goal-list",
+    label: "Goal list",
+    variants: [
+      { name: "single",       render: () => <GoalListScreen goals={GOAL_TRACKER_SCENARIOS.single} onGoalTap={noop} onClose={noop} /> },
+      { name: "two goals",    render: () => <GoalListScreen goals={GOAL_TRACKER_SCENARIOS.two}    onGoalTap={noop} onClose={noop} /> },
+      { name: "three goals",  render: () => <GoalListScreen goals={GOAL_TRACKER_SCENARIOS.three}  onGoalTap={noop} onClose={noop} /> },
+    ],
+  },
+  {
+    id: "chat-initial",
+    label: "Chat initial",
+    variants: [
+      { name: "no goal", render: () => <ChatInitialScreen suggestions={getSuggestions(false)} onSuggestionClick={noop} onSubmit={noop} /> },
+      { name: "has goal", render: () => <ChatInitialScreen suggestions={getSuggestions(true)} onSuggestionClick={noop} onSubmit={noop} /> },
     ],
   },
 ];

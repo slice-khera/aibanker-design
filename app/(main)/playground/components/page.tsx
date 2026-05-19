@@ -17,6 +17,8 @@ import { StatusBar, AppBar, NavButton, GestureNav, ChatAppBar } from "@/app/comp
 import FeedbackBar from "@/app/components/FeedbackBar";
 import AIBankerChip from "@/app/components/AIBankerChip";
 import SnackbarHost from "@/app/components/SnackbarHost";
+import Snackbar from "@/app/components/Snackbar";
+import JumpToRecentPill from "@/app/components/JumpToRecentPill";
 import { useControlPanel } from "@/app/preview/_shared/ControlPanel";
 import { useSlotControls } from "@/app/preview/_shared/PlaygroundCard";
 
@@ -26,7 +28,7 @@ import ChatCard, { type ChatCardData } from "@/app/components/ChatCards";
 
 // Fixture data
 import { DBG_GOAL_QUESTIONS, GOAL_TRACKER_SCENARIOS } from "@/app/lib/debug-fixtures";
-import { TEXT_PRIMARY, VALENTINO_500 } from "@/app/lib/colors";
+import { TEXT_PRIMARY, VALENTINO_50, VALENTINO_500 } from "@/app/lib/colors";
 import { RADIUS_M } from "@/app/lib/radii";
 import { typography } from "@/app/lib/typography";
 import {
@@ -332,6 +334,108 @@ function FootprintCard({ data }: { data: ChatCardData }) {
   );
 }
 
+// ── New component wrappers ──────────────────────────────────
+
+const JUMP_PILL_DEMO_MESSAGES: { sender: "ryan" | "user"; text: string }[] = [
+  { sender: "ryan", text: "Hey, glad you made it. I'm Ryan - I'll be your banker for the foreseeable future." },
+  { sender: "ryan", text: "Before I do anything useful, I need to look at your money. Mind connecting your main account?" },
+  { sender: "user", text: "Connect HDFC" },
+  { sender: "ryan", text: "HDFC Bank ..4829 is linked. Pulling in your last 12 months of transactions now." },
+  { sender: "ryan", text: "Okay, three months in and your kitchen's basically a coat rack. ₹42K on food, ₹3K on apps you don't open, and you call ₹38K to one guy 'casual'." },
+  { sender: "user", text: "Top categories - last 3 months" },
+  { sender: "ryan", text: "Food & Delivery is running the show at ₹64,200 - 27% of everything. Shopping is a close second at ₹48,800." },
+  { sender: "ryan", text: "Transport, Entertainment, and Subscriptions round out the top 5. Nothing here is alarming on its own, but together they add up to ₹1.75L a month." },
+  { sender: "user", text: "My month-to-month story" },
+  { sender: "ryan", text: "March was your big month - ₹2.4L across all categories. April dropped 18%, then May climbed back to ₹2.1L." },
+  { sender: "ryan", text: "The pattern I see: you tighten up after a heavy month, but it never lasts more than 30 days." },
+  { sender: "user", text: "What my spending says about me" },
+  { sender: "ryan", text: "You're a social spender. Most of your discretionary money goes toward eating with people, gifting, and weekend plans." },
+  { sender: "ryan", text: "You're not impulsive - you're generous. There's a difference, and it matters when we build your plan." },
+  { sender: "user", text: "Roast me, Ryan" },
+  { sender: "ryan", text: "Byron's a bit much, but he means well. If tough love is what you like, you know where to find him." },
+  { sender: "ryan", text: "Want me to put together a savings goal based on what I've seen?" },
+  { sender: "user", text: "Yes, set up a goal" },
+  { sender: "ryan", text: "Cool. Walk me through what you're saving for - I'll handle the math." },
+];
+
+function JumpToRecentWrapper() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  // Update pill visibility on mount + on scroll
+  const updateVisibility = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setVisible(el.scrollHeight - el.scrollTop - el.clientHeight > 80);
+  };
+
+  useEffect(() => {
+    updateVisibility();
+    const el = scrollRef.current;
+    if (!el) return;
+    // Start near the top so the pill is visible by default.
+    el.scrollTop = 0;
+    updateVisibility();
+  }, []);
+
+  return (
+    <div className="relative flex h-full flex-col overflow-hidden bg-white">
+      <ChatAppBar absolute variant="firstTime" voice="ryan" />
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto"
+        style={{ paddingTop: 56, paddingLeft: 16, paddingRight: 16, paddingBottom: 16 }}
+        onScroll={updateVisibility}
+      >
+        {JUMP_PILL_DEMO_MESSAGES.map((m, i) => {
+          if (m.sender === "ryan") {
+            return (
+              <p
+                key={i}
+                style={{
+                  ...typography.bodySmall,
+                  color: TEXT_PRIMARY,
+                  marginTop: i === 0 ? 0 : 16,
+                }}
+              >
+                {m.text}
+              </p>
+            );
+          }
+          return (
+            <div key={i} className="flex justify-end" style={{ marginTop: 16 }}>
+              <div
+                className="max-w-[75%] rounded-[16px] rounded-tr-lg"
+                style={{ backgroundColor: VALENTINO_50, padding: "12px 16px" }}
+              >
+                <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>{m.text}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <JumpToRecentPill
+        visible={visible}
+        bottom={24}
+        onClick={() => {
+          const el = scrollRef.current;
+          if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+        }}
+      />
+      <GestureNav />
+    </div>
+  );
+}
+
+function RawSnackbarWrapper() {
+  return (
+    <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+      <Snackbar text="Saved to your pot" />
+      <Snackbar variant="negative" text="Couldn't save your changes" action={{ label: "Retry", onClick: () => {} }} />
+    </div>
+  );
+}
+
 // ── Component definitions ────────────────────────────────────
 
 type ComponentDef = {
@@ -468,6 +572,16 @@ const COMPONENTS: ComponentDef[] = [
     description: "Toast bar that slides up from bottom; auto-dismisses 4s (persists with action)",
     variants: [
       { name: "playground", render: () => <SnackbarPlayground /> },
+      { name: "raw (static)", render: () => <RawSnackbarWrapper /> },
+    ],
+  },
+  {
+    id: "jump-to-recent",
+    label: "Jump-to-recent pill",
+    description: "Circular pill that appears when the chat has scrolled away from the latest message. Tap to snap back to the bottom.",
+    deviceFrame: true,
+    variants: [
+      { name: "in scrollable chat", render: () => <JumpToRecentWrapper /> },
     ],
   },
   {

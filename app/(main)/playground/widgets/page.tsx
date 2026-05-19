@@ -69,6 +69,44 @@ const WIDGET_ITEMS: WidgetItem[] = [
       },
     ],
   },
+  {
+    type: "savings-plan",
+    label: "Savings plan",
+    fixtures: [
+      {
+        name: "default",
+        data: {
+          type: "savings-plan",
+          name: "Trip to Japan",
+          target: 200000,
+          timeline: "6 months",
+          existingSavings: 0,
+          monthlyAmount: 33000,
+          productType: "RD",
+          productLabel: "Recurring Deposit",
+          rate: "7.25%",
+          pct: 0,
+          timelineLabel: "6 months to go",
+        },
+      },
+      {
+        name: "with existing savings",
+        data: {
+          type: "savings-plan",
+          name: "Trip to Japan",
+          target: 200000,
+          timeline: "6 months",
+          existingSavings: 50000,
+          monthlyAmount: 25000,
+          productType: "RD",
+          productLabel: "Recurring Deposit",
+          rate: "7.25%",
+          pct: 25,
+          timelineLabel: "6 months to go",
+        },
+      },
+    ],
+  },
 ];
 
 function InteractiveWidgetFixture({ data }: { data: ChatCardData }) {

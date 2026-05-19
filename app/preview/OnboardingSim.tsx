@@ -5,7 +5,6 @@ import { typography } from "../lib/typography";
 import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
-  TEXT_TERTIARY,
   OUTLINE_SUBTLE,
   BG_PRIMARY,
   BG_CARD,
@@ -15,7 +14,6 @@ import {
 } from "../lib/colors";
 import { SPACE_XS, SPACE_M, SPACE_L } from "../lib/spacing";
 import { RADIUS_M, RADIUS_CIRCLE } from "../lib/radii";
-import { ELEVATION_CARD } from "../lib/elevation";
 import { StatusBar, GestureNav, ChatAppBar } from "../components/AppChrome";
 import QuestionnaireOverlay from "../components/QuestionnaireOverlay";
 import type { Question, QuestionOption } from "../components/QuestionnaireOverlay";
@@ -30,6 +28,7 @@ import AASim from "./AASim";
 import SharedPayScreen from "../components/PayScreen";
 import FeaturePDP from "../components/FeaturePDP";
 import FeedbackBar from "../components/FeedbackBar";
+import JumpToRecentPill from "../components/JumpToRecentPill";
 import {
   WRAPPED_BEATS,
   PRE_WRAPPED_BUBBLES,
@@ -1279,28 +1278,20 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
                 {chatContent}
 
                 {/* Scroll-to-bottom pill */}
-                <button
+                <JumpToRecentPill
+                  visible={hasContentBelow}
                   onClick={() => {
                     const scroller = scrollRef.current;
                     if (scroller) scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
                   }}
-                  className="absolute z-[11] flex items-center justify-center rounded-full bg-white active:scale-95 transition-all duration-200 ease-out"
-                  style={{
-                    bottom: prefQuizOpen ? 340 : 80,
-                    right: SPACE_L,
-                    width: 36,
-                    height: 36,
-                    border: `1px solid ${OUTLINE_SUBTLE}`,
-                    boxShadow: ELEVATION_CARD,
-                    opacity: hasContentBelow ? 1 : 0,
-                    pointerEvents: hasContentBelow ? "auto" : "none",
-                    transition: `opacity 200ms ease, bottom 300ms ease`,
-                  }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M8 3v10M4 9l4 4 4-4" stroke={TEXT_TERTIARY} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
+                  bottom={
+                    prefQuizOpen
+                      ? 340
+                      : STEPS[stepIndex]?.kind === "input-bar"
+                      ? 80
+                      : SPACE_L
+                  }
+                />
 
                 {/* QuestionnaireOverlay */}
                 {prefQuizOpen && (
