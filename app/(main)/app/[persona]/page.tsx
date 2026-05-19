@@ -65,6 +65,7 @@ import type {
   HomeSubflow,
 } from "@/app/lib/types";
 import { getEffectiveBudget } from "@/app/lib/budget-utils";
+import { formatDateMonth } from "@/app/lib/format-date";
 import { useUserState } from "@/app/hooks/useUserState";
 import { typography } from "@/app/lib/typography";
 import {
@@ -1279,8 +1280,8 @@ Be insightful, not just descriptive.`;
     if (isMultipleGoals) {
       return [
         primary,
-        { id: "2", name: "Emergency Fund", pct: 35, status: "on-track" as const, icon: "🛡️", daysLabel: "On track", saved: 175000, target: 500000, ringColor: "#ff9a17", endDate: "Mar 2027", monthlyAmount: 15000, gradient: "linear-gradient(135deg, #fff3e3 0%, #ff9a17 100%)", heroEmoji: "🛡️" },
-        { id: "3", name: "New Laptop", pct: 65, status: "on-track" as const, icon: "💻", daysLabel: "On track", saved: 48750, target: 75000, ringColor: "#00a63e", endDate: "Sep 2026", monthlyAmount: 5000, gradient: "linear-gradient(135deg, #e0f4e8 0%, #00a63e 100%)", heroEmoji: "💻" },
+        { id: "2", name: "Emergency Fund", pct: 35, status: "on-track" as const, icon: "🛡️", daysLabel: "On track", saved: 175000, target: 500000, ringColor: "#ff9a17", endDate: "Mar '27", monthlyAmount: 15000, gradient: "linear-gradient(135deg, #fff3e3 0%, #ff9a17 100%)", heroEmoji: "🛡️" },
+        { id: "3", name: "New Laptop", pct: 65, status: "on-track" as const, icon: "💻", daysLabel: "On track", saved: 48750, target: 75000, ringColor: "#00a63e", endDate: "Sep '26", monthlyAmount: 5000, gradient: "linear-gradient(135deg, #e0f4e8 0%, #00a63e 100%)", heroEmoji: "💻" },
       ];
     }
 
@@ -1320,9 +1321,7 @@ Be insightful, not just descriptive.`;
       : monthsLeftFromLabel ? parseInt(monthsLeftFromLabel[1], 10) : Math.max(0, timelineMonths - monthsElapsed);
     const { contributionAmount, contributionLabel, productLabel } = getGoalContributionSummary();
     const amountRemaining = Math.max(0, card.target - card.saved);
-    const startedLabel = goal
-      ? new Date(goal.createdAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })
-      : "Latest snapshot";
+    const startedLabel = goal ? formatDateMonth(goal.createdAt) : "Latest snapshot";
 
     setGoalDetail({
       name: goal?.name ?? card.name,
@@ -2968,14 +2967,14 @@ Be insightful, not just descriptive.`;
       const recentMonths = monthEntries.slice(-5);
       const chartData = recentMonths.map(([m, d]) => {
         const date = new Date(m + "-01");
-        return { label: date.toLocaleString("en-IN", { month: "short" }), value: d.totalDebits };
+        return { label: formatDateMonth(date), value: d.totalDebits };
       });
       const avgSpend = chartData.length > 0
         ? Math.round(chartData.reduce((s, d) => s + d.value, 0) / chartData.length)
         : 0;
       const latestMonth = recentMonths[recentMonths.length - 1];
       const latestLabel = latestMonth
-        ? new Date(latestMonth[0] + "-01").toLocaleString("en-IN", { month: "long" })
+        ? formatDateMonth(new Date(latestMonth[0] + "-01"))
         : "Recent";
       const latestAmount = latestMonth ? latestMonth[1].totalDebits : 0;
       const pctDiff = avgSpend > 0 ? Math.round(((latestAmount - avgSpend) / avgSpend) * 100) : 0;
@@ -3134,7 +3133,7 @@ Be insightful, not just descriptive.`;
       const monthEntries = Object.entries(profile.monthlyBreakdown).sort(([a], [b]) => a.localeCompare(b));
       const latestMonth = monthEntries[monthEntries.length - 1];
       const latestLabel = latestMonth
-        ? new Date(latestMonth[0] + "-01").toLocaleString("en-IN", { month: "long" })
+        ? formatDateMonth(new Date(latestMonth[0] + "-01"))
         : "Recent";
       const latestAmount = latestMonth ? latestMonth[1].totalDebits : 0;
       const topCatName = lifestyleCategories[0]?.name || "Top category";
@@ -3647,7 +3646,7 @@ Be insightful, not just descriptive.`;
                   goalStage: "pinned",
                   goal: {
                     name: "Trip to Japan",
-                    timeline: "Dec 2026",
+                    timeline: "Dec '26",
                     timelineMonths: 8,
                     amount: "\u20b92,00,000",
                     amountNum: 200000,

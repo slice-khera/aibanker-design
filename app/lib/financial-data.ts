@@ -6,6 +6,7 @@ import type {
 } from "./types";
 import type { MockProfile, PacePreset } from "../data/mockProfiles";
 import type { WrappedSlide } from "../data/flows";
+import { formatDateDay, formatDateShort } from "./format-date";
 
 const data = rawData as unknown as RawBankData;
 
@@ -180,13 +181,7 @@ export function computeWrappedSlides(): WrappedSlide[] {
     (totalInvested / data.overallSummary.totalCredits) * 100
   );
 
-  // Format the max ATM day
-  const atmDate = maxAtmDay.date
-    ? new Date(maxAtmDay.date).toLocaleDateString("en-IN", {
-        month: "short",
-        day: "numeric",
-      })
-    : "";
+  const atmDate = maxAtmDay.date ? formatDateDay(maxAtmDay.date) : "";
 
   return [
     {
@@ -198,7 +193,7 @@ export function computeWrappedSlides(): WrappedSlide[] {
       id: "wrapped-2",
       headline: "We found your Sri Lanka trip",
       punchline:
-        "Jan 29 - Colombo airport ATM\nFeb 1 - Bentota beach resort\n5 ATM runs the day you got back",
+        "29 Jan – Colombo airport ATM\n1 Feb – Bentota beach resort\n5 ATM runs the day you got back",
       stat: {
         label: "",
         value: formatINR(tripTotal),
@@ -356,8 +351,6 @@ function generateReceipts(): MockProfile["receipts"] {
     if (!catData) continue;
     for (const txn of catData.transactions.slice(-3)) {
       const date = new Date(txn.date);
-      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-      const dayName = dayNames[date.getDay()];
 
       // Extract merchant name from narration
       let merchant = catName.split("(")[1]?.replace(")", "") || catName.split(" ")[0];
@@ -367,7 +360,7 @@ function generateReceipts(): MockProfile["receipts"] {
 
       receipts.push({
         id: `r-${txn.date}-${txn.amount}`,
-        time: `${dayName} ${date.toLocaleDateString("en-IN", { month: "short", day: "numeric" })}`,
+        time: formatDateShort(date),
         category: catName.includes("Food") || catName.includes("Groceries") || catName.includes("Dining") ? "Food & Delivery" : catName.includes("Shopping") ? "Shopping" : "Other",
         amount: formatINR(txn.amount),
         merchant,
@@ -680,8 +673,6 @@ export function getRecentTransactionsForRating(): RatingTransaction[] {
 
     for (const txn of catData.transactions.slice(-5)) {
       const date = new Date(txn.date);
-      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-      const dayName = dayNames[date.getDay()];
 
       let merchant = catName.split("(")[1]?.replace(")", "") || catName.split(" ")[0];
       if (txn.narration.includes("SWIGGY")) merchant = "Swiggy";
@@ -690,7 +681,7 @@ export function getRecentTransactionsForRating(): RatingTransaction[] {
 
       transactions.push({
         id: `rtxn-${txn.date}-${txn.amount}`,
-        time: `${dayName} ${date.toLocaleDateString("en-IN", { month: "short", day: "numeric" })}`,
+        time: formatDateShort(date),
         category: catName,
         amount: formatINR(txn.amount),
         amountNum: txn.amount,

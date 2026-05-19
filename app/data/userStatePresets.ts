@@ -78,7 +78,7 @@ export const PERSONA_PRESETS: PersonaPreset[] = [
       budgetStyle: "chill",
       goal: {
         name: "Trip to Japan",
-        timeline: "Dec 2026",
+        timeline: "Dec '26",
         timelineMonths: 8,
         amount: "\u20b92,00,000",
         amountNum: 200000,
@@ -112,7 +112,7 @@ export const PERSONA_PRESETS: PersonaPreset[] = [
               budgetStyle: "strict",
               goal: {
                 name: "Trip to Japan",
-                timeline: "Dec 2026",
+                timeline: "Dec '26",
                 timelineMonths: 8,
                 amount: "\u20b92,00,000",
                 amountNum: 200000,
@@ -147,7 +147,7 @@ export const PERSONA_PRESETS: PersonaPreset[] = [
             patch: {
               goal: {
                 name: "Trip to Japan",
-                timeline: "Dec 2026",
+                timeline: "Dec '26",
                 timelineMonths: 8,
                 amount: "\u20b92,00,000",
                 amountNum: 200000,
@@ -189,7 +189,7 @@ export const PERSONA_PRESETS: PersonaPreset[] = [
       goalStage: "pinned",
       goal: {
         name: "Emergency Fund",
-        timeline: "Mar 2027",
+        timeline: "Mar '27",
         timelineMonths: 12,
         amount: "\u20b95,00,000",
         amountNum: 500000,

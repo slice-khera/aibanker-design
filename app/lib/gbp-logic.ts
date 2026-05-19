@@ -17,6 +17,7 @@ import type {
   Verdict,
 } from "./types";
 import { formatINR, getLifestyleCategories } from "./financial-data";
+import { formatDateMonth, formatDateShort } from "./format-date";
 
 const data = rawData as unknown as RawBankData;
 
@@ -166,7 +167,7 @@ export function classifyIntoBuckets(): FootprintBucket[] {
       const surplus = mData.totalCredits - avgMonthlyCredit;
       sporadicIncomeItems.push({
         id: `sporadic-in-${month}`,
-        label: `Unusual credit in ${new Date(month + "-01").toLocaleDateString("en-IN", { month: "short", year: "numeric" })}`,
+        label: `Unusual credit in ${formatDateMonth(new Date(month + "-01"))}`,
         amount: surplus,
         type: "bonus-or-refund",
         frequency: "one-off",
@@ -194,7 +195,7 @@ export function classifyIntoBuckets(): FootprintBucket[] {
       if (txn.amount > monthlyOther * 2) {
         sporadicExpenseItems.push({
           id: `sporadic-out-${txn.date}-${txn.amount}`,
-          label: `Large expense on ${new Date(txn.date).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}`,
+          label: `Large expense on ${formatDateShort(new Date(txn.date))}`,
           amount: txn.amount,
           type: "one-off",
           frequency: "one-off",

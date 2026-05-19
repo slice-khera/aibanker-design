@@ -52,25 +52,25 @@ export type GoalTrackerScenario = "none" | "single" | "single-icon" | "single-al
 export const GOAL_TRACKER_SCENARIOS: Record<GoalTrackerScenario, GoalIndicatorData[]> = {
   none: [],
   single: [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "\u2708\ufe0f", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
+    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "\u2708\ufe0f", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec '26", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
   ],
   "single-icon": [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "\u2708\ufe0f", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
+    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "\u2708\ufe0f", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec '26", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
   ],
   "single-alert": [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "behind", icon: "\u2708\ufe0f", daysLabel: "15 days behind", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
+    { id: "1", name: "Trip to Japan", pct: 42, status: "behind", icon: "\u2708\ufe0f", daysLabel: "15 days behind", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec '26", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
   ],
   "single-icon-alert": [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "behind", icon: "\u2708\ufe0f", daysLabel: "15 days behind", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
+    { id: "1", name: "Trip to Japan", pct: 42, status: "behind", icon: "\u2708\ufe0f", daysLabel: "15 days behind", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec '26", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
   ],
   two: [
-    { id: "1", name: "Trip to Japan", pct: 62, status: "ahead", icon: "\u2708\ufe0f", daysLabel: "11 days ahead", saved: 124000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
-    { id: "2", name: "Emergency Fund", pct: 35, status: "on-track", icon: "\ud83d\udee1\ufe0f", daysLabel: "On track", saved: 175000, target: 500000, ringColor: "#ff9a17", endDate: "Mar 2027", monthlyAmount: 15000, gradient: "linear-gradient(135deg, #fff3e3 0%, #ff9a17 100%)", heroEmoji: "\ud83d\udee1\ufe0f" },
+    { id: "1", name: "Trip to Japan", pct: 62, status: "ahead", icon: "\u2708\ufe0f", daysLabel: "11 days ahead", saved: 124000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec '26", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
+    { id: "2", name: "Emergency Fund", pct: 35, status: "on-track", icon: "\ud83d\udee1\ufe0f", daysLabel: "On track", saved: 175000, target: 500000, ringColor: "#ff9a17", endDate: "Mar '27", monthlyAmount: 15000, gradient: "linear-gradient(135deg, #fff3e3 0%, #ff9a17 100%)", heroEmoji: "\ud83d\udee1\ufe0f" },
   ],
   three: [
-    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "\u2708\ufe0f", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec 2026", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
-    { id: "2", name: "Emergency Fund", pct: 78, status: "ahead", icon: "\ud83d\udee1\ufe0f", daysLabel: "12 days ahead", saved: 390000, target: 500000, ringColor: "#ff9a17", endDate: "Mar 2027", monthlyAmount: 15000, gradient: "linear-gradient(135deg, #fff3e3 0%, #ff9a17 100%)", heroEmoji: "\ud83d\udee1\ufe0f" },
-    { id: "3", name: "New Laptop", pct: 65, status: "on-track", icon: "\ud83d\udcbb", daysLabel: "On track", saved: 48750, target: 75000, ringColor: "#00a63e", endDate: "Sep 2026", monthlyAmount: 5000, gradient: "linear-gradient(135deg, #e0f4e8 0%, #00a63e 100%)", heroEmoji: "\ud83d\udcbb" },
+    { id: "1", name: "Trip to Japan", pct: 42, status: "on-track", icon: "\u2708\ufe0f", daysLabel: "4 months left", saved: 84000, target: 200000, ringColor: VALENTINO_500, endDate: "Dec '26", monthlyAmount: 10000, gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)", heroEmoji: "\u2708\ufe0f", heroScene: "japan" },
+    { id: "2", name: "Emergency Fund", pct: 78, status: "ahead", icon: "\ud83d\udee1\ufe0f", daysLabel: "12 days ahead", saved: 390000, target: 500000, ringColor: "#ff9a17", endDate: "Mar '27", monthlyAmount: 15000, gradient: "linear-gradient(135deg, #fff3e3 0%, #ff9a17 100%)", heroEmoji: "\ud83d\udee1\ufe0f" },
+    { id: "3", name: "New Laptop", pct: 65, status: "on-track", icon: "\ud83d\udcbb", daysLabel: "On track", saved: 48750, target: 75000, ringColor: "#00a63e", endDate: "Sep '26", monthlyAmount: 5000, gradient: "linear-gradient(135deg, #e0f4e8 0%, #00a63e 100%)", heroEmoji: "\ud83d\udcbb" },
   ],
 };
 
@@ -213,11 +213,11 @@ export const DBG_TXN_TABLE: ChatCardData = {
   type: "transaction-table",
   title: "Recent transactions",
   transactions: [
-    { date: "28 Feb' 25", merchant: "Swiggy", amount: 486, category: "Food" },
-    { date: "27 Feb' 25", merchant: "Amazon", amount: 2499, category: "Shopping" },
-    { date: "27 Feb' 25", merchant: "Uber", amount: 342, category: "Transport" },
-    { date: "26 Feb' 25", merchant: "BigBasket", amount: 1850, category: "Groceries" },
-    { date: "25 Feb' 25", merchant: "Zomato", amount: 720, category: "Food" },
+    { date: "28 Feb '25", merchant: "Swiggy", amount: 486, category: "Food" },
+    { date: "27 Feb '25", merchant: "Amazon", amount: 2499, category: "Shopping" },
+    { date: "27 Feb '25", merchant: "Uber", amount: 342, category: "Transport" },
+    { date: "26 Feb '25", merchant: "BigBasket", amount: 1850, category: "Groceries" },
+    { date: "25 Feb '25", merchant: "Zomato", amount: 720, category: "Food" },
   ],
 };
 
@@ -237,10 +237,10 @@ export const DBG_BIG_EXPENSES: ChatCardData = {
   type: "transaction-table",
   title: "Big expenses",
   transactions: [
-    { date: "26 Feb 2026", merchant: "Jasvinder", amount: 99000, category: "P2P" },
-    { date: "25 Dec 2025", merchant: "Avigayen55", amount: 35000, category: "P2P" },
-    { date: "06 Nov 2025", merchant: "Transfer", amount: 30000, category: "P2P" },
-    { date: "12 Nov 2025", merchant: "Jayram Pra", amount: 30000, category: "P2P" },
+    { date: "26 Feb '26", merchant: "Jasvinder", amount: 99000, category: "P2P" },
+    { date: "25 Dec '25", merchant: "Avigayen55", amount: 35000, category: "P2P" },
+    { date: "6 Nov '25", merchant: "Transfer", amount: 30000, category: "P2P" },
+    { date: "12 Nov '25", merchant: "Jayram Pra", amount: 30000, category: "P2P" },
   ],
 };
 
@@ -256,7 +256,7 @@ const TRIP_GOAL: GoalIndicatorData = {
   saved: 84000,
   target: 200000,
   ringColor: VALENTINO_500,
-  endDate: "Dec 2026",
+  endDate: "Dec '26",
   monthlyAmount: 10000,
   gradient: "linear-gradient(135deg, #fae2fa 0%, #d30ad7 100%)",
   heroEmoji: "✈️",
@@ -276,7 +276,7 @@ const EMERGENCY_POOL: Pool = {
 
 // Goal-only - mid-May, spending faster than ideal pace ("X days behind").
 const MAY_2026_BEHIND: MonthlyBudgetSnapshot = {
-  monthLabel: "May 2026",
+  monthLabel: "May '26",
   daysElapsed: 18,
   daysInMonth: 31,
   totalSpent: 22600,
@@ -293,7 +293,7 @@ const MAY_2026_BEHIND: MonthlyBudgetSnapshot = {
 
 // Goal-and-pool - mid-May, under-spending vs pace ("X days ahead").
 const MAY_2026_AHEAD: MonthlyBudgetSnapshot = {
-  monthLabel: "May 2026",
+  monthLabel: "May '26",
   daysElapsed: 18,
   daysInMonth: 31,
   totalSpent: 11400,
@@ -310,7 +310,7 @@ const MAY_2026_AHEAD: MonthlyBudgetSnapshot = {
 
 // Pool-only - late April, fully over budget across multiple categories.
 const APR_2026_OVER: MonthlyBudgetSnapshot = {
-  monthLabel: "Apr 2026",
+  monthLabel: "Apr '26",
   daysElapsed: 28,
   daysInMonth: 30,
   totalSpent: 28700,

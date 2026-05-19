@@ -14,6 +14,7 @@ import {
   ALPHA_BLACK_20, ALPHA_BLACK_30, OUTLINE_SUBTLE,
 } from "../lib/colors";
 import { RADIUS_S, RADIUS_PILL, RADIUS_CIRCLE } from "../lib/radii";
+import { formatDateRange } from "../lib/format-date";
 
 // ─── Shared types ──────────────────────────────────────────
 
@@ -255,7 +256,9 @@ function ConfirmedRow({ label, onArrowTap }: { label: string; onArrowTap?: () =>
 
 function SpendOverviewCard({ data }: { data: Extract<ChatCardData, { type: "spend-overview" }> }) {
   const { month, chartData, average, highlightIndex } = data;
-  const [activeIndex, setActiveIndex] = useState(highlightIndex);
+  const [override, setOverride] = useState<number | null>(null);
+  const activeIndex = override ?? highlightIndex;
+  const setActiveIndex = setOverride;
   const svgRef = useRef<SVGSVGElement>(null);
   const isDragging = useRef(false);
 
@@ -651,7 +654,8 @@ function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "
 
 function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-pot" }> }) {
   const { goalName, amount, fromAccount, activated, onAdd } = data;
-  const [done, setDone] = useState(activated ?? false);
+  const [tapped, setTapped] = useState(false);
+  const done = activated || tapped;
 
   const shell = { backgroundColor: BG_PRIMARY, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW };
 
@@ -681,7 +685,7 @@ function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-po
           </div>
           <button
             type="button"
-            onClick={() => { setDone(true); onAdd?.(); }}
+            onClick={() => { setTapped(true); onAdd?.(); }}
             style={{
               ...typography.buttonSmall,
               border: "none",
@@ -1052,7 +1056,9 @@ function CategoryMomCard({ data }: { data: Extract<ChatCardData, { type: "catego
 
 function SpendTrendCard({ data }: { data: Extract<ChatCardData, { type: "spend-trend" }> }) {
   const { month, chartData, average, highlightIndex } = data;
-  const [activeIndex, setActiveIndex] = useState(highlightIndex);
+  const [override, setOverride] = useState<number | null>(null);
+  const activeIndex = override ?? highlightIndex;
+  const setActiveIndex = setOverride;
 
   const maxVal = Math.max(...chartData.map((d) => d.value), average) * 1.15;
   const activeMonthLabel = chartData[activeIndex].label;
@@ -1190,7 +1196,7 @@ function SpendingHeatmapCard({ data }: { data: Extract<ChatCardData, { type: "sp
   // Display values based on selection
   const displayAmount = selectedDay !== null ? (dailySpend[selectedDay] ?? 0) : avgDaily;
   const displayLabel = selectedDay !== null
-    ? `${selectedDay + 1} ${month}' ${String(year).slice(-2)} spends`
+    ? `${selectedDay + 1} ${month} '${String(year).slice(-2)} spends`
     : `Avg. daily spends`;
   const displaySubtext = selectedDay !== null
     ? (() => {
@@ -1420,7 +1426,9 @@ function TransactionTableCard({ data }: { data: Extract<ChatCardData, { type: "t
   // Compute total and date range
   const totalAmount = transactions.reduce((s, tx) => s + tx.amount, 0);
   const dates = transactions.map((tx) => tx.date);
-  const dateRange = dates.length > 1 ? `${dates[dates.length - 1]} – ${dates[0]}` : dates[0] ?? "";
+  const dateRange = dates.length > 1
+    ? formatDateRange(dates[dates.length - 1]!, dates[0]!)
+    : dates[0] ?? "";
 
   // Assign consistent color per unique merchant
   const merchantColorMap = new Map<string, string>();
