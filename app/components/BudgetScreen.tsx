@@ -11,7 +11,6 @@ import {
   TEXT_PRIMARY,
   TEXT_TERTIARY,
   VALENTINO_500,
-  VALENTINO_50,
   OUTLINE_BOLD,
   SLATE_10,
   SLATE_30,
@@ -223,9 +222,11 @@ function AnchorCardGoal({ goal }: { goal: GoalIndicatorData }) {
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <span style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(255,255,255,0.85)", letterSpacing: 1 }}>
-            Goal
-          </span>
+          {goal.endDate ? (
+            <span style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(255,255,255,0.85)", letterSpacing: 1 }}>
+              {goal.endDate}
+            </span>
+          ) : <span />}
           <ProgressRing pct={goal.pct} />
         </div>
 
@@ -243,7 +244,6 @@ function AnchorCardGoal({ goal }: { goal: GoalIndicatorData }) {
           </p>
           <p style={{ ...typography.caption, color: ALPHA_WHITE_80, margin: 0 }}>
             {formatINRFull(goal.saved)} / {formatINRFull(goal.target)}
-            {goal.endDate ? ` · ${goal.endDate}` : ""}
           </p>
         </div>
       </div>
@@ -305,9 +305,7 @@ function AnchorCardPool({ pool }: { pool: Pool }) {
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <span style={{ ...typography.metadata, textTransform: "uppercase", color: "rgba(255,255,255,0.85)", letterSpacing: 1 }}>
-            Pool
-          </span>
+          <span />
           {hasTarget ? <ProgressRing pct={pct} /> : null}
         </div>
 
@@ -393,7 +391,7 @@ function AnchorCarousel({ goal, pool }: { goal: GoalIndicatorData | null; pool: 
         paddingLeft: SIDE_PAD,
         paddingRight: SIDE_PAD,
         paddingTop: 16,
-        paddingBottom: 16,
+        paddingBottom: 24,
         flexShrink: 0,
       }}
     >
@@ -440,7 +438,7 @@ function BudgetBar({
 // ─── Budget total - headline + bar + supporting caption ───────
 
 function BudgetTotalBar({ snapshot }: { snapshot: MonthlyBudgetSnapshot }) {
-  const { totalSpent, totalCap } = snapshot;
+  const { totalSpent, totalCap, monthLabel } = snapshot;
   const overflow = Math.max(totalSpent - totalCap, 0);
   const left = Math.max(totalCap - totalSpent, 0);
   const pace = pacingStatus(snapshot);
@@ -450,35 +448,25 @@ function BudgetTotalBar({ snapshot }: { snapshot: MonthlyBudgetSnapshot }) {
     ? `Over by ${formatINRFull(overflow)}`
     : `${formatINRFull(left)} left`;
 
-  // Pace tag is hidden when the budget is over - the headline + bar carry the signal.
   const tagIntent: "positive" | "warning" | "neutral" =
     pace.kind === "projected-save" ? "positive"
     : pace.kind === "projected-over" ? "warning"
     : "neutral";
 
   return (
-    <div style={{ padding: "16px 24px 16px" }}>
-      {pace.kind !== "over" ? (
+    <div style={{ padding: "24px 24px 24px" }}>
+      {!isOver ? (
         <div style={{ marginBottom: 8 }}>
           <DlsTag intent={tagIntent} emphasis="subtle">{pacingLabel(pace)}</DlsTag>
         </div>
       ) : null}
-      <p style={{ ...typography.headerH1, color: isOver ? RED_500 : TEXT_PRIMARY, margin: 0, marginBottom: 16 }}>
+      <p style={{ ...typography.headerH1, color: isOver ? RED_500 : TEXT_PRIMARY, margin: 0, marginBottom: 4 }}>
         {headlineText}
       </p>
-      <div style={{ marginBottom: 10 }}>
-        <BudgetBar spent={totalSpent} cap={totalCap} fillColor={VALENTINO_500} />
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-        <div>
-          <p style={{ ...typography.caption, color: TEXT_TERTIARY, margin: 0 }}>Spent</p>
-          <p style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, margin: 0 }}>{formatINRFull(totalSpent)}</p>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <p style={{ ...typography.caption, color: TEXT_TERTIARY, margin: 0 }}>Budget</p>
-          <p style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, margin: 0 }}>{formatINRFull(totalCap)}</p>
-        </div>
-      </div>
+      <p style={{ ...typography.metadata, textTransform: "uppercase", color: TEXT_TERTIARY, margin: 0, marginBottom: 16 }}>
+        {monthLabel} · Monthly budget
+      </p>
+      <BudgetBar spent={totalSpent} cap={totalCap} fillColor={VALENTINO_500} />
     </div>
   );
 }
@@ -500,8 +488,8 @@ function BudgetCategoryRow({ row }: { row: BudgetCategoryProgress }) {
         display: "flex",
         gap: 12,
         alignItems: "center",
-        paddingTop: 12,
-        paddingBottom: 12,
+        paddingTop: 16,
+        paddingBottom: 16,
         paddingLeft: 24,
         paddingRight: 24,
       }}
@@ -560,29 +548,10 @@ function sortCategories(rows: BudgetCategoryProgress[]): BudgetCategoryProgress[
   });
 }
 
-// ─── DLS Big divider (8px Slate/10 full-bleed) + month header below ───────────
+// ─── DLS Big divider (8px Slate/10 full-bleed) ────────────────
 
 function BigDivider() {
   return <div style={{ height: 8, backgroundColor: SLATE_10, width: "100%" }} />;
-}
-
-function MonthHeader({ label }: { label: string }) {
-  return (
-    <p
-      style={{
-        ...typography.metadata,
-        textTransform: "uppercase",
-        color: TEXT_TERTIARY,
-        margin: 0,
-        paddingLeft: 24,
-        paddingRight: 24,
-        paddingTop: 16,
-        paddingBottom: 4,
-      }}
-    >
-      {label}
-    </p>
-  );
 }
 
 // ─── Budget screen ────────────────────────────────────────────
@@ -609,11 +578,10 @@ export default function BudgetScreen({ goal, pool, budget, onClose }: BudgetScre
         <AnchorCarousel goal={goal} pool={pool} />
 
         <BigDivider />
-        <MonthHeader label={budget.monthLabel} />
         <BudgetTotalBar snapshot={budget} />
 
         <div>
-          {sorted.map((row) => (
+          {sorted.slice(0, 3).map((row) => (
             <BudgetCategoryRow key={row.name} row={row} />
           ))}
         </div>
