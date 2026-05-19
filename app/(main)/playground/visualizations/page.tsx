@@ -70,6 +70,7 @@ function VizEntry({ item }: { item: VizItem }) {
 
   return (
     <PlaygroundCard
+      id={item.type}
       name={item.label}
       status={resolveStatus(item.type)}
       variants={item.fixtures.map((f) => f.name)}

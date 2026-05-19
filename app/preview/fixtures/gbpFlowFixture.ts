@@ -92,8 +92,8 @@ export const BUCKET_CONFIRM_INCOME: ChatCardData = {
   type: "confirm-list",
   label: "Income sources",
   items: [
-    { id: "inc-1", payee: "Wipro salary", amount: 72000, type: "salary" },
-    { id: "inc-2", payee: "Dad (family help)", amount: 10000, type: "family" },
+    { id: "inc-1", payee: "Wipro salary", amount: 72000, type: "Salary" },
+    { id: "inc-2", payee: "Dad (family help)", amount: 10000, type: "Family" },
   ],
 };
 
@@ -101,10 +101,10 @@ export const BUCKET_CONFIRM_OBLIGATIONS: ChatCardData = {
   type: "confirm-list",
   label: "Obligations",
   items: [
-    { id: "obl-1", payee: "Rent", amount: 15000, type: "rent" },
+    { id: "obl-1", payee: "Rent", amount: 15000, type: "Rent" },
     { id: "obl-2", payee: "Car EMI", amount: 8000, type: "EMI" },
-    { id: "obl-3", payee: "Netflix", amount: 199, type: "subscription" },
-    { id: "obl-4", payee: "Spotify", amount: 119, type: "subscription" },
+    { id: "obl-3", payee: "Netflix", amount: 199, type: "Subscription" },
+    { id: "obl-4", payee: "Spotify", amount: 119, type: "Subscription" },
     { id: "obl-5", payee: "SIP (Groww)", amount: 5000, type: "SIP" },
   ],
 };
@@ -113,17 +113,17 @@ export const BUCKET_CONFIRM_P2P: ChatCardData = {
   type: "confirm-list",
   label: "P2P transfers",
   items: [
-    { id: "p2p-1", payee: "Roommate (rent split back)", amount: 5000, type: "p2p" },
+    { id: "p2p-1", payee: "Roommate (rent split back)", amount: 5000, type: "P2P" },
   ],
 };
 
-export const BUCKET_CONFIRM_SPORADIC: ChatCardData = {
+export const BUCKET_CONFIRM_OTHERS: ChatCardData = {
   type: "confirm-list",
-  label: "Sporadic",
+  label: "Others",
   items: [
-    { id: "si-1", payee: "Tax refund (Mar)", amount: 12000, type: "refund" },
-    { id: "se-1", payee: "Doctor visit (Feb)", amount: 3000, type: "medical" },
-    { id: "se-2", payee: "Laptop repair (Jan)", amount: 4500, type: "repair" },
+    { id: "si-1", payee: "Tax refund", amount: 12000, type: "Refund", subtext: "Mar" },
+    { id: "se-1", payee: "Doctor visit", amount: 3000, type: "Medical", subtext: "Feb" },
+    { id: "se-2", payee: "Laptop repair", amount: 4500, type: "Repair", subtext: "Jan" },
   ],
 };
 
@@ -131,7 +131,7 @@ export const BUCKET_CONFIRM_LIST = [
   BUCKET_CONFIRM_INCOME,
   BUCKET_CONFIRM_OBLIGATIONS,
   BUCKET_CONFIRM_P2P,
-  BUCKET_CONFIRM_SPORADIC,
+  BUCKET_CONFIRM_OTHERS,
 ];
 
 // ── Savings ladder options ─────────────────────────────────────────

@@ -110,6 +110,7 @@ function FlowEntry({ flow }: { flow: FlowDef }) {
 
   return (
     <PlaygroundCard
+      id={flow.id}
       name={flow.label}
       description={flow.description}
       status={resolveStatus(flow.id)}
