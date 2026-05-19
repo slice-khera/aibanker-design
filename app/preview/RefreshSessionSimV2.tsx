@@ -10,6 +10,7 @@ import { ILLUST_AFFORD_IT, ILLUST_MY_SPENDS, ILLUST_FEEDBACK } from "../lib/illu
 import { StatusBar, GestureNav, FooterInset, ChatAppBar } from "../components/AppChrome";
 import GoalTracker from "../components/GoalTracker";
 import type { GoalIndicatorData } from "../components/GoalTracker";
+import { getPlaygroundByronRoast } from "./fixtures/wrappedFixture";
 
 // ── Hardcoded content ───────────────────────────────────────────
 
@@ -29,6 +30,7 @@ const MOCK_RESPONSES: Record<string, string> = {
     "Got it, I\u2019ll leave it with you. Just a heads up \u2014 if the gap grows past \u20B920,000, your December target starts looking tight. I\u2019ll check in again next week.",
   "Show me where I overspent":
     "Here\u2019s the breakdown \u2014 dining out was \u20B98,200 (double your usual), shopping hit \u20B94,300, and subscriptions crept up by \u20B92,500. Dining is the big one to rein in.",
+  "Roast me": getPlaygroundByronRoast(0),
 };
 
 // ── Popover menu items ──────────────────────────────────────────

@@ -189,7 +189,9 @@ export type HomeSubflow =
   | "leak-insight"
   | "leak-investigate"
   | "leak-solution"
-  | "tradeoff";
+  | "tradeoff"
+  | "recap"
+  | "roast";
 
 // ============ PREFERENCE SYSTEM ============
 

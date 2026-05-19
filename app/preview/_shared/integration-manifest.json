@@ -37,7 +37,6 @@
       "onboarding":        { "kind": "import", "symbols": ["OnboardingSim"],         "sourcePaths": ["app/preview/OnboardingSim.tsx"] },
       "aa":                { "kind": "import", "symbols": ["AASim"],                 "sourcePaths": ["app/preview/AASim.tsx"] },
       "planmode-savings":  { "kind": "import", "symbols": ["SavingsFlowSimBottom"],  "sourcePaths": ["app/preview/SavingsFlowSimBottom.tsx"] },
-      "degen-mode":        { "kind": "import", "symbols": ["DegenModeSimV1"],        "sourcePaths": ["app/preview/DegenModeSimV1.tsx"] },
       "reddit":            { "kind": "import", "symbols": ["RedditSimV1", "RedditSimV2"], "sourcePaths": ["app/preview/RedditSimV1.tsx", "app/preview/RedditSimV2.tsx"] },
       "refresh-session":   { "kind": "import", "symbols": ["RefreshSessionSimV2"], "sourcePaths": ["app/preview/RefreshSessionSimV2.tsx"] },
       "drawer-experience": { "kind": "import", "symbols": ["DrawerExperienceSim"],   "sourcePaths": ["app/preview/DrawerExperienceSim.tsx"] },

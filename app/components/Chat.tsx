@@ -170,6 +170,7 @@ type ChatProps = {
   showFeedbackRow?: boolean;
   voice?: Voice;
   onVoiceChange?: (v: Voice) => void;
+  onMosaicSelect?: (title: string) => void;
 };
 
 function VoiceIcon() {
@@ -426,6 +427,11 @@ function AssistantOptionsCard({
           {highlightValues(displayedSurface)}
         </p>
       )}
+      {message.card && (
+        <div className="w-full">
+          <ChatCard card={message.card} />
+        </div>
+      )}
       {(surfaceDone || !surfaceText) && (
         <div
           className={`w-full overflow-hidden transition-[max-height,opacity] duration-250 ease-out ${
@@ -542,13 +548,6 @@ const MOSAIC_TALL: QuickAction = { category: "Feedback", title: "Make Ryan smart
 // Row 2 right: tall card
 const MOSAIC_TALL_RIGHT: QuickAction = { category: "Just for laughs", title: "Roast me", bg: "linear-gradient(160deg, #ffffff 40%, #f9e4e5 100%)" };
 
-const ONTRACK_MOCK_RESPONSES: Record<string, string> = {
-  "Can I afford it?": "Balance is \u20B919,883 but whether you can afford something depends on what it is, when you need to pay, and what bills are coming up. What are you thinking of buying?",
-  "Analyse my spends": "Last month you spent \u20B947,200 total. Dining was the biggest at \u20B912,400, then groceries at \u20B98,900 and transport at \u20B96,100. Overall **8% less** than the month before. Whatever you did, it\u2019s working.",
-  "Make Ryan smarter": "You can rate my responses with the thumbs up or down after each reply. The more you interact, the sharper I get. Let\u2019s keep going.",
-  "Roast me": "Where do I start. You spent \u20B91,240 on coffee last month and your emergency fund is still \u20B92,500. Bold strategy. Want the full inventory or are we good?",
-};
-
 function MosaicCard({
   action,
   onSelect,
@@ -594,73 +593,30 @@ function MosaicCard({
 
 function ReviewOnTrackScreen({
   text = REVIEW_ONTRACK_TEXT,
-  onOptionSelect,
-  voice = "ryan" as Voice,
+  onMosaicSelect,
 }: {
   text?: string;
-  onOptionSelect: (label: string) => void;
-  voice?: Voice;
+  onMosaicSelect: (label: string) => void;
 }) {
-  const [typingDone, setTypingDone] = useState(false);
-  const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
-  const [replyDone, setReplyDone] = useState(false);
-  const onComplete = useCallback(() => setTypingDone(true), []);
-  const onReplyComplete = useCallback(() => setReplyDone(true), []);
-  const displayedText = useTypewriter(text, true, onComplete);
-  const mockReply = selectedLabel ? ONTRACK_MOCK_RESPONSES[selectedLabel] ?? "" : "";
-  const displayedReply = useTypewriter(mockReply, !!selectedLabel, onReplyComplete);
-
-  const handleSelect = (title: string) => {
-    setSelectedLabel(title);
-    onOptionSelect(title);
-  };
-
   return (
     <div className="shrink-0 mb-6">
       <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>
-        {highlightValues(displayedText)}
+        {highlightValues(text)}
       </p>
 
-      {!selectedLabel && (
-        <div
-          className={`transition-opacity duration-300 ease-out ${
-            typingDone ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
-          style={{ marginTop: typingDone ? 16 : 0, display: "flex", flexDirection: "column", gap: 16 }}
-        >
-          {/* Row 1: two square cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            {MOSAIC_ROW1.map((a) => (
-              <MosaicCard key={a.title} action={a} onSelect={() => handleSelect(a.title)} style={{ aspectRatio: "1 / 1" }} />
-            ))}
-          </div>
-          {/* Row 2: two tall cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            <MosaicCard action={MOSAIC_TALL} onSelect={() => handleSelect(MOSAIC_TALL.title)} style={{ aspectRatio: "1 / 1" }} />
-            <MosaicCard action={MOSAIC_TALL_RIGHT} onSelect={() => handleSelect(MOSAIC_TALL_RIGHT.title)} style={{ aspectRatio: "1 / 1" }} />
-          </div>
+      <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+        {/* Row 1: two square cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          {MOSAIC_ROW1.map((a) => (
+            <MosaicCard key={a.title} action={a} onSelect={() => onMosaicSelect(a.title)} style={{ aspectRatio: "1 / 1" }} />
+          ))}
         </div>
-      )}
-
-      {/* Mock conversation after selection */}
-      {selectedLabel && (
-        <div className="mt-6 space-y-4 animate-chat-message-in">
-          {/* User bubble */}
-          <div className="flex justify-end">
-            <div
-              className="max-w-[75%] rounded-[16px] rounded-tr-lg"
-              style={{ backgroundColor: VALENTINO_50, padding: "12px 16px" }}
-            >
-              <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>{selectedLabel}</p>
-            </div>
-          </div>
-          {/* Assistant reply */}
-          <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>
-            {highlightValues(displayedReply)}
-          </p>
-          {replyDone && <FeedbackBar />}
+        {/* Row 2: two tall cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <MosaicCard action={MOSAIC_TALL} onSelect={() => onMosaicSelect(MOSAIC_TALL.title)} style={{ aspectRatio: "1 / 1" }} />
+          <MosaicCard action={MOSAIC_TALL_RIGHT} onSelect={() => onMosaicSelect(MOSAIC_TALL_RIGHT.title)} style={{ aspectRatio: "1 / 1" }} />
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -791,6 +747,7 @@ export default function Chat({
   showFeedbackRow: showFeedbackRowProp = false,
   voice = "ryan",
   onVoiceChange,
+  onMosaicSelect,
 }: ChatProps) {
   const isNewVariant = true; // All remaining variants use the new layout
   const [contentVisible, setContentVisible] = useState(true);
@@ -1253,11 +1210,13 @@ export default function Chat({
                 )}
 
                 {/* Review on-track - reassuring text + quick action cards */}
-                {alert && initialScreenVariant === "review-ontrack" && (
+                {alert && initialScreenVariant === "review-ontrack" && !hasInteracted && (
                   <ReviewOnTrackScreen
                     text={REVIEW_ONTRACK_TEXT_BY_VOICE[voice]}
-                    onOptionSelect={() => { setHasInteracted(true); }}
-                    voice={voice}
+                    onMosaicSelect={(title) => {
+                      setHasInteracted(true);
+                      onMosaicSelect?.(title);
+                    }}
                   />
                 )}
 

@@ -8,7 +8,6 @@ import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 import OnboardingSim from "@/app/preview/OnboardingSim";
 import AASim from "@/app/preview/AASim";
 import SavingsFlowSimBottom from "@/app/preview/SavingsFlowSimBottom";
-import DegenModeSimV1 from "@/app/preview/DegenModeSimV1";
 import RedditSimV1 from "@/app/preview/RedditSimV1";
 import RedditSimV2 from "@/app/preview/RedditSimV2";
 import RefreshSessionSimV2 from "@/app/preview/RefreshSessionSimV2";
@@ -51,14 +50,6 @@ const FLOWS: FlowDef[] = [
     description: "Savings goal flow with cruncher and interactive conversation",
     variants: [
       { name: "v1", render: () => <SavingsFlowSimBottom /> },
-    ],
-  },
-  {
-    id: "degen-mode",
-    label: "Degen mode",
-    description: "Degen mode exploration - baseline",
-    variants: [
-      { name: "v1", render: () => <DegenModeSimV1 /> },
     ],
   },
   {

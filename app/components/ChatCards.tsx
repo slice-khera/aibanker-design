@@ -15,6 +15,9 @@ import {
 } from "../lib/colors";
 import { RADIUS_S, RADIUS_PILL, RADIUS_CIRCLE } from "../lib/radii";
 import { formatDateRange } from "../lib/format-date";
+import type { SpendingPlan } from "../lib/types";
+import BudgetSummaryViz from "./BudgetSummaryViz";
+import CategoryBudgetsViz from "./CategoryBudgetsViz";
 
 // ─── Shared types ──────────────────────────────────────────
 
@@ -31,7 +34,9 @@ export type ChatCardData =
   | { type: "transaction-table"; title: string; transactions: { date: string; merchant: string; amount: number; category: string }[] }
   | { type: "confirm-list"; label?: string; items: { id: string; payee: string; amount: number; type: string; subtext?: string }[]; monthlyIncome?: number; onSubmit?: (selected: { id: string; amount: number; type: string }[]) => void; submitted?: boolean; onArrowTap?: () => void }
   | { type: "spend-trend"; month: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number }
-  | { type: "add-to-pot"; goalName: string; amount: number; fromAccount: string; activated?: boolean; variant?: "single" | "chips"; recommendedAmount?: number; amountOptions?: { label: string; value: number }[]; onAdd?: () => void };
+  | { type: "add-to-pot"; goalName: string; amount: number; fromAccount: string; activated?: boolean; variant?: "single" | "chips"; recommendedAmount?: number; amountOptions?: { label: string; value: number }[]; onAdd?: () => void }
+  | { type: "budget-summary"; plan: Pick<SpendingPlan, "income" | "obligations" | "savingsTarget" | "dailyPool"> }
+  | { type: "category-budgets"; plan: Pick<SpendingPlan, "categoryBudgets"> };
 
 // ─── Taxonomy aliases ─────────────────────────────────────
 // Visualizations: 8 data displays (flat on surface, no bounding box)
@@ -45,6 +50,8 @@ export type VisualizationData = Extract<
   | { type: "payment-mode-donut-v2" }
   | { type: "transaction-table" }
   | { type: "spend-trend" }
+  | { type: "budget-summary" }
+  | { type: "category-budgets" }
 >;
 
 // Widgets: 6 actionable items (enclosed container)
@@ -2005,6 +2012,10 @@ export default function ChatCard({ card }: { card: ChatCardData }) {
       return <ConfirmListCard data={card} />;
     case "add-to-pot":
       return <AddToPotCard data={card} />;
+    case "budget-summary":
+      return <BudgetSummaryViz plan={card.plan} />;
+    case "category-budgets":
+      return <CategoryBudgetsViz plan={card.plan} />;
     default:
       return null;
   }

@@ -197,14 +197,24 @@ export const PLAYGROUND_REVEALS: Record<string, PlaygroundReveal> = {
   },
 };
 
-// Pool of roasts - first one runs the intro/handoff flow, subsequent taps rotate through.
-export const PLAYGROUND_BYRON_ROASTS: string[] = [
-  "Three months in and your kitchen's basically a coat rack. ₹42K on food, ₹3K on apps you don't open, and you call ₹38K to one guy 'casual'. You don't need a banker. You need a witness.",
-  "Tuesdays you spend like it's your birthday. Saturdays you spend like rent isn't real. Mondays you cry. The pattern is - there isn't one.",
-  "Eight days before payday and you're rationing UPI like it's wartime. That's not budgeting. That's a hostage situation.",
-  "143 Swiggy orders in three months. Your fridge is a museum. The exhibits are ageing.",
-  "₹3,240 a month on apps you forgot existed. That's a small EMI for a streaming graveyard.",
-];
+// Roasts are now computed via `buildRoast` (see app/lib/roast.ts) — single
+// source of truth for both production and sims. The playground uses a fixed
+// synthetic input so consecutive taps cycle through copy variants by seed.
+import { buildRoast } from "../../lib/roast";
+
+const PLAYGROUND_ROAST_INPUT = {
+  lifestyleCategories: [
+    { name: "Food & dining", totalAmount: 0, transactionCount: 0, avgPerTransaction: 0, monthlyAverage: 0, shareOfLifestyle: "42%" },
+  ],
+  foodBreakdown: { totalOrders: 143, totalSpend: 42000 },
+  categoryBudgets: [
+    { name: "Food & dining", cap: 8000, currentSpend: 14000, isBiggestCut: true },
+  ],
+};
+
+export function getPlaygroundByronRoast(seed: number): string {
+  return buildRoast(PLAYGROUND_ROAST_INPUT, "byron", seed).text;
+}
 
 export const PLAYGROUND_RYAN_HANDOFF: DualVoice = dv(
   "Byron's a bit much. But he means well. If tough love is what you like, you know where to find him.",

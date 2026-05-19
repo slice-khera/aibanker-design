@@ -65,6 +65,8 @@ import type {
   HomeSubflow,
 } from "@/app/lib/types";
 import { getEffectiveBudget } from "@/app/lib/budget-utils";
+import { buildRoast } from "@/app/lib/roast";
+import { SPENDING_PLAN_FIXTURE } from "@/app/preview/fixtures/gbpFlowFixture";
 import { formatDateMonth } from "@/app/lib/format-date";
 import { useUserState } from "@/app/hooks/useUserState";
 import { typography } from "@/app/lib/typography";
@@ -352,6 +354,7 @@ function Home() {
   const [activeChips, setActiveChips] = useState<ChatChip[]>([]);
   const [homeSubflow, setHomeSubflow] = useState<HomeSubflow>("idle");
   const [subflowData, setSubflowData] = useState<Record<string, string>>({});
+  const [roastSeed, setRoastSeed] = useState(0);
   const [insightsMode, setInsightsMode] = useState(false);
 
   // Data-driven state (transient)
@@ -1942,6 +1945,12 @@ Be insightful, not just descriptive.`;
       case "tradeoff":
         handleTradeoffChip(chip);
         break;
+      case "recap":
+        handleRecapChip(chip);
+        break;
+      case "roast":
+        handleRoastChip(chip);
+        break;
       default:
         // Handle insight chip clicks or return to steady state
         handleInsightChip(chip);
@@ -2950,6 +2959,101 @@ Be insightful, not just descriptive.`;
     }
   };
 
+  // ============ LAST MONTH RECAP (from on-track mosaic) ============
+  const startRecapFlow = () => {
+    setHomeSubflow("recap");
+    queueMessage("assistant", "Here's last month at a glance.");
+    queueMessage("assistant", "", undefined, {
+      type: "budget-summary",
+      plan: SPENDING_PLAN_FIXTURE,
+    });
+    queueMessage("assistant", "", undefined, {
+      type: "category-budgets",
+      plan: SPENDING_PLAN_FIXTURE,
+    });
+    setActiveChips([
+      { id: "recap-understand", label: "Why is dining so high?" },
+      { id: "recap-done", label: "Done" },
+    ]);
+  };
+
+  const handleRecapChip = (chip: ChatChip) => {
+    if (chip.id === "recap-understand") {
+      startUnderstandFlow();
+      return;
+    }
+    returnToSteadyState();
+  };
+
+  // ============ ROAST ME (from on-track mosaic) ============
+  const runRoast = (seed: number) => {
+    const voice = userState?.voice ?? "ryan";
+    const result = buildRoast(
+      {
+        lifestyleCategories: profile.lifestyleCategories,
+        foodBreakdown: profile.foodBreakdown,
+        categoryBudgets: SPENDING_PLAN_FIXTURE.categoryBudgets,
+      },
+      voice,
+      seed,
+    );
+    queueMessage("assistant", result.text);
+    if (result.viz === "summary") {
+      queueMessage("assistant", "", undefined, {
+        type: "budget-summary",
+        plan: SPENDING_PLAN_FIXTURE,
+      });
+    } else if (result.viz === "categories") {
+      queueMessage("assistant", "", undefined, {
+        type: "category-budgets",
+        plan: SPENDING_PLAN_FIXTURE,
+      });
+    }
+  };
+
+  const startRoastFlow = () => {
+    setHomeSubflow("roast");
+    setRoastSeed(0);
+    runRoast(0);
+    setActiveChips([
+      { id: "roast-again", label: "Again" },
+      { id: "roast-done", label: "Done" },
+    ]);
+  };
+
+  const handleRoastChip = (chip: ChatChip) => {
+    if (chip.id === "roast-again") {
+      const next = roastSeed + 1;
+      setRoastSeed(next);
+      runRoast(next);
+      return;
+    }
+    returnToSteadyState();
+  };
+
+  // ============ MOSAIC DISPATCH (on-track "what can Ryan do" cards) ============
+  // No user echo bubble: the tapped card already signals intent, and the
+  // user→assistant transition would otherwise fire the processing edge glow.
+  const handleMosaicSelect = (title: string) => {
+    switch (title) {
+      case "Can I afford it?":
+        startAffordFlow();
+        return;
+      case "Analyse my spends":
+        startRecapFlow();
+        return;
+      case "Roast me":
+        startRoastFlow();
+        return;
+      case "Make Ryan smarter":
+        queueMessage("assistant", "Soon. Keep using me for now — every tap teaches me what to surface next.");
+        returnToSteadyState();
+        return;
+      default:
+        returnToSteadyState();
+    }
+  };
+
   // ============ UNDERSTAND MY MONEY (Educational flow) ============
   const startUnderstandFlow = () => {
     setHomeSubflow("understand-menu");
@@ -3691,6 +3795,7 @@ Be insightful, not just descriptive.`;
                   messages={displayedMessages}
                   chips={displayedChips}
                   onChipSelect={handleChipSelect}
+                  onMosaicSelect={handleMosaicSelect}
                   showInitialPrompt={showInitialScreen}
                   initialScreenVariant={initialScreenVariant}
                   goalSnapshot={goalTrackerGoals[0] ? { name: goalTrackerGoals[0].name, pct: goalTrackerGoals[0].pct, saved: goalTrackerGoals[0].saved, target: goalTrackerGoals[0].target, status: goalTrackerGoals[0].status, daysLabel: goalTrackerGoals[0].daysLabel } : undefined}

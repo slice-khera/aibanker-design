@@ -38,7 +38,7 @@ import {
   PLAYGROUND_INTRO_BUBBLES,
   PLAYGROUND_CHIPS,
   PLAYGROUND_REVEALS,
-  PLAYGROUND_BYRON_ROASTS,
+  getPlaygroundByronRoast,
   PLAYGROUND_RYAN_HANDOFF,
   PLAYGROUND_GOAL_NUDGE,
   type PlaygroundReveal,
@@ -665,7 +665,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
     if (playgroundBusy) return;
 
     if (chipId === "roast-byron") {
-      const roastText = PLAYGROUND_BYRON_ROASTS[playgroundRoastIndex % PLAYGROUND_BYRON_ROASTS.length];
+      const roastText = getPlaygroundByronRoast(playgroundRoastIndex);
       setPlaygroundRoastIndex((i) => i + 1);
       setUserActionCount((c) => c + 1);
       appendPlaygroundEvent({ kind: "user-tap", chipId, label: "Roast me, Byron" });

@@ -4,7 +4,9 @@
 
 export const INTEGRATED_IDS: ReadonlySet<string> = new Set([
   "app-chrome",
+  "budget-summary",
   "category-breakdown",
+  "category-budgets",
   "goal-list",
   "goal-progress",
   "goal-tracker",
