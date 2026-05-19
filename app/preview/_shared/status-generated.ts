@@ -12,6 +12,7 @@ export const INTEGRATED_IDS: ReadonlySet<string> = new Set([
   "goal-tracker",
   "investment-product",
   "onboarding",
+  "pay",
   "persona-toggle",
   "pot-detail",
   "questionnaire-overlay",
