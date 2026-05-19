@@ -9,7 +9,7 @@ import {
   BG_PRIMARY,
   ALPHA_WHITE_FF,
 } from "../lib/colors";
-import { SPACE_S, SPACE_XS, SPACE_L, SPACE_XL } from "../lib/spacing";
+import { SPACE_2XS, SPACE_S, SPACE_XS, SPACE_M, SPACE_L, SPACE_XL } from "../lib/spacing";
 // SPACE_XS used for gap in label row and product info
 import { RADIUS_CIRCLE } from "../lib/radii";
 import { AppBar, GestureNav, NavButton } from "./AppChrome";
@@ -58,6 +58,78 @@ function Fab({ onClick }: { onClick: () => void }) {
   );
 }
 
+// ── Footer with disclaimer + full-width CTA ──
+// Layout per Figma node 7524:14533 (Button group). Used by Meet Ryan PDP.
+
+function DisclaimerCtaFooter({
+  disclaimerText,
+  actionLabel,
+  onAction,
+}: {
+  disclaimerText: string;
+  actionLabel: string;
+  onAction: () => void;
+}) {
+  return (
+    <div
+      style={{
+        backgroundColor: BG_PRIMARY,
+        paddingTop: SPACE_M,
+        paddingLeft: SPACE_L,
+        paddingRight: SPACE_L,
+        paddingBottom: SPACE_M,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: SPACE_M,
+      }}
+    >
+      <div
+        className="flex items-center justify-center"
+        style={{
+          width: 312,
+          paddingTop: SPACE_XS,
+          gap: SPACE_2XS,
+        }}
+      >
+        <img
+          src={PLACEHOLDER_ICON}
+          alt=""
+          width={16}
+          height={16}
+          style={{ display: "block" }}
+        />
+        <span
+          style={{
+            ...typography.caption,
+            color: TEXT_TERTIARY,
+            textAlign: "center",
+          }}
+        >
+          {disclaimerText}
+        </span>
+      </div>
+      <button
+        type="button"
+        onClick={onAction}
+        className="transition-transform active:scale-[0.98]"
+        style={{
+          width: 312,
+          height: 48,
+          borderRadius: RADIUS_CIRCLE,
+          backgroundColor: VALENTINO_500,
+          border: "none",
+          cursor: "pointer",
+          ...typography.buttonNormal,
+          color: ALPHA_WHITE_FF,
+        }}
+      >
+        {actionLabel}
+      </button>
+    </div>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════════
 //  Feature PDP - per reference_dls_feature_pdp.md
 // ══════════════════════════════════════════════════════════════════
@@ -77,6 +149,9 @@ type Props = {
   features: FeatureRow[];
   onClose: () => void;
   onAction: () => void;
+  footer?: "fab" | "disclaimer-cta";
+  disclaimerText?: string;
+  actionLabel?: string;
 };
 
 export default function FeaturePDP({
@@ -88,6 +163,9 @@ export default function FeaturePDP({
   features,
   onClose,
   onAction,
+  footer = "fab",
+  disclaimerText,
+  actionLabel,
 }: Props) {
   return (
     <div
@@ -166,18 +244,26 @@ export default function FeaturePDP({
         ))}
       </div>
 
-      {/* ── FAB + gesture nav (pinned to bottom) ── */}
+      {/* ── Footer slot (pinned to bottom) + gesture nav ── */}
       <div className="shrink-0">
-        <div
-          className="flex justify-end"
-          style={{
-            paddingLeft: SPACE_XL,
-            paddingRight: SPACE_XL,
-            paddingBottom: SPACE_L,
-          }}
-        >
-          <Fab onClick={onAction} />
-        </div>
+        {footer === "disclaimer-cta" ? (
+          <DisclaimerCtaFooter
+            disclaimerText={disclaimerText ?? ""}
+            actionLabel={actionLabel ?? ""}
+            onAction={onAction}
+          />
+        ) : (
+          <div
+            className="flex justify-end"
+            style={{
+              paddingLeft: SPACE_XL,
+              paddingRight: SPACE_XL,
+              paddingBottom: SPACE_L,
+            }}
+          >
+            <Fab onClick={onAction} />
+          </div>
+        )}
         <GestureNav />
       </div>
     </div>

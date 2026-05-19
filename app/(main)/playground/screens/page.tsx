@@ -48,6 +48,9 @@ const SCREENS: ScreenDef[] = [
             features={PDP_FEATURES}
             onClose={noop}
             onAction={noop}
+            footer="disclaimer-cta"
+            disclaimerText="This beta may contain bugs or unfinished features"
+            actionLabel="Join the beta"
           />
         ),
       },

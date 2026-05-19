@@ -1225,6 +1225,9 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
             features={PDP_FEATURES}
             onClose={closeOverlay}
             onAction={handlePdpAction}
+            footer="disclaimer-cta"
+            disclaimerText="This beta may contain bugs or unfinished features"
+            actionLabel="Join the beta"
           />
         )}
 
