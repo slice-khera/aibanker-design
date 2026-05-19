@@ -7,10 +7,10 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/ca
 const SECTIONS = [
   { href: "/playground/dls", label: "DLS", description: "Colors, typography, spacing, radii, elevation, primitives" },
   { href: "/playground/components", label: "Components", description: "Overlays, trackers, toggles, and chrome compositions" },
-  { href: "/playground/visualizations", label: "Visualizations", description: "Data visualizations for spend analysis and tracking" },
-  { href: "/playground/widgets", label: "Widgets", description: "Interactive cards for goals, investments, and savings" },
+  { href: "/playground/visualizations", label: "Visualizations", description: "Flat data displays rendered on the chat surface" },
+  { href: "/playground/widgets", label: "Widgets", description: "Enclosed cards the user can confirm or modify" },
   { href: "/playground/screens", label: "Screens", description: "Individual screens in device frames" },
-  { href: "/playground/flows", label: "Flows", description: "Complete user journeys from onboarding to daily use" },
+  { href: "/playground/flows", label: "Flows", description: "Multi-step sims, end to end" },
 ] as const;
 
 export default function PlaygroundPage() {

@@ -22,6 +22,6 @@ export const SAVINGS_TIER_QUESTION: Question = {
     label: opt.tier,
     title: `${formatINRShort(opt.monthlyAmount)}/mo`,
     subtext: opt.description,
-    tag: { label: opt.tier.toUpperCase(), intent: TIER_INTENT[opt.tier] },
+    tag: { label: opt.tier, intent: TIER_INTENT[opt.tier] },
   })),
 };

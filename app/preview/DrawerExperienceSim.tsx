@@ -280,7 +280,7 @@ const DRAWER_CHAT_MESSAGES = [
   {
     id: "ontrack-1",
     role: "assistant" as const,
-    text: "Great going, Rajan - all your goals are **on track**. What would you like to talk about today?",
+    text: "Great going, Rajan. All your goals are **on track**. What would you like to talk about today?",
   },
   {
     id: "user-1",
@@ -290,7 +290,7 @@ const DRAWER_CHAT_MESSAGES = [
   {
     id: "ontrack-2",
     role: "assistant" as const,
-    text: "You've saved **₹1,08,000** of your ₹1,50,000 target - that's 72%. At your current pace, you'll hit it **18 days early**.",
+    text: "You've saved **₹1,08,000** of your ₹1,50,000 target. That's 72%. At your current pace, you'll hit it **18 days early**.",
   },
   {
     id: "user-2",
@@ -300,7 +300,7 @@ const DRAWER_CHAT_MESSAGES = [
   {
     id: "ontrack-3",
     role: "assistant" as const,
-    text: "You could, but you'd lose the buffer. If you skip, you'll still make it - just with only 3 days to spare instead of 18. Want me to adjust the plan?",
+    text: "You could, but you'd lose the buffer. If you skip, you'll still make it, just with only 3 days to spare instead of 18. Want me to adjust the plan?",
   },
 ];
 

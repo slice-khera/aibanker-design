@@ -197,7 +197,7 @@ const STEPS: Step[] = [
   bot(CLARIFYING_QUESTIONS[2].botText),
   { kind: "clarify-chips", questionIndex: 2 },
   // ── Phase 6: Plan crunching + verbose plan ──
-  bot({ ryan: "Thanks - give me a moment while I crunch the numbers.", byron: "Crunching. Sit tight." }),
+  bot({ ryan: "Thanks, give me a moment while I crunch the numbers.", byron: "Crunching. Sit tight." }),
   { kind: "plan-crunching" },
   bot(VERBOSE_PLAN_TEXT),
   { kind: "ready" },
@@ -1224,7 +1224,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
             onClose={closeOverlay}
             onAction={handlePdpAction}
             footer="disclaimer-cta"
-            disclaimerText="This beta may contain bugs or unfinished features"
+            disclaimerText="This beta may contain bugs or unfinished features."
             actionLabel="Join the beta"
           />
         )}

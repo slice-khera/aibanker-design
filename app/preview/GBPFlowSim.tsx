@@ -347,7 +347,7 @@ export default function GBPFlowSim({ story = "clean-start" }: { story?: GBPStory
           role: "assistant",
           text: chip.id === "review" || chip.id === "stack"
             ? "Let's take a closer look at your finances to figure out what's possible."
-            : "Got it - I'll factor that in. Let me walk through your finances first.",
+            : "Got it. I'll factor that in. Let me walk through your finances first.",
         }]);
         // For stories 2-6, once user makes a choice, start the footprint walk
         startFootprintWalk();

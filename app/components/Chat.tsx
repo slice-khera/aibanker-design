@@ -497,7 +497,7 @@ function OptionList({
 // ── New3 Alert Header - typed title + option list ──────────────
 // ── New5 - Text-only with affirmative/negative/neutral options ──
 const NEW5_TEXT_BY_VOICE: Record<Voice, string> = {
-  ryan: "Rajan, your Japan trip is veering off course \u2014 you\u2019ve overspent by \u20B915,000 against what we budgeted. Let\u2019s do some damage control while we still can.",
+  ryan: "Rajan, your Japan trip is veering off course. You\u2019ve overspent by \u20B915,000 against what we budgeted. Let\u2019s do some damage control while we still can.",
   byron: "\u20B915,000 over budget on Japan. Dining out twice a day? Subscriptions you forgot existed? At this pace Japan is a 2027 problem.",
 };
 const NEW5_TEXT = NEW5_TEXT_BY_VOICE.ryan;
@@ -509,23 +509,23 @@ const NEW5_OPTIONS = [
 ];
 
 const MOCK_RESPONSES: Record<string, string> = {
-  "Add ₹5,000 to pot": "Done \u2014 \u20B95,000 moved to your Japan trip pot. You\u2019re now \u20B910,000 behind instead of \u20B915,000. I\u2019ve also tightened your dining budget by \u20B92,000 this month to help close the gap faster.",
-  "I'll handle it myself": "Got it, I\u2019ll leave it with you. Just a heads up \u2014 if the gap grows past \u20B920,000, your December target starts looking tight. I\u2019ll check in again next week.",
-  "Show me where I overspent": "Here\u2019s the breakdown \u2014 dining out was \u20B98,200 (double your usual), shopping hit \u20B94,300, and subscriptions crept up by \u20B92,500. Dining is the big one to rein in.",
+  "Add ₹5,000 to pot": "Done. \u20B95,000 moved to your Japan trip pot. You\u2019re now \u20B910,000 behind instead of \u20B915,000. I\u2019ve also tightened your dining budget by \u20B92,000 this month to help close the gap faster.",
+  "I'll handle it myself": "Got it, I\u2019ll leave it with you. Just a heads up: if the gap grows past \u20B920,000, your December target starts looking tight. I\u2019ll check in again next week.",
+  "Show me where I overspent": "Here\u2019s the breakdown. Dining out was \u20B98,200 (double your usual), shopping hit \u20B94,300, and subscriptions crept up by \u20B92,500. Dining is the big one to rein in.",
 };
 
 // ── Review Rent - rent-specific text-only variant ──
-const RENT_TEXT = "Rajan, your rent of ₹25,000 is due in 5 days but your balance is only ₹11,200.\n\nYour salary of ₹62,000 hits 2 days later - if you can defer rent briefly, you're covered.";
+const RENT_TEXT = "Rajan, your rent of ₹25,000 is due in 5 days but your balance is only ₹11,200.\n\nYour salary of ₹62,000 hits 2 days later. If you can defer rent briefly, you're covered.";
 
 const REVIEW_ONTRACK_TEXT_BY_VOICE: Record<Voice, string> = {
-  ryan: "Great going, Rajan \u2014 all your goals are **on track**. What do you want to explore today?",
+  ryan: "Great going, Rajan. All your goals are **on track**. What do you want to explore today?",
   byron: "Goals on track. Don\u2019t let it go to your head. What do you want to dig into?",
 };
 const REVIEW_ONTRACK_TEXT = REVIEW_ONTRACK_TEXT_BY_VOICE.ryan;
 
 const REVIEW_COMPLETED_TEXT_BY_VOICE: Record<Voice, string> = {
-  ryan: "You did it, Rajan \u2014 your **Trip to Japan** goal is **100% funded**! Time to start planning what to pack. What do you want to explore next?",
-  byron: "Trip to Japan \u2014 done. Took you long enough. Now what?",
+  ryan: "You did it, Rajan. Your **Trip to Japan** goal is **100% funded**! Time to start planning what to pack. What do you want to explore next?",
+  byron: "Trip to Japan. Done. Took you long enough. Now what?",
 };
 const REVIEW_COMPLETED_TEXT = REVIEW_COMPLETED_TEXT_BY_VOICE.ryan;
 
@@ -546,7 +546,7 @@ const ONTRACK_MOCK_RESPONSES: Record<string, string> = {
   "Can I afford it?": "Balance is \u20B919,883 but whether you can afford something depends on what it is, when you need to pay, and what bills are coming up. What are you thinking of buying?",
   "Analyse my spends": "Last month you spent \u20B947,200 total. Dining was the biggest at \u20B912,400, then groceries at \u20B98,900 and transport at \u20B96,100. Overall **8% less** than the month before. Whatever you did, it\u2019s working.",
   "Make Ryan smarter": "You can rate my responses with the thumbs up or down after each reply. The more you interact, the sharper I get. Let\u2019s keep going.",
-  "Roast me": "Where do I start. You spent \u20B91,240 on coffee last month and your emergency fund is still \u20B92,500. Bold strategy. Want the full inventory or are we good?",
+  "Roast me": "Where to start. \u20B91,240 on coffee last month, and your emergency fund is still at \u20B92,500. Want me to walk through the rest, or are we good?",
 };
 
 function MosaicCard({
@@ -831,7 +831,7 @@ export default function Chat({
     if (initialScreenVariant === "review-ontrack") {
       return {
         title: "All goals are on track.",
-        subtitle: "Nothing to worry about - I'll nudge you if anything shifts.",
+        subtitle: "Nothing to worry about. I'll nudge you if anything shifts.",
         icon: null,
         iconBg: BLUE_50,
       };
