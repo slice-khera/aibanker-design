@@ -15,6 +15,7 @@ import PlanMode, { type PlanStep } from "@/app/components/PlanMode";
 import PayScreen from "@/app/components/PayScreen";
 import QuestionnaireOverlay, { type Question, type QuestionOption } from "@/app/components/QuestionnaireOverlay";
 import OnboardingSim from "@/app/preview/OnboardingSim";
+import AASim from "@/app/preview/AASim";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -364,6 +365,8 @@ function Home() {
   const [receiptsOpen, setReceiptsOpen] = useState(false);
   const [isAgentProcessingGlow, setIsAgentProcessingGlow] = useState(false);
   const [chatVisible, setChatVisible] = useState(false);
+  // AA flow reachable from the home (e.g. "Link more accounts" mosaic card).
+  const [aaSheetOpen, setAaSheetOpen] = useState(false);
   const [chatScreenPhase, setChatScreenPhase] = useState<"closed" | "entering" | "open" | "exiting">("closed");
   const [reviewMessages, setReviewMessages] = useState<ChatMessage[] | null>(null);
   const [goalDetail, setGoalDetail] = useState<GoalDetailSnapshot | null>(null);
@@ -1294,7 +1297,10 @@ Be insightful, not just descriptive.`;
   // ── Derive initial screen variant from goal status ──
   const initialScreenVariant = useMemo<"new5" | "review-ontrack" | "review-completed" | "review-rent">(() => {
     const goal = userState?.goal;
-    if (!goal) return "new5";
+    // Post-onboarding user with no goal yet → land on the mosaic
+    // ReviewOnTrackScreen so they see what Ryan can do, without any
+    // goal-related chrome.
+    if (!goal) return userState?.onboardingComplete ? "review-ontrack" : "new5";
     const monthsElapsed = Math.max(1, Math.round((Date.now() - new Date(goal.createdAt).getTime()) / (30 * 24 * 60 * 60 * 1000)));
     const { contributionAmount } = getGoalContributionSummary();
     const totalSaved = goal.savingsAllocated + (contributionAmount * monthsElapsed);
@@ -1303,7 +1309,7 @@ Be insightful, not just descriptive.`;
     const expectedPct = (monthsElapsed / goal.timelineMonths) * 100;
     if (pct <= expectedPct - 5) return "new5"; // behind → overspend alert
     return "review-ontrack"; // on-track or ahead
-  }, [userState?.goal, getGoalContributionSummary]);
+  }, [userState?.goal, userState?.onboardingComplete, getGoalContributionSummary]);
 
   const openGoalDetail = useCallback((card: GoalProgressCardData) => {
     const goal = userState?.goal;
@@ -3049,6 +3055,11 @@ Be insightful, not just descriptive.`;
         queueMessage("assistant", "Soon. Keep using me for now — every tap teaches me what to surface next.");
         returnToSteadyState();
         return;
+      case "Link more accounts":
+        // Re-entry into AA from the home — same sheet the onboarding sim
+        // mounted, just launched at the parent level.
+        setAaSheetOpen(true);
+        return;
       default:
         returnToSteadyState();
     }
@@ -3743,22 +3754,22 @@ Be insightful, not just descriptive.`;
           <div ref={frameRef} className="relative z-10 aspect-[360/780] w-full overflow-hidden rounded-[26px] bg-white">
             {/* ── V3 Onboarding (pre-onboarding users) ── */}
             {!userState?.onboardingComplete && (step === "wrapped" || step === "goal") ? (
-              <OnboardingSim onComplete={() => {
+              <OnboardingSim onComplete={({ aaLinked }) => {
+                // Hand off to the banker home. aaLinked drives the home
+                // experience: true \u2192 AA sync FYI; false \u2192 "Link more
+                // accounts" mosaic card that re-opens the AA flow.
                 mutate({
                   onboardingComplete: true,
                   currentStep: "home",
-                  goalStage: "pinned",
-                  goal: {
-                    name: "Trip to Japan",
-                    timeline: "Dec '26",
-                    timelineMonths: 8,
-                    amount: "\u20b92,00,000",
-                    amountNum: 200000,
-                    savingsAllocated: 0,
-                    paceId: "balanced",
-                    createdAt: new Date().toISOString(),
-                  },
+                  aaLinked,
                 });
+                clearChatTransitionTimers();
+                setReviewMessages(null);
+                setGoalDetail(null);
+                setShowInitialScreen(true);
+                setSheetOffset(SHEET_MAX_OFFSET);
+                setChatVisible(true);
+                setChatScreenPhase("open");
               }} />
             ) : (
             <>
@@ -3800,13 +3811,16 @@ Be insightful, not just descriptive.`;
                   initialScreenVariant={initialScreenVariant}
                   goalSnapshot={goalTrackerGoals[0] ? { name: goalTrackerGoals[0].name, pct: goalTrackerGoals[0].pct, saved: goalTrackerGoals[0].saved, target: goalTrackerGoals[0].target, status: goalTrackerGoals[0].status, daysLabel: goalTrackerGoals[0].daysLabel } : undefined}
                   voice={userState?.voice ?? "ryan"}
-                  onVoiceChange={(v) => {
+                  aaLinked={userState?.aaLinked ?? null}
+                  // Hide the Ryan/Byron toggle until the user has a goal —
+                  // the post-onboarding no-goal landing shouldn't show it.
+                  onVoiceChange={userState?.goal ? (v) => {
                     mutate({ voice: v });
                     // Reset conversation when voice changes
                     setMessages([]);
                     setReviewMessages(null);
                     setShowInitialScreen(true);
-                  }}
+                  } : undefined}
                   initialSuggestions={getSuggestions(!!userState?.goal)}
                   onInitialSuggestionClick={(id, title) => {
                     if (id === "review-goal") {
@@ -4392,6 +4406,27 @@ Be insightful, not just descriptive.`;
                   </div>
                 </div>
               )}
+
+              {/* ── AA flow (launched from "Link more accounts" mosaic card) ── */}
+              <div
+                className="absolute inset-0 z-30"
+                style={{
+                  transform: aaSheetOpen ? "translateY(0%)" : "translateY(100%)",
+                  transition: "transform 460ms cubic-bezier(0.22, 1, 0.36, 1)",
+                  willChange: "transform",
+                  pointerEvents: aaSheetOpen ? "auto" : "none",
+                }}
+              >
+                {aaSheetOpen && (
+                  <AASim
+                    onComplete={() => {
+                      setAaSheetOpen(false);
+                      mutate({ aaLinked: true });
+                    }}
+                    onClose={() => setAaSheetOpen(false)}
+                  />
+                )}
+              </div>
             </>
             )}
           </div>

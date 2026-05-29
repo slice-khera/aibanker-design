@@ -150,6 +150,10 @@ type ChatProps = {
   voice?: Voice;
   onVoiceChange?: (v: Voice) => void;
   onMosaicSelect?: (title: string) => void;
+  // AA linking status. true → show "sync in progress" FYI above mosaic;
+  // false → replace one mosaic card with "Link more accounts"; null/omitted
+  // → no AA-related UI (standard returning-user view).
+  aaLinked?: boolean | null;
 };
 
 function VoiceIcon() {
@@ -241,7 +245,10 @@ function ChatAppBar({
         navKind="close"
         onNav={onClose}
         voice={voice}
-        onVoiceChange={(v) => onVoiceChange?.(v as Voice)}
+        // When the caller hasn't wired voice switching (e.g. post-onboarding,
+        // no goal yet), pass undefined so ChatAppBar falls back to rendering
+        // the persona name as a title — same chrome as the sim's intro.
+        onVoiceChange={onVoiceChange ? (v) => onVoiceChange(v as Voice) : undefined}
         trailing={goalTrailingSlot}
       />
     );
@@ -506,6 +513,12 @@ const REVIEW_ONTRACK_TEXT_BY_VOICE: Record<Voice, string> = {
   ryan: "Great going, Rajan. All your goals are **on track**. What do you want to explore today?",
   byron: "Goals on track. Don\u2019t let it go to your head. What do you want to dig into?",
 };
+// Same mosaic, no-goal flavour: shown to a fresh post-onboarding user who
+// hasn't set a goal yet. Keeps Ryan's tone, drops the goal-specific framing.
+const REVIEW_ONTRACK_NO_GOAL_TEXT_BY_VOICE: Record<Voice, string> = {
+  ryan: "Welcome in, Rajan. Here's what I can help with \u2014 pick anything to start.",
+  byron: "You're in. Pick something. I'll do the actual work.",
+};
 const REVIEW_ONTRACK_TEXT = REVIEW_ONTRACK_TEXT_BY_VOICE.ryan;
 
 const REVIEW_COMPLETED_TEXT_BY_VOICE: Record<Voice, string> = {
@@ -570,30 +583,92 @@ function MosaicCard({
   );
 }
 
+// Mosaic card surfaced to users who skipped AA — taps re-open the AA flow.
+const MOSAIC_LINK_AA: QuickAction = {
+  category: "Get more out of Ryan",
+  title: "Link more accounts",
+  bg: "linear-gradient(160deg, #ffffff 40%, #e0f4e8 100%)",
+};
+
 function ReviewOnTrackScreen({
   text = REVIEW_ONTRACK_TEXT,
+  aaLinked,
   onMosaicSelect,
 }: {
   text?: string;
+  aaLinked?: boolean | null;
   onMosaicSelect: (label: string) => void;
 }) {
+  // Stream the welcome text in like a fresh chat message, then fade-stagger
+  // the mosaic in once the text has settled — same rhythm as a normal bot
+  // bubble landing in the conversation.
+  const [textDone, setTextDone] = useState(false);
+  const handleTextDone = useCallback(() => setTextDone(true), []);
+  const displayedText = useTypewriter(text, true, handleTextDone);
+
+  // When the user skipped AA, swap the bottom-right "Roast me" card for
+  // the "Link more accounts" CTA. Keeps the 2×2 layout, surfaces the
+  // re-entry without crowding the page.
+  const tallRight: QuickAction = aaLinked === false ? MOSAIC_LINK_AA : MOSAIC_TALL_RIGHT;
+
   return (
-    <div className="shrink-0 mb-6">
+    <div className="shrink-0 mb-6 animate-chat-message-in">
       <p className="whitespace-pre-line" style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>
-        {highlightValues(text)}
+        {highlightValues(displayedText)}
       </p>
 
-      <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+      {/* AA-linked FYI: small persistent note above the mosaic. */}
+      {textDone && aaLinked === true && (
+        <div
+          className="animate-chat-message-in"
+          style={{
+            marginTop: 16,
+            padding: "10px 12px",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            borderRadius: 12,
+            backgroundColor: "#e6edf9",
+            color: TEXT_PRIMARY,
+            ...typography.caption,
+          }}
+        >
+          <span
+            aria-hidden="true"
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              backgroundColor: "#2b6acf",
+              flexShrink: 0,
+              animation: "thinkingPulse 1.5s ease-in-out infinite",
+            }}
+          />
+          <span>Syncing your linked account — I'll have a fuller picture in a moment.</span>
+        </div>
+      )}
+
+      <div
+        className="transition-opacity duration-300 ease-out"
+        style={{
+          marginTop: 16,
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+          opacity: textDone ? 1 : 0,
+          pointerEvents: textDone ? "auto" : "none",
+        }}
+      >
         {/* Row 1: two square cards */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           {MOSAIC_ROW1.map((a) => (
             <MosaicCard key={a.title} action={a} onSelect={() => onMosaicSelect(a.title)} style={{ aspectRatio: "1 / 1" }} />
           ))}
         </div>
-        {/* Row 2: two tall cards */}
+        {/* Row 2: two tall cards (right slot swaps when AA was skipped) */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <MosaicCard action={MOSAIC_TALL} onSelect={() => onMosaicSelect(MOSAIC_TALL.title)} style={{ aspectRatio: "1 / 1" }} />
-          <MosaicCard action={MOSAIC_TALL_RIGHT} onSelect={() => onMosaicSelect(MOSAIC_TALL_RIGHT.title)} style={{ aspectRatio: "1 / 1" }} />
+          <MosaicCard action={tallRight} onSelect={() => onMosaicSelect(tallRight.title)} style={{ aspectRatio: "1 / 1" }} />
         </div>
       </div>
     </div>
@@ -727,19 +802,25 @@ export default function Chat({
   voice = "ryan",
   onVoiceChange,
   onMosaicSelect,
+  aaLinked,
 }: ChatProps) {
   const isNewVariant = true; // All remaining variants use the new layout
   const [contentVisible, setContentVisible] = useState(true);
 
-  // Handle voice switching with fade-out → reset → fade-in (matches DegenMode)
-  const handleVoiceSwitch = useCallback((v: Voice) => {
-    if (v === voice) return;
-    setContentVisible(false);
-    setTimeout(() => {
-      onVoiceChange?.(v);
-      setHasInteracted(false);
-      setTimeout(() => setContentVisible(true), 50);
-    }, 200);
+  // Handle voice switching with fade-out → reset → fade-in (matches DegenMode).
+  // Resolves to undefined when the caller hasn't wired voice switching, so the
+  // toggle UI downstream stays hidden (the wrapper alone would keep it truthy).
+  const handleVoiceSwitch = useMemo<((v: Voice) => void) | undefined>(() => {
+    if (!onVoiceChange) return undefined;
+    return (v: Voice) => {
+      if (v === voice) return;
+      setContentVisible(false);
+      setTimeout(() => {
+        onVoiceChange(v);
+        setHasInteracted(false);
+        setTimeout(() => setContentVisible(true), 50);
+      }, 200);
+    };
   }, [voice, onVoiceChange]);
 
   const [draft, setDraft] = useState("");
@@ -1192,7 +1273,10 @@ export default function Chat({
                 {/* Review on-track - reassuring text + quick action cards */}
                 {alert && initialScreenVariant === "review-ontrack" && !hasInteracted && (
                   <ReviewOnTrackScreen
-                    text={REVIEW_ONTRACK_TEXT_BY_VOICE[voice]}
+                    text={goalSnapshot
+                      ? REVIEW_ONTRACK_TEXT_BY_VOICE[voice]
+                      : REVIEW_ONTRACK_NO_GOAL_TEXT_BY_VOICE[voice]}
+                    aaLinked={aaLinked}
                     onMosaicSelect={(title) => {
                       setHasInteracted(true);
                       onMosaicSelect?.(title);

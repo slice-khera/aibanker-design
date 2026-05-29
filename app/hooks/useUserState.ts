@@ -23,6 +23,7 @@ function createDefaultUserState(userId: string, bufferAmount: number): UserState
     nudges: [],
     voice: "ryan",
     activeFlow: null,
+    aaLinked: null,
     lastActiveAt: new Date().toISOString(),
     createdAt: new Date().toISOString(),
   };

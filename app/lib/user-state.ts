@@ -46,6 +46,7 @@ export function createDefaultUserState(userId: string, bufferAmount: number): Us
     nudges: [],
     voice: "ryan",
     activeFlow: null,
+    aaLinked: null,
     lastActiveAt: now,
     createdAt: now,
   };

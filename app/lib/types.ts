@@ -289,6 +289,13 @@ export type UserState = {
 
   voice: "ryan" | "byron";
 
+  // Account-aggregator linking status. null = user hasn't engaged the flow yet
+  // (pre-onboarding or before reaching the AA step). true = at least one bank
+  // is linked and sync is in progress. false = user chose "Do it later".
+  // Drives the post-onboarding home: linked → FYI banner; skipped → "Link
+  // more accounts" mosaic card.
+  aaLinked: boolean | null;
+
   lastActiveAt: string;
   createdAt: string;
 };

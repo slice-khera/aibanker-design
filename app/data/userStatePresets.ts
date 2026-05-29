@@ -54,6 +54,7 @@ const base: UserState = {
   nudges: [],
   voice: "ryan",
   activeFlow: null,
+  aaLinked: null,
   lastActiveAt: now,
   createdAt: now,
 };
