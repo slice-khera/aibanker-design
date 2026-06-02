@@ -62,8 +62,36 @@ export const PERSONA_PRESETS: PersonaPreset[] = [
   {
     id: "new-user",
     label: "New user",
-    description: "Meet Ryan, take the money quiz, and set your first goal",
-    state: { ...base },
+    description: "Iterate on the onboarding flow: AA, Byron, and goal can each be turned on or off",
+    state: {
+      ...base,
+      onboardingAaMode: "optional",
+      onboardingIntroduceByron: false,
+      onboardingGoalRequired: false,
+    },
+    controls: [
+      {
+        label: "Account aggregator",
+        substates: [
+          { id: "aa-optional", label: "Optional", patch: { onboardingAaMode: "optional" } },
+          { id: "aa-required", label: "Required", patch: { onboardingAaMode: "required" } },
+        ],
+      },
+      {
+        label: "Voice",
+        substates: [
+          { id: "ryan-only", label: "Ryan only", patch: { onboardingIntroduceByron: false } },
+          { id: "ryan-byron", label: "Ryan + Byron", patch: { onboardingIntroduceByron: true } },
+        ],
+      },
+      {
+        label: "Goal setup",
+        substates: [
+          { id: "goal-optional", label: "Optional", patch: { onboardingGoalRequired: false } },
+          { id: "goal-required", label: "Required", patch: { onboardingGoalRequired: true } },
+        ],
+      },
+    ],
   },
   {
     id: "returning",

@@ -3743,23 +3743,40 @@ Be insightful, not just descriptive.`;
           <div ref={frameRef} className="relative z-10 aspect-[360/780] w-full overflow-hidden rounded-[26px] bg-white">
             {/* ── V3 Onboarding (pre-onboarding users) ── */}
             {!userState?.onboardingComplete && (step === "wrapped" || step === "goal") ? (
-              <OnboardingSim onComplete={() => {
-                mutate({
-                  onboardingComplete: true,
-                  currentStep: "home",
-                  goalStage: "pinned",
-                  goal: {
-                    name: "Trip to Japan",
-                    timeline: "Dec '26",
-                    timelineMonths: 8,
-                    amount: "\u20b92,00,000",
-                    amountNum: 200000,
-                    savingsAllocated: 0,
-                    paceId: "balanced",
-                    createdAt: new Date().toISOString(),
-                  },
-                });
-              }} />
+              <OnboardingSim
+                key={`${userState?.onboardingAaMode ?? "required"}-${userState?.onboardingIntroduceByron ?? true}-${userState?.onboardingGoalRequired ?? true}`}
+                config={{
+                  aaMode: userState?.onboardingAaMode,
+                  introduceByron: userState?.onboardingIntroduceByron,
+                  goalRequired: userState?.onboardingGoalRequired,
+                }}
+                onComplete={(opts) => {
+                  if (opts?.skipGoal) {
+                    mutate({
+                      onboardingComplete: true,
+                      currentStep: "home",
+                      goalStage: "choice",
+                      goal: null,
+                    });
+                    return;
+                  }
+                  mutate({
+                    onboardingComplete: true,
+                    currentStep: "home",
+                    goalStage: "pinned",
+                    goal: {
+                      name: "Trip to Japan",
+                      timeline: "Dec '26",
+                      timelineMonths: 8,
+                      amount: "\u20b92,00,000",
+                      amountNum: 200000,
+                      savingsAllocated: 0,
+                      paceId: "balanced",
+                      createdAt: new Date().toISOString(),
+                    },
+                  });
+                }}
+              />
             ) : (
             <>
               {/* ── Pay screen (default landing layer) ── */}

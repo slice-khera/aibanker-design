@@ -289,6 +289,10 @@ export type UserState = {
 
   voice: "ryan" | "byron";
 
+  onboardingAaMode?: "required" | "optional";
+  onboardingIntroduceByron?: boolean;
+  onboardingGoalRequired?: boolean;
+
   lastActiveAt: string;
   createdAt: string;
 };

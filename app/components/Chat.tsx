@@ -515,19 +515,19 @@ const REVIEW_COMPLETED_TEXT_BY_VOICE: Record<Voice, string> = {
 const REVIEW_COMPLETED_TEXT = REVIEW_COMPLETED_TEXT_BY_VOICE.ryan;
 
 // ── Quick action cards for On Track variant ──
-type QuickAction = { category: string; title: string; illustration?: string; bg: string };
+export type QuickAction = { category: string; title: string; illustration?: string; bg: string };
 
 // Row 1: two square cards
-const MOSAIC_ROW1: QuickAction[] = [
+export const MOSAIC_ROW1: QuickAction[] = [
   { category: "Budget", title: "Can I afford it?", illustration: ILLUST_AFFORD_IT, bg: "linear-gradient(160deg, #ffffff 40%, #e6edf9 100%)" },
   { category: "Last month", title: "Analyse my spends", illustration: ILLUST_MY_SPENDS, bg: "linear-gradient(160deg, #ffffff 40%, #fff3e3 100%)" },
 ];
 // Row 2 left: tall card
-const MOSAIC_TALL: QuickAction = { category: "Feedback", title: "Make Ryan smarter", illustration: ILLUST_FEEDBACK, bg: "linear-gradient(160deg, #ffffff 40%, #fae2fa 100%)" };
+export const MOSAIC_TALL: QuickAction = { category: "Feedback", title: "Make Ryan smarter", illustration: ILLUST_FEEDBACK, bg: "linear-gradient(160deg, #ffffff 40%, #fae2fa 100%)" };
 // Row 2 right: tall card
-const MOSAIC_TALL_RIGHT: QuickAction = { category: "Just for laughs", title: "Roast me", bg: "linear-gradient(160deg, #ffffff 40%, #f9e4e5 100%)" };
+export const MOSAIC_TALL_RIGHT: QuickAction = { category: "Just for laughs", title: "Roast me", bg: "linear-gradient(160deg, #ffffff 40%, #f9e4e5 100%)" };
 
-function MosaicCard({
+export function MosaicCard({
   action,
   onSelect,
   style: extraStyle,
