@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 
 // Component imports
@@ -670,7 +669,6 @@ function ComponentEntry({ comp }: { comp: ComponentDef }) {
       id={comp.id}
       name={comp.label}
       description={comp.description}
-      status={resolveStatus(comp.id)}
       variants={comp.variants.map((v) => v.name)}
       activeVariantIndex={activeIdx}
       onVariantChange={setActiveIdx}

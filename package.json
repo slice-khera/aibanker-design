@@ -3,13 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node scripts/scan-playground-status.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/scan-playground-status.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "scan-playground-status": "node scripts/scan-playground-status.mjs"
+    "lint": "eslint"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
