@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback } from "react";
 import { typography } from "../lib/typography";
 import {
   TEXT_PRIMARY,
@@ -19,7 +19,7 @@ import QuestionnaireOverlay from "../components/QuestionnaireOverlay";
 import type { Question, QuestionOption } from "../components/QuestionnaireOverlay";
 import PlanCruncherV2 from "../components/PlanCruncherV2";
 import type { Persona } from "../components/PersonaToggle";
-import { TypeBox } from "../components/Chat";
+import { TypeBox, MosaicCard, MOSAIC_ROW1, MOSAIC_TALL, MOSAIC_TALL_RIGHT } from "../components/Chat";
 import ChatCard from "../components/ChatCards";
 import { highlightValues } from "../lib/chat-highlight";
 
@@ -164,7 +164,13 @@ type Step =
 
 function bot(dv: DualVoiceRef): Step { return { kind: "bot", dv }; }
 
-const STEPS: Step[] = [
+export type OnboardingConfig = {
+  aaMode?: "required" | "optional";
+  introduceByron?: boolean;
+  goalRequired?: boolean;
+};
+
+const ALL_STEPS: Step[] = [
   // ── Phase 1: Meet Ryan - wrapped quiz ──
   ...PRE_WRAPPED_BUBBLES.map(bot),
   { kind: "wrapped" },
@@ -220,23 +226,26 @@ const STEPS: Step[] = [
   { kind: "lock-in" },
 ];
 
-const LAST_STEP_INDEX = STEPS.length - 1;
 // Pause-point + post-pause logic is retired: the flow is now linear, no
 // exit-and-re-enter beat. Sentinels kept so a couple of remaining call sites
 // (auto-advance guard, snap-scroll ref) don't blow up.
 const PAUSE_STEP_INDEX = -1;
 const POST_PAUSE_STEP_INDEX = -1;
 
-// Goal questionnaire step - chip "Yes, set up a goal" jumps straight here
-const PREFERENCES_STEP_INDEX = STEPS.findIndex((s) => s.kind === "preferences");
-
 // After this many roasts, retire the "Roast me, Byron" chip and lean on the
 // goal-setting CTA instead. Byron's voice has been established; further
 // repetition stops adding signal.
 const MAX_BYRON_ROASTS = 2;
 
-// First step after wrapped - this is where we scroll to after story closes
-const POST_WRAPPED_STEP_INDEX = STEPS.findIndex((s) => s.kind === "wrapped") + 1;
+function buildStepsForConfig(config: OnboardingConfig | undefined): Step[] {
+  let result = [...ALL_STEPS];
+  if (config?.goalRequired === false) {
+    // Everything from preferences onward is goal-setting; cut the tail.
+    const prefIdx = result.findIndex((s) => s.kind === "preferences");
+    if (prefIdx >= 0) result = result.slice(0, prefIdx);
+  }
+  return result;
+}
 
 // Ryan's text line - plain text, typewriter on first reveal, full text afterwards
 function RyanLine({
@@ -294,7 +303,30 @@ const PDP_FEATURES = [
   { title: "Goals on autopilot", subtitle: "Set a target, get a plan, stay on track" },
 ];
 
-export default function OnboardingSim({ onComplete }: { onComplete?: () => void } = {}) {
+export default function OnboardingSim({
+  onComplete,
+  config,
+}: {
+  onComplete?: (opts?: { skipGoal?: boolean }) => void;
+  config?: OnboardingConfig;
+} = {}) {
+  const STEPS = useMemo(
+    () => buildStepsForConfig(config),
+    [config?.goalRequired],
+  );
+  const LAST_STEP_INDEX = STEPS.length - 1;
+  const PREFERENCES_STEP_INDEX = STEPS.findIndex((s) => s.kind === "preferences");
+  const PLAYGROUND_STEP_INDEX = STEPS.findIndex((s) => s.kind === "playground");
+  const AA_CHIPS_STEP_INDEX = STEPS.findIndex((s) => s.kind === "aa-chips");
+  const POST_WRAPPED_STEP_INDEX = STEPS.findIndex((s) => s.kind === "wrapped") + 1;
+  const aaMode = config?.aaMode ?? "required";
+  const introduceByron = config?.introduceByron ?? true;
+  const goalRequired = config?.goalRequired ?? true;
+
+  // True once the user taps "Skip for now" on the AA chip step. Triggers the
+  // skip-mosaic render path and hides the "linked" bot lines that buy time
+  // during the (now non-existent) fetch.
+  const [aaSkipped, setAaSkipped] = useState(false);
   // Single overlay - content swaps between "pdp" and "chat" inside it
   const [overlayScreen, setOverlayScreen] = useState<"pdp" | "chat">("pdp");
   const [pdpSeen, setPdpSeen] = useState(false); // once true, pill tap goes straight to chat
@@ -438,7 +470,7 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
 
   const advanceStep = useCallback(() => {
     setStepIndex((i) => Math.min(i + 1, LAST_STEP_INDEX));
-  }, []);
+  }, [LAST_STEP_INDEX]);
 
   const openOverlay = useCallback(() => {
     // First time → show PDP; returning → straight to chat
@@ -862,7 +894,12 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
     setUserActionCount((c) => c + 1);
     // Skip mosaic + preface bubbles; go straight to the goal questionnaire
     setStepIndex(PREFERENCES_STEP_INDEX);
-  }, []);
+  }, [PREFERENCES_STEP_INDEX]);
+
+  const handlePlaygroundTakeMeHome = useCallback(() => {
+    setUserActionCount((c) => c + 1);
+    onComplete?.({ skipGoal: true });
+  }, [onComplete]);
 
   // ── Render the chat content ───────────────────────────
 
@@ -905,6 +942,19 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
         {visibleSteps.map((step, i) => {
           const isLast = i === stepIndex;
 
+          // Skip path: hide the AA_LINKED_BUBBLE and the PLAYGROUND_INTRO_BUBBLES
+          // that live between aa-chips and playground. They were written to buy
+          // time during the AA fetch — irrelevant when the user opted out.
+          if (
+            aaSkipped &&
+            AA_CHIPS_STEP_INDEX >= 0 &&
+            PLAYGROUND_STEP_INDEX >= 0 &&
+            i > AA_CHIPS_STEP_INDEX &&
+            i < PLAYGROUND_STEP_INDEX
+          ) {
+            return null;
+          }
+
           if (step.kind === "bot") {
             const shouldAutoAdvance = isLast && (i + 1 !== PAUSE_STEP_INDEX + 1);
             const isPostWrapped = i === POST_WRAPPED_STEP_INDEX;
@@ -927,7 +977,9 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
                 <div key={`aa-chips-${i}`}>
                   <div ref={userBubbleRef} className="flex justify-end animate-chat-message-in" style={{ marginTop: SPACE_L }}>
                     <div className="max-w-[75%] rounded-[16px] rounded-tr-lg" style={{ backgroundColor: VALENTINO_50, padding: "12px 16px" }}>
-                      <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>Connect other accounts</p>
+                      <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>
+                        {aaChipPicked === "skip" ? "Skip for now" : "Connect other accounts"}
+                      </p>
                     </div>
                   </div>
                   {aaDismissed && !aaFlowOpen && (
@@ -988,6 +1040,36 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
                 >
                   Connect other accounts
                 </button>
+                {aaMode === "optional" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAaChipPicked("skip");
+                      setAaSkipped(true);
+                      setUserActionCount((c) => c + 1);
+                      // Jump straight to the playground step; the in-between
+                      // bot lines (AA_LINKED_BUBBLE + PLAYGROUND_INTRO_BUBBLES)
+                      // get filtered out below because aaSkipped is true.
+                      if (PLAYGROUND_STEP_INDEX >= 0) {
+                        setStepIndex(PLAYGROUND_STEP_INDEX);
+                      } else {
+                        setStepIndex((idx) => Math.min(idx + 1, LAST_STEP_INDEX));
+                      }
+                    }}
+                    className="transition-transform active:scale-[0.97]"
+                    style={{
+                      ...typography.buttonSmall,
+                      color: TEXT_PRIMARY,
+                      backgroundColor: BG_SECONDARY,
+                      border: `1px solid ${OUTLINE_SUBTLE}`,
+                      borderRadius: RADIUS_CIRCLE,
+                      padding: `${SPACE_XS}px ${SPACE_M}px`,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Skip for now
+                  </button>
+                )}
               </div>
             );
           }
@@ -1055,6 +1137,82 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
               );
             }
             return null;
+          }
+
+          if (step.kind === "playground" && aaSkipped) {
+            // Skip path: no time-buying playground reveal, no Byron handoff.
+            // Show a single Ryan bubble explaining the trade-off, then the
+            // post-onboarding mosaic so the user can preview Ryan's capabilities
+            // (or hit the goal/home chip below).
+            return (
+              <div key={`skip-mosaic-${i}`}>
+                <RyanLine
+                  text="No problem. Linking later gives me the sharpest read on where your money actually goes, but I can still show you around in the meantime."
+                  active={isLast}
+                />
+                <div ref={userBubbleRef} style={{ marginTop: SPACE_L, display: "flex", flexDirection: "column", gap: 16 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                    {MOSAIC_ROW1.map((a) => (
+                      <MosaicCard
+                        key={a.title}
+                        action={a}
+                        onSelect={() => onComplete?.({ skipGoal: !goalRequired })}
+                        style={{ aspectRatio: "1 / 1" }}
+                      />
+                    ))}
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                    <MosaicCard
+                      action={MOSAIC_TALL}
+                      onSelect={() => onComplete?.({ skipGoal: !goalRequired })}
+                      style={{ aspectRatio: "1 / 1" }}
+                    />
+                    <MosaicCard
+                      action={MOSAIC_TALL_RIGHT}
+                      onSelect={() => onComplete?.({ skipGoal: !goalRequired })}
+                      style={{ aspectRatio: "1 / 1" }}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-3 animate-chat-message-in" style={{ marginTop: SPACE_L }}>
+                  {goalRequired ? (
+                    <button
+                      type="button"
+                      onClick={handlePlaygroundAcceptGoal}
+                      className="transition-transform active:scale-[0.97]"
+                      style={{
+                        ...typography.buttonSmall,
+                        color: TEXT_PRIMARY,
+                        backgroundColor: BG_SECONDARY,
+                        border: `1px solid ${OUTLINE_SUBTLE}`,
+                        borderRadius: RADIUS_CIRCLE,
+                        padding: `${SPACE_XS}px ${SPACE_M}px`,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Yes, set up a goal
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handlePlaygroundTakeMeHome}
+                      className="transition-transform active:scale-[0.97]"
+                      style={{
+                        ...typography.buttonSmall,
+                        color: TEXT_PRIMARY,
+                        backgroundColor: BG_SECONDARY,
+                        border: `1px solid ${OUTLINE_SUBTLE}`,
+                        borderRadius: RADIUS_CIRCLE,
+                        padding: `${SPACE_XS}px ${SPACE_M}px`,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Take me home
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
           }
 
           if (step.kind === "playground") {
@@ -1194,23 +1352,42 @@ export default function OnboardingSim({ onComplete }: { onComplete?: () => void 
 
                 {showPostNudgeChips && (
                   <div ref={userBubbleRef} className="flex flex-wrap gap-3 animate-chat-message-in" style={{ marginTop: SPACE_L }}>
-                    <button
-                      type="button"
-                      onClick={handlePlaygroundAcceptGoal}
-                      className="transition-transform active:scale-[0.97]"
-                      style={{
-                        ...typography.buttonSmall,
-                        color: TEXT_PRIMARY,
-                        backgroundColor: BG_SECONDARY,
-                        border: `1px solid ${OUTLINE_SUBTLE}`,
-                        borderRadius: RADIUS_CIRCLE,
-                        padding: `${SPACE_XS}px ${SPACE_M}px`,
-                        cursor: "pointer",
-                      }}
-                    >
-                      Yes, set up a goal
-                    </button>
-                    {playgroundRoastIndex < MAX_BYRON_ROASTS && (
+                    {goalRequired ? (
+                      <button
+                        type="button"
+                        onClick={handlePlaygroundAcceptGoal}
+                        className="transition-transform active:scale-[0.97]"
+                        style={{
+                          ...typography.buttonSmall,
+                          color: TEXT_PRIMARY,
+                          backgroundColor: BG_SECONDARY,
+                          border: `1px solid ${OUTLINE_SUBTLE}`,
+                          borderRadius: RADIUS_CIRCLE,
+                          padding: `${SPACE_XS}px ${SPACE_M}px`,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Yes, set up a goal
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handlePlaygroundTakeMeHome}
+                        className="transition-transform active:scale-[0.97]"
+                        style={{
+                          ...typography.buttonSmall,
+                          color: TEXT_PRIMARY,
+                          backgroundColor: BG_SECONDARY,
+                          border: `1px solid ${OUTLINE_SUBTLE}`,
+                          borderRadius: RADIUS_CIRCLE,
+                          padding: `${SPACE_XS}px ${SPACE_M}px`,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Take me home
+                      </button>
+                    )}
+                    {introduceByron && playgroundRoastIndex < MAX_BYRON_ROASTS && (
                     <button
                       type="button"
                       onClick={() => handlePlaygroundChip("roast-byron")}
