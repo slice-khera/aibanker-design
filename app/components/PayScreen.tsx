@@ -1,8 +1,8 @@
 "use client";
 
 import { typography } from "../lib/typography";
-import { ALPHA_WHITE_05, ALPHA_WHITE_90, ALPHA_WHITE_FF, VALENTINO_500 } from "../lib/colors";
-import { SPACE_S, SPACE_M } from "../lib/spacing";
+import { ALPHA_WHITE_05, ALPHA_WHITE_90, ALPHA_WHITE_FF, VALENTINO_400 } from "../lib/colors";
+import { SPACE_S, SPACE_L } from "../lib/spacing";
 import { RADIUS_XL } from "../lib/radii";
 import AIBankerChip from "./AIBankerChip";
 
@@ -62,10 +62,10 @@ export default function PayScreen({
       />
 
       {/* Pill row - overlays the screenshot at the pill position */}
-      <div style={{ position: "absolute", top: "17%", left: 0, right: 0 }}>
+      <div style={{ position: "absolute", top: "17%", left: 0, right: 0, transform: `translateY(-${SPACE_S}px)` }}>
         <div
           className="flex items-center overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          style={{ gap: SPACE_M, paddingLeft: SPACE_M, paddingRight: SPACE_M }}
+          style={{ gap: SPACE_S, paddingLeft: SPACE_L, paddingRight: SPACE_L, paddingTop: SPACE_S, paddingBottom: SPACE_S }}
         >
           {pills.map((pill, idx) => {
             if (idx === 0 && pill.tappable) {
@@ -86,7 +86,7 @@ export default function PayScreen({
                 className="flex items-center shrink-0 transition-transform active:scale-[0.97]"
                 style={{
                   gap: 4,
-                  backgroundColor: VALENTINO_500,
+                  backgroundColor: VALENTINO_400,
                   border: `1.5px solid ${ALPHA_WHITE_05}`,
                   borderRadius: RADIUS_XL,
                   padding: "10px 16px",

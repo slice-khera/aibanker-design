@@ -12,11 +12,12 @@ The AI Banker chip is the tappable purple pill that sits in the pay-screen heade
 - Padding: 10px 16px
 - Icon: 16×16, leading
 - Gap between icon and label: 4px
-- Background: `#d827dc` (exact value carried over from the live pay-screen chip - slightly lighter than the surface so the pill reads as distinct; no matching DLS token yet)
-- Surface it sits on: `VALENTINO_500` (#D30AD7) - verified by pixel-sampling pay-screen.png
+- Background: `VALENTINO_400` (#DE45E1) - closest DLS token to Figma's `#d828dc`; one step lighter than the surface so the pill reads as distinct
+- Surface it sits on: `VALENTINO_500` (#D30AD7) - the pay-screen brand magenta
 - Border: 1.5px `ALPHA_WHITE_05`
 - Label: `typography.caption` (12/16, Rubik 400), color `rgba(255,255,255,0.9)`
 - Press feedback: `active:scale(0.97)`
+- Wrapper span: `position: relative; display: inline-flex; flex-shrink: 0; z-index: 1`. The `flex-shrink: 0` is required because the chip lives inside a flex row that would otherwise blockify the wrapper's `inline-flex` to `flex` and shrink it below the button's content width, clipping the halo on the right. The `z-index: 1` keeps the halo painting on top of sibling pills (sparks/fires) so the pulse isn't covered.
 
 ## States
 
@@ -34,10 +35,13 @@ Labels can be overridden per persona (e.g. "Byron is ready" for the Byron voice)
 - Duration: 2.2s, easing: `ease-out`, loop: infinite
 - No layout shift - halos are absolutely positioned within the chip's relative wrapper
 - Halos only mount when `state === "alert"` so the animation isn't running idle
+- **Halo needs vertical breathing room.** The host row's `overflow-x: auto` forces `overflow-y` to also clip, so the halo's 12px top/bottom reach would be cut off. Whatever row hosts the chip in the alert state must give itself `paddingTop`/`paddingBottom` ≥ 12px (use `SPACE_S`) and compensate the position with an equal `transform: translateY(-12px)` on the outer wrapper to keep the pills at the original visual line. PayScreen does this; any new host should too.
 
 ## Placement
-- Pay-screen pill row at ~17% from the top of the screen
+- Pay-screen pill row at ~17% from the top of the screen (with `translateY(-SPACE_S)` to offset the row's vertical padding so the chip still lands on the 17% line)
 - First (leftmost) slot in the row; sparks + fires pills sit to its right
+- Row layout: `gap: SPACE_S` (12px between pills), `paddingLeft/Right: SPACE_L` (24px row inset), `paddingTop/Bottom: SPACE_S` (12px to contain the halo)
+- Static sibling pills (sparks/fires) share the chip's surface color (`VALENTINO_400`), border, radius and padding
 - Horizontal scroll allowed on the row, but the chip is always the first item
 
 ## When to use which state
@@ -46,10 +50,14 @@ Labels can be overridden per persona (e.g. "Byron is ready" for the Byron voice)
 - `default` - steady state after first interaction
 
 ## Tokens
-- `#d827dc` - chip fill (raw hex, matches the live pay-screen; pending DLS token)
-- `rgba(255,255,255,0.5) → 0` - pulse ring colour
+- `VALENTINO_400` - chip fill (closest token to Figma `#d828dc`; no raw hex)
+- `rgba(255,255,255,0.15) → 0` - pulse ring colour (raw rgba inside `box-shadow` string; no DLS alpha token matches)
 - `ALPHA_WHITE_05` - border
-- `typography.caption` - label
+- `ALPHA_WHITE_90` - label colour
+- `typography.caption` - label type
+- `RADIUS_XL` - pill radius
+- `SPACE_S` - row gap, row paddingTop/Bottom, and the row's compensating `translateY`
+- `SPACE_L` - row paddingLeft/Right
 - Icon: `/icons/placeholder.svg` (placeholder - real Ryan/Byron avatar icon TBD)
 
 ## Notes

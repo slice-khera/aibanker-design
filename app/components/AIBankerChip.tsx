@@ -1,7 +1,7 @@
 "use client";
 
 import { typography } from "../lib/typography";
-import { ALPHA_WHITE_05, ALPHA_WHITE_90, VALENTINO_500 } from "../lib/colors";
+import { ALPHA_WHITE_05, ALPHA_WHITE_90, VALENTINO_400 } from "../lib/colors";
 import { RADIUS_XL } from "../lib/radii";
 
 export type AIBankerChipState = "firstTime" | "alert" | "default";
@@ -12,7 +12,7 @@ const DEFAULT_LABEL: Record<AIBankerChipState, string> = {
   default: "Chat with Ryan",
 };
 
-const CHIP_BG = VALENTINO_500;
+const CHIP_BG = VALENTINO_400;
 const CHIP_RADIUS = RADIUS_XL;
 const ICON = "/icons/placeholder.svg";
 
@@ -29,7 +29,7 @@ export default function AIBankerChip({
   const pulsing = state === "alert";
 
   return (
-    <span style={{ position: "relative", display: "inline-flex" }}>
+    <span style={{ position: "relative", display: "inline-flex", flexShrink: 0, zIndex: 1 }}>
       {pulsing && (
         <>
           <span aria-hidden className="ai-banker-chip-halo" />
