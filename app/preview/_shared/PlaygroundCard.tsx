@@ -9,12 +9,10 @@ import {
   type ReactNode,
 } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Pause, Play, RotateCcw } from "lucide-react";
-import type { ItemStatus } from "./status-registry";
 import DeviceFrame from "./DeviceFrame";
 
 // Context that lets a nested rendered component publish its control panel
@@ -34,17 +32,10 @@ export function useSlotControls(panel: ReactNode) {
   }, [set, panel]);
 }
 
-const STATUS_BADGE_VARIANT: Record<ItemStatus, "outline" | "secondary" | "default"> = {
-  exploring: "outline",
-  confirmed: "secondary",
-  integrated: "default",
-};
-
 type Props = {
   id?: string;
   name: string;
   description?: string;
-  status: ItemStatus;
   variants?: string[];
   activeVariantIndex?: number;
   onVariantChange?: (index: number) => void;
@@ -60,7 +51,6 @@ export default function PlaygroundCard({
   id,
   name,
   description,
-  status,
   variants,
   activeVariantIndex = 0,
   onVariantChange,
@@ -97,20 +87,11 @@ export default function PlaygroundCard({
   return (
     <Card id={id} className="rounded-none shadow-none scroll-mt-4">
       <CardHeader>
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <CardTitle className="text-sm">{name}</CardTitle>
-            {description && (
-              <CardDescription className="mt-0.5">{description}</CardDescription>
-            )}
-          </div>
-          <Badge
-            variant={STATUS_BADGE_VARIANT[status]}
-            className="shrink-0"
-            title="Auto-derived from code. Change the code or run design-lint to change this."
-          >
-            {status}
-          </Badge>
+        <div className="min-w-0 flex-1">
+          <CardTitle className="text-sm">{name}</CardTitle>
+          {description && (
+            <CardDescription className="mt-0.5">{description}</CardDescription>
+          )}
         </div>
 
         <div className="flex items-center gap-2 pt-1">

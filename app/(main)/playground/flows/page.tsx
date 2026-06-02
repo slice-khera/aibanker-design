@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 
 // Sim imports - reused as-is
@@ -102,7 +101,6 @@ function FlowEntry({ flow }: { flow: FlowDef }) {
       id={flow.id}
       name={flow.label}
       description={flow.description}
-      status={resolveStatus(flow.id)}
       variants={flow.variants.map((v) => v.name)}
       activeVariantIndex={activeIdx}
       onVariantChange={setActiveIdx}

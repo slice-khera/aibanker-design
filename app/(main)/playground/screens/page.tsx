@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 
 // Screen components
@@ -119,7 +118,6 @@ function ScreenEntry({ screen }: { screen: ScreenDef }) {
     <PlaygroundCard
       id={screen.id}
       name={screen.label}
-      status={resolveStatus(screen.id)}
       variants={screen.variants.map((v) => v.name)}
       activeVariantIndex={activeIdx}
       onVariantChange={setActiveIdx}

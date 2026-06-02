@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import ChatCard from "@/app/components/ChatCards";
 import type { ChatCardData } from "@/app/components/ChatCards";
-import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 import {
   DBG_FD_SETUP, DBG_FD_CHIPS,
@@ -21,7 +20,6 @@ function InvestmentProductPlayground() {
     <PlaygroundCard
       id="investment-product"
       name="Investment product"
-      status={resolveStatus("investment-product")}
       variants={["single", "chips"]}
       activeVariantIndex={variantIdx}
       onVariantChange={setVariantIdx}
@@ -45,7 +43,6 @@ function AddToPotPlayground() {
     <PlaygroundCard
       id="add-to-pot"
       name="Add to pot"
-      status={resolveStatus("add-to-pot")}
       variants={["single", "chips"]}
       activeVariantIndex={variantIdx}
       onVariantChange={setVariantIdx}
@@ -145,7 +142,6 @@ function SimpleWidgetEntry({ item }: { item: WidgetItem }) {
     <PlaygroundCard
       id={item.type}
       name={item.label}
-      status={resolveStatus(item.type)}
       variants={item.fixtures.map((f) => f.name)}
       activeVariantIndex={activeIdx}
       onVariantChange={setActiveIdx}

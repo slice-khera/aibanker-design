@@ -5,7 +5,6 @@ import ChatCard from "@/app/components/ChatCards";
 import type { ChatCardData } from "@/app/components/ChatCards";
 import BudgetSummaryViz from "@/app/components/BudgetSummaryViz";
 import CategoryBudgetsViz from "@/app/components/CategoryBudgetsViz";
-import { resolveStatus } from "@/app/preview/_shared/status-registry";
 import PlaygroundCard from "@/app/preview/_shared/PlaygroundCard";
 import {
   DBG_SPEND_OVERVIEW, DBG_CATEGORY_BAR,
@@ -99,7 +98,6 @@ function VizEntry({ item }: { item: VizItem }) {
     <PlaygroundCard
       id={item.type}
       name={item.label}
-      status={resolveStatus(item.type)}
       variants={item.fixtures.map((f) => f.name)}
       activeVariantIndex={activeIdx}
       onVariantChange={setActiveIdx}
