@@ -6,7 +6,7 @@ import {
   VALENTINO_500,
   TEXT_PRIMARY, TEXT_SECONDARY, TEXT_TERTIARY, TEXT_DISABLED,
   BG_PRIMARY, BG_CARD, BG_DISABLED, OUTLINE_SUBTLE,
-  ALPHA_BLACK_50, ALPHA_WHITE_FF, RED_500,
+  ALPHA_BLACK_50, ALPHA_WHITE_FF,
 } from "../lib/colors";
 import { SPACE_2XS, SPACE_XS, SPACE_S, SPACE_M, SPACE_L, SPACE_XL, SPACE_2XL } from "../lib/spacing";
 import { RADIUS_L, RADIUS_M, RADIUS_CIRCLE } from "../lib/radii";
@@ -14,7 +14,8 @@ import { ELEVATION_CARD, ELEVATION_ABOVE, ELEVATION_BELOW } from "../lib/elevati
 import { StatusBar, GestureNav } from "../components/AppChrome";
 import InputField from "../components/InputField";
 import OtpInput from "../components/OtpInput";
-import { AA_BENEFITS, AA_LEARN_MORE, AA_CONSENT_CARDS, AA_CONSENT_DETAILS, AA_INFO_TOOLTIPS, AA_PHONE, AA_NO_ACCOUNTS, AA_OTP_ERROR, BANKS, ONEMONEY_LOGO } from "./fixtures/onboardingFixture";
+import ListItemControl from "../components/ListItemControl";
+import { AA_BENEFITS, AA_LEARN_MORE, AA_CONSENT_CARDS, AA_CONSENT_DETAILS, AA_INFO_TOOLTIPS, AA_PHONE, AA_NO_ACCOUNTS, AA_OTP_ERROR, AA_FETCHED_ACCOUNTS, ONEMONEY_LOGO } from "./fixtures/onboardingFixture";
 
 // ── Transition config ────────────────────────────────────────────
 
@@ -102,9 +103,9 @@ function HandIcon({ color = TEXT_TERTIARY }: { color?: string }) {
   );
 }
 
-function InfoIcon({ color = TEXT_TERTIARY }: { color?: string }) {
+function InfoIcon({ color = TEXT_TERTIARY, size = 24 }: { color?: string; size?: number }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <circle cx="12" cy="12" r="10" stroke={color} strokeWidth="2" />
       <path d="M12 16v-4M12 8h.01" stroke={color} strokeWidth="2" strokeLinecap="round" />
     </svg>
@@ -195,8 +196,9 @@ function Fab({ onClick }: { onClick: () => void }) {
 //  MAIN COMPONENT
 // ══════════════════════════════════════════════════════════════════
 
-const SCREENS = ["value-prop", "learn-more", "bank-select", "otp", "no-accounts", "phone-number", "consent", "consent-detail"] as const;
+const SCREENS = ["value-prop", "learn-more", "otp", "select-accounts", "no-accounts", "phone-number", "consent", "consent-detail"] as const;
 type Screen = (typeof SCREENS)[number];
+type OtpContext = "discovery" | "confirm";
 const OTP_LENGTH = 4;
 const OTP_RESEND_SECONDS = 15;
 
@@ -224,7 +226,10 @@ export default function AASim({
   const [prevScreen, setPrevScreen] = useState<Screen | null>(null);
   const [direction, setDirection] = useState<"left" | "right" | "up" | "down">("left");
   const [phase, setPhase] = useState<"idle" | "prep" | "go">("idle");
-  const [selectedBank, setSelectedBank] = useState<string | null>(null);
+  const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
+  // Accounts carried into the consent screen (from select-accounts or alternates).
+  const [consentAccounts, setConsentAccounts] = useState<typeof AA_FETCHED_ACCOUNTS>([]);
+  const [otpContext, setOtpContext] = useState<OtpContext>("discovery");
   const [otpValue, setOtpValue] = useState(startState === "otp-error" ? "1234" : "");
   const [consentDetailIdx, setConsentDetailIdx] = useState(0);
   const [infoSheet, setInfoSheet] = useState<string | null>(null);
@@ -275,6 +280,22 @@ export default function AASim({
     setHistory((h) => h.slice(0, -1));
     navigate(prev, dir);
   }, [history, screen, navigate, onClose]);
+
+  // Enter the OTP screen for account discovery (after value prop / phone number).
+  const goToDiscoveryOtp = useCallback(() => {
+    setOtpContext("discovery");
+    setOtpValue("");
+    setOtpErrored(false);
+    goTo("otp");
+  }, [goTo]);
+
+  // Enter the OTP screen to confirm consent (after Approve).
+  const goToConfirmOtp = useCallback(() => {
+    setOtpContext("confirm");
+    setOtpValue("");
+    setOtpErrored(false);
+    goTo("otp");
+  }, [goTo]);
 
   // ── Value Prop ───────────────────────────────────────────────
 
@@ -354,7 +375,7 @@ export default function AASim({
         {/* FAB + Gesture nav */}
         <div className="shrink-0">
           <div className="flex justify-end" style={{ padding: `0 ${SPACE_XL}px ${SPACE_L}px` }}>
-            <Fab onClick={() => goTo("bank-select")} />
+            <Fab onClick={goToDiscoveryOtp} />
           </div>
           <GestureNav />
         </div>
@@ -477,13 +498,20 @@ export default function AASim({
 
   // ── Bank Select ──────────────────────────────────────────────
 
-  const [bankScrolled, setBankScrolled] = useState(false);
-  const [bankAtBottom, setBankAtBottom] = useState(true);
-  const bankScrollRef = useCallback((el: HTMLDivElement | null) => {
-    if (el) setBankAtBottom(el.scrollHeight <= el.clientHeight + 2);
+  const [acctScrolled, setAcctScrolled] = useState(false);
+  const [acctAtBottom, setAcctAtBottom] = useState(true);
+  const acctScrollRef = useCallback((el: HTMLDivElement | null) => {
+    if (el) setAcctAtBottom(el.scrollHeight <= el.clientHeight + 2);
   }, []);
 
-  function renderBankSelect() {
+  const toggleAccount = useCallback((id: string) => {
+    setSelectedAccountIds((ids) =>
+      ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]
+    );
+  }, []);
+
+  function renderSelectAccounts() {
+    const canConfirm = selectedAccountIds.length >= 1;
     return (
       <div
         className="h-full w-full flex flex-col"
@@ -491,7 +519,7 @@ export default function AASim({
       >
         <StatusBar backgroundColor="transparent" />
 
-        {/* App bar - shows title + shadow on scroll */}
+        {/* App bar - shows shadow on scroll */}
         <div
           className="flex items-center shrink-0"
           style={{
@@ -501,7 +529,7 @@ export default function AASim({
             paddingTop: SPACE_XS,
             paddingBottom: SPACE_XS,
             backgroundColor: BG_PRIMARY,
-            boxShadow: bankScrolled ? ELEVATION_BELOW : "none",
+            boxShadow: acctScrolled ? ELEVATION_BELOW : "none",
             transition: "box-shadow 200ms ease",
             zIndex: 1,
           }}
@@ -516,67 +544,59 @@ export default function AASim({
           </button>
         </div>
 
-        {/* Scrollable content: header + grid */}
+        {/* Scrollable content: header + account list */}
         <div
-          ref={bankScrollRef}
+          ref={acctScrollRef}
           className="flex-1 overflow-y-auto"
           onScroll={(e) => {
             const el = e.target as HTMLDivElement;
-            setBankScrolled(el.scrollTop > 40);
-            setBankAtBottom(el.scrollTop + el.clientHeight >= el.scrollHeight - 2);
+            setAcctScrolled(el.scrollTop > 40);
+            setAcctAtBottom(el.scrollTop + el.clientHeight >= el.scrollHeight - 2);
           }}
         >
           {/* Header */}
-          <div style={{ paddingLeft: SPACE_L, paddingRight: SPACE_L, marginTop: SPACE_XL }}>
+          <div style={{ paddingLeft: SPACE_L, paddingRight: SPACE_L, marginTop: SPACE_XL, display: "flex", flexDirection: "column", gap: SPACE_S }}>
             <h1 style={{ ...typography.headerH1, color: TEXT_PRIMARY, margin: 0 }}>
-              Select your primary account
+              Link bank accounts
             </h1>
+            <p style={{ ...typography.bodyNormal, color: TEXT_TERTIARY, margin: 0 }}>
+              Choose the accounts you&apos;d like to link
+            </p>
           </div>
 
-          {/* Bank grid */}
+          {/* Account list */}
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: SPACE_L,
-              padding: `${SPACE_2XL}px ${SPACE_L}px`,
-              paddingBottom: SPACE_2XL,
+              display: "flex",
+              flexDirection: "column",
+              gap: SPACE_M,
+              padding: `${SPACE_L}px ${SPACE_L}px ${SPACE_2XL}px`,
             }}
           >
-            {BANKS.map((bank) => (
-              <button
-                key={bank.id}
-                type="button"
-                onClick={() => {
-                  setSelectedBank(bank.id);
-                }}
-                className="flex flex-col items-center justify-center transition-transform active:scale-[0.97]"
-                style={{
-                  height: 134,
-                  borderRadius: RADIUS_L,
-                  backgroundColor: BG_CARD,
-                  border: `2px solid ${selectedBank === bank.id ? VALENTINO_500 : OUTLINE_SUBTLE}`,
-                  cursor: "pointer",
-                  gap: SPACE_M,
-                  padding: SPACE_M,
-                }}
-              >
-                <div
-                  className="flex items-center justify-center overflow-hidden"
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: RADIUS_CIRCLE,
-                    backgroundColor: BG_CARD,
-                    border: `1.2px solid ${OUTLINE_SUBTLE}`,
-                  }}
-                >
-                  <img src={bank.logo} alt="" width={32} height={32} style={{ objectFit: "contain" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-                </div>
-                <span style={{ ...typography.buttonSmall, color: TEXT_SECONDARY, textAlign: "center" }}>
-                  {bank.label}
-                </span>
-              </button>
+            {AA_FETCHED_ACCOUNTS.map((acct) => (
+              <ListItemControl
+                key={acct.id}
+                card
+                kind="none"
+                selected={selectedAccountIds.includes(acct.id)}
+                onSelect={() => toggleAccount(acct.id)}
+                title={`${acct.accountMasked} • ${acct.accountType}`}
+                subtext={acct.bankLabel}
+                leading={
+                  <div
+                    className="flex items-center justify-center shrink-0 overflow-hidden"
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: RADIUS_CIRCLE,
+                      backgroundColor: BG_CARD,
+                      border: `1.2px solid ${OUTLINE_SUBTLE}`,
+                    }}
+                  >
+                    <img src={acct.logo} alt="" width={28} height={28} style={{ objectFit: "contain" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                  </div>
+                }
+              />
             ))}
           </div>
         </div>
@@ -584,24 +604,27 @@ export default function AASim({
         {/* Footer */}
         <div
           className="shrink-0"
-          style={{ boxShadow: bankAtBottom ? "none" : ELEVATION_ABOVE, transition: "box-shadow 200ms ease" }}
+          style={{ boxShadow: acctAtBottom ? "none" : ELEVATION_ABOVE, transition: "box-shadow 200ms ease" }}
         >
           <div style={{ padding: `${SPACE_M}px ${SPACE_L}px`, backgroundColor: BG_PRIMARY }}>
             <button
               type="button"
-              onClick={selectedBank ? () => goTo("otp") : undefined}
+              onClick={canConfirm ? () => {
+                setConsentAccounts(AA_FETCHED_ACCOUNTS.filter((a) => selectedAccountIds.includes(a.id)));
+                goTo("consent");
+              } : undefined}
               style={{
                 width: "100%",
                 height: 48,
                 borderRadius: RADIUS_CIRCLE,
-                backgroundColor: selectedBank ? VALENTINO_500 : BG_DISABLED,
+                backgroundColor: canConfirm ? VALENTINO_500 : BG_DISABLED,
                 border: "none",
-                cursor: selectedBank ? "pointer" : "default",
+                cursor: canConfirm ? "pointer" : "default",
                 ...typography.buttonNormal,
-                color: selectedBank ? BG_PRIMARY : TEXT_DISABLED,
+                color: canConfirm ? BG_PRIMARY : TEXT_DISABLED,
               }}
             >
-              Continue
+              Confirm
             </button>
           </div>
           <GestureNav />
@@ -698,10 +721,13 @@ export default function AASim({
             </p>
             {(() => {
               const enabled = otpValue.length === OTP_LENGTH && !otpErrored;
+              const onContinue = otpContext === "confirm"
+                ? () => onComplete?.()
+                : () => goTo("select-accounts");
               return (
                 <button
                   type="button"
-                  onClick={enabled ? () => goTo("consent") : undefined}
+                  onClick={enabled ? onContinue : undefined}
                   style={{
                     width: "100%",
                     height: 48,
@@ -813,7 +839,7 @@ export default function AASim({
                   <button
                     key={a.id}
                     type="button"
-                    onClick={() => goTo("consent")}
+                    onClick={() => { setConsentAccounts([a]); goTo("consent"); }}
                     className="flex items-center"
                     style={{
                       backgroundColor: BG_CARD,
@@ -953,7 +979,7 @@ export default function AASim({
           <div style={{ padding: `${SPACE_M}px ${SPACE_L}px`, backgroundColor: BG_PRIMARY }}>
             <button
               type="button"
-              onClick={enabled ? () => goTo("otp") : undefined}
+              onClick={enabled ? goToDiscoveryOtp : undefined}
               style={{
                 width: "100%",
                 height: 48,
@@ -984,7 +1010,7 @@ export default function AASim({
       >
         <StatusBar backgroundColor="transparent" />
 
-        {/* App bar - back + Skip */}
+        {/* App bar - back + Deny */}
         <div
           className="flex items-center shrink-0"
           style={{
@@ -1027,28 +1053,34 @@ export default function AASim({
             Approve consent
           </h1>
 
-          {/* Account row */}
-          <div className="flex items-center" style={{ gap: SPACE_S, paddingTop: SPACE_M, paddingBottom: SPACE_M }}>
-            <div
-              className="flex items-center justify-center shrink-0 overflow-hidden"
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: RADIUS_CIRCLE,
-                backgroundColor: BG_CARD,
-                border: `1px solid ${OUTLINE_SUBTLE}`,
-              }}
-            >
-              <img src="/icons/banks/hdfc.png" alt="" width={28} height={28} style={{ objectFit: "contain" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-            </div>
-            <div>
-              <p style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, margin: 0 }}>HDFC xx6543</p>
-              <p style={{ ...typography.caption, color: TEXT_TERTIARY, margin: 0 }}>Savings</p>
-            </div>
+          {/* Selected accounts */}
+          <div style={{ display: "flex", flexDirection: "column", gap: SPACE_M, marginTop: SPACE_M }}>
+            {consentAccounts.map((a) => (
+              <div key={a.id} className="flex items-center" style={{ gap: SPACE_S }}>
+                <div
+                  className="flex items-center justify-center shrink-0 overflow-hidden"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: RADIUS_CIRCLE,
+                    backgroundColor: BG_CARD,
+                    border: `1px solid ${OUTLINE_SUBTLE}`,
+                  }}
+                >
+                  <img src={a.logo} alt="" width={20} height={20} style={{ objectFit: "contain" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                </div>
+                <div className="min-w-0">
+                  <p style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, margin: 0 }}>
+                    {a.bankLabel.replace(/ Bank$/, "")} {a.accountMasked}
+                  </p>
+                  <p style={{ ...typography.caption, color: TEXT_TERTIARY, margin: 0 }}>{a.accountType}</p>
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Consent cards */}
-          <div style={{ display: "flex", flexDirection: "column", gap: SPACE_M, marginTop: SPACE_XS }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: SPACE_M, marginTop: SPACE_M }}>
             {AA_CONSENT_CARDS.map((card, i) => (
               <div
                 key={card.title}
@@ -1069,7 +1101,7 @@ export default function AASim({
                 </div>
 
                 {/* Title + subtitle */}
-                <div style={{ display: "flex", flexDirection: "column", gap: SPACE_XS }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: SPACE_XS, paddingRight: SPACE_L }}>
                   <p style={{ ...typography.headerH4, color: TEXT_PRIMARY, margin: 0 }}>{card.title}</p>
                   <p style={{ ...typography.caption, color: TEXT_TERTIARY, margin: 0 }}>{card.subtitle}</p>
                 </div>
@@ -1093,7 +1125,7 @@ export default function AASim({
           <div style={{ padding: `${SPACE_M}px ${SPACE_L}px`, backgroundColor: BG_PRIMARY }}>
             <button
               type="button"
-              onClick={() => onComplete?.()}
+              onClick={goToConfirmOtp}
               style={{
                 width: "100%",
                 height: 48,
@@ -1205,7 +1237,7 @@ export default function AASim({
     switch (s) {
       case "value-prop": return renderValueProp();
       case "learn-more": return renderLearnMore();
-      case "bank-select": return renderBankSelect();
+      case "select-accounts": return renderSelectAccounts();
       case "otp": return renderOtp();
       case "no-accounts": return renderNoAccounts();
       case "phone-number": return renderPhoneNumber();

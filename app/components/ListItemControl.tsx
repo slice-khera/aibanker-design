@@ -7,19 +7,26 @@ import {
   TEXT_SECONDARY,
   VALENTINO_500,
   ALPHA_BLACK_20,
+  BG_CARD,
+  OUTLINE_SUBTLE,
 } from "../lib/colors";
+import { RADIUS_L } from "../lib/radii";
 
 // DLS 2.0 - List item/Control (Figma node 166:2751)
 // All-purpose selection list item: title + optional subtext + trailing radio/checkbox.
+// `card` wraps the row as a bordered card with an optional `leading` avatar slot
+// (Figma node 648:40851 "List item / Standard").
 
 export type ListItemControlProps = {
   title: string;
   titleTrailing?: ReactNode;
   subtext?: string;
-  kind?: "radio" | "checkbox";
+  kind?: "radio" | "checkbox" | "none";
   selected: boolean;
   disabled?: boolean;
   onSelect: () => void;
+  leading?: ReactNode;
+  card?: boolean;
 };
 
 export default function ListItemControl({
@@ -30,7 +37,16 @@ export default function ListItemControl({
   selected,
   disabled = false,
   onSelect,
+  leading,
+  card = false,
 }: ListItemControlProps) {
+  const cardStyle = card
+    ? {
+        backgroundColor: BG_CARD,
+        border: `2px solid ${selected ? VALENTINO_500 : OUTLINE_SUBTLE}`,
+        borderRadius: RADIUS_L,
+      }
+    : {};
   return (
     <button
       type="button"
@@ -47,8 +63,10 @@ export default function ListItemControl({
         cursor: disabled ? "not-allowed" : "pointer",
         textAlign: "left",
         opacity: disabled ? 0.5 : 1,
+        ...cardStyle,
       }}
     >
+      {leading}
       <div
         style={{
           flex: 1,
@@ -71,6 +89,7 @@ export default function ListItemControl({
         )}
       </div>
 
+      {kind !== "none" && (
       <div
         style={{
           width: 40,
@@ -115,6 +134,7 @@ export default function ListItemControl({
           )}
         </div>
       </div>
+      )}
     </button>
   );
 }

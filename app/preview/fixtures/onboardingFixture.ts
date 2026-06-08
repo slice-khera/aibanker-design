@@ -23,19 +23,11 @@ export const AA_BENEFITS = [
 
 export const AA_CONSENT_CARDS = [
   {
-    title: "Spending analysis",
-    subtitle: "To analyse your spending patterns",
+    title: "Personal finance management",
+    subtitle: "Consumer spending patterns, budget or other reportings",
     details: [
-      { label: "Frequency", value: "One time" },
-      { label: "Time period", value: "13 months" },
-    ],
-  },
-  {
-    title: "Ongoing tracking",
-    subtitle: "To keep your insights up to date",
-    details: [
-      { label: "Frequency", value: "Up to 5x per month" },
-      { label: "Consent validity", value: "12 months" },
+      { label: "Frequency", value: "Up to 45x/month" },
+      { label: "Time period", value: "While active" },
     ],
   },
 ];
@@ -44,24 +36,13 @@ export const AA_CONSENT_CARDS = [
 
 export const AA_CONSENT_DETAILS = [
   {
-    title: "Spending analysis",
+    title: "Personal finance management",
     rows: [
-      { label: "Purpose", value: "To analyse your spending patterns" },
+      { label: "Purpose", value: "Customer spending patterns, budget or other reportings" },
       { label: "Consent type", value: "Profile, summary, transactions" },
       { label: "Time period", value: "13 Jan '25 to 14 Mar '25", hasInfo: true, tooltipKey: "Statement period" },
-      { label: "Frequency", value: "Once" },
-      { label: "Consent validity", value: "1 month" },
-      { label: "Data life", value: "1 month", hasInfo: true },
-    ],
-  },
-  {
-    title: "Ongoing tracking",
-    rows: [
-      { label: "Purpose", value: "To keep your financial insights current" },
-      { label: "Consent type", value: "Profile, summary, transactions" },
-      { label: "Time period", value: "13 Jan '25 to 14 Mar '25", hasInfo: true, tooltipKey: "Statement period" },
-      { label: "Frequency", value: "Periodic (max 5x per month)" },
-      { label: "Consent validity", value: "12 months" },
+      { label: "Frequency", value: "Up to 45x per month" },
+      { label: "Consent validity", value: "While active", hasInfo: true, tooltipKey: "Consent validity" },
       { label: "Data life", value: "1 month", hasInfo: true },
     ],
   },
@@ -116,6 +97,10 @@ export const AA_INFO_TOOLTIPS: Record<string, { title: string; body: string }> =
     title: "What is data life?",
     body: "The duration for which we securely store your bank statements.",
   },
+  "Consent validity": {
+    title: "What is consent validity?",
+    body: "Your consent stays active until you revoke it, so Ryan can keep your insights up to date.",
+  },
 };
 
 // ── Onemoney brand ──────────────────────────────────────────────
@@ -148,6 +133,17 @@ export const AA_NO_ACCOUNTS = {
     { id: "ippb", bankLabel: "India Post Payments Bank", logo: "/icons/banks/ippb.png", accountMasked: "xx1234", accountType: "Current" },
   ],
 };
+
+// ── AA Fetched accounts (Select bank accounts screen) ───────────
+// Accounts discovered after the discovery OTP. Two share a bank (HDFC).
+
+export const AA_FETCHED_ACCOUNTS = [
+  { id: "hdfc-sav", bankLabel: "HDFC Bank", logo: "/icons/banks/hdfc.png", accountMasked: "xx6543", accountType: "Savings" },
+  { id: "hdfc-cur", bankLabel: "HDFC Bank", logo: "/icons/banks/hdfc.png", accountMasked: "xx1188", accountType: "Current" },
+  { id: "axis-cur", bankLabel: "Axis Bank", logo: "/icons/banks/axis.png", accountMasked: "xx1234", accountType: "Current" },
+  { id: "kotak-sav", bankLabel: "Kotak Mahindra Bank", logo: "/icons/banks/kotak.png", accountMasked: "xx7790", accountType: "Savings" },
+  { id: "ippb-cur", bankLabel: "India Post Payments Bank", logo: "/icons/banks/ippb.png", accountMasked: "xx0042", accountType: "Current" },
+];
 
 // ── AA OTP error state ──────────────────────────────────────────
 

@@ -35,7 +35,7 @@ const FLOWS: FlowDef[] = [
   {
     id: "aa",
     label: "Account aggregator",
-    description: "Value prop, learn more, bank select, OTP, approve consent, consent detail",
+    description: "Value prop, learn more, OTP, link bank accounts, approve consent, confirm OTP",
     variants: [
       { name: "Happy", render: () => <AASim /> },
       { name: "No accounts", render: () => <AASim startState="no-accounts-empty" /> },
