@@ -28,6 +28,9 @@ export type PlanCruncherV2Props = {
   completedSubtitle?: string;
   planSummary?: PlanSummaryItem[];
   celebratoryText?: string;
+  // When provided, renders a dismiss (X) affordance while crunching. Dismissing
+  // hides the card; the caller is responsible for keeping the work running.
+  onDismiss?: () => void;
 };
 
 /* ── Inline keyframes ── */
@@ -114,6 +117,7 @@ export default function PlanCruncherV2({
   completedSubtitle,
   planSummary,
   celebratoryText,
+  onDismiss,
 }: PlanCruncherV2Props) {
   const [mounted, setMounted] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -180,6 +184,23 @@ export default function PlanCruncherV2({
             >
               <path d="M4 6L8 10L12 6" stroke={ALPHA_BLACK_30} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
+          )}
+
+          {!completed && onDismiss && (
+            <button
+              type="button"
+              aria-label="Dismiss"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDismiss();
+              }}
+              className="flex items-center justify-center shrink-0 transition-transform active:scale-[0.9]"
+              style={{ width: 24, height: 24, border: "none", background: "transparent", cursor: "pointer", padding: 0 }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M4 4L12 12M12 4L4 12" stroke={ALPHA_BLACK_30} strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
           )}
         </div>
       </div>

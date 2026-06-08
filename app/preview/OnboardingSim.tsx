@@ -367,6 +367,25 @@ const SKIP_SPEND_TILES: SkipSpendTile[] = [
 ];
 const SKIP_CONNECT_TILE: QuickAction = { category: "Accounts", title: "Connect other accounts", illustration: ILLUST_FEEDBACK, bg: "linear-gradient(160deg, #ffffff 40%, #fae2fa 100%)" };
 
+// Connect (Jun 11 terminal) path: after linking, transactions take time to pull
+// and parse. The cruncher cycles these while the work runs in the background;
+// the user can dismiss it and explore the mosaic meanwhile, and Ryan posts a
+// completion line once the snapshot is ready.
+const SYNC_TEXTS = [
+  "Pulling your transactions",
+  "Sorting them by category",
+  "Spotting your patterns",
+  "Building your spending snapshot",
+];
+const SYNC_DONE_LINE: DualVoiceRef = {
+  ryan: "All done. I've read through your transactions and your spending snapshot is ready.",
+  byron: "Finished digging. I've been through every transaction, the snapshot's ready when you are.",
+};
+const CONNECT_SALUTATION: DualVoiceRef = {
+  ryan: "You're all set. I'm reading through your transactions now, meanwhile here are a few things you can explore.",
+  byron: "Linked. I'm digging through your transactions as we speak. Amuse yourself with these while I work.",
+};
+
 export type GoalCompletionPayload = {
   type: string;
   name: string;
@@ -406,6 +425,14 @@ export default function OnboardingSim({
   // skip-mosaic render path and hides the "linked" bot lines that buy time
   // during the (now non-existent) fetch.
   const [aaSkipped, setAaSkipped] = useState(false);
+  // Connect (Jun 11 terminal) path: linking lands on a terminal mosaic with a
+  // background transaction-sync cruncher. `connectSyncStatus` cycles SYNC_TEXTS,
+  // `connectSyncDone` flips when parsing finishes, `connectCruncherDismissed`
+  // lets the user close the card while the sync keeps running.
+  const [aaConnected, setAaConnected] = useState(false);
+  const [connectSyncStatus, setConnectSyncStatus] = useState(SYNC_TEXTS[0]);
+  const [connectSyncDone, setConnectSyncDone] = useState(false);
+  const [connectCruncherDismissed, setConnectCruncherDismissed] = useState(false);
   // Single overlay - content swaps between "pdp" and "chat" inside it
   const [overlayScreen, setOverlayScreen] = useState<"pdp" | "chat">("pdp");
   const [pdpSeen, setPdpSeen] = useState(false); // once true, pill tap goes straight to chat
@@ -514,6 +541,7 @@ export default function OnboardingSim({
   const postPauseRef = useRef<HTMLDivElement>(null);
   const walkthroughBotRef = useRef<HTMLDivElement>(null);
   const skipResponseRef = useRef<HTMLDivElement>(null);
+  const connectTopRef = useRef<HTMLDivElement>(null);
   const [skipResponseStreamed, setSkipResponseStreamed] = useState(false);
   // Spend tiles the user has tapped, in order. Each renders an inline reveal
   // (reply bubble + viz + quip). Tapping a tile dismisses the mosaic; the
@@ -770,6 +798,17 @@ export default function OnboardingSim({
     }));
   }, [aaSkipped, snapScrollTo]);
 
+  // Connect-mosaic path: park the top of the connect content (the sync cruncher)
+  // just below chrome so the stepIndex auto-scroll doesn't push it under the
+  // floating app bar when the mosaic reveals.
+  useEffect(() => {
+    if (!aaConnected) return;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const el = connectTopRef.current;
+      if (el) snapScrollTo(el, 0);
+    }));
+  }, [aaConnected, snapScrollTo]);
+
   // Flip the pay-screen pill into its "ready" state once the user first opens
   // the chat. The old pause-based trigger (exit during mosaic, wait 5s) is
   // gone; the new flow is linear so the pill just commits the first time the
@@ -812,6 +851,26 @@ export default function OnboardingSim({
     return () => window.clearInterval(timer);
   }, [stepIndex, advanceStep]);
 
+  // Connect path: parse transactions in the background. Runs independently of
+  // the cruncher card's visibility, so dismissing the card doesn't stop the
+  // work. Terminal - never advances the step; on completion the render layer
+  // posts Ryan's "snapshot ready" line.
+  useEffect(() => {
+    if (!aaConnected || connectSyncDone) return;
+    let idx = 0;
+    setConnectSyncStatus(SYNC_TEXTS[0]);
+    const timer = window.setInterval(() => {
+      idx += 1;
+      if (idx >= SYNC_TEXTS.length) {
+        clearInterval(timer);
+        window.setTimeout(() => setConnectSyncDone(true), 1600);
+        return;
+      }
+      setConnectSyncStatus(SYNC_TEXTS[idx]);
+    }, 1600);
+    return () => window.clearInterval(timer);
+  }, [aaConnected, connectSyncDone]);
+
   // ── AA actions ────────────────────────────────────────
 
   const handleAAConnect = useCallback(() => {
@@ -820,15 +879,22 @@ export default function OnboardingSim({
 
   const handleAAComplete = useCallback(() => {
     setAaFlowOpen(false);
-    // Jun 11: connecting accounts is the end of onboarding. No goal/budget/plan
-    // flow to advance into, so finish straight to the home/pay screen.
+    // Jun 11: connecting accounts is terminal. Rather than dropping straight to
+    // the pay screen, land on the connect mosaic (playground step) where a
+    // background sync cruncher runs while the user explores. Mirrors the skip
+    // path so closing the overlay behaves the same.
     if (terminalAtAa) {
-      onComplete?.({ skipGoal: true });
+      setAaConnected(true);
+      if (PLAYGROUND_STEP_INDEX >= 0) {
+        setStepIndex(PLAYGROUND_STEP_INDEX);
+      } else {
+        setStepIndex((idx) => Math.min(idx + 1, LAST_STEP_INDEX));
+      }
       return;
     }
     // Advance past aa-chips to the linked bubble + linked chips
     advanceStep();
-  }, [advanceStep, terminalAtAa, onComplete]);
+  }, [advanceStep, terminalAtAa, PLAYGROUND_STEP_INDEX, LAST_STEP_INDEX]);
 
   const handleAAClose = useCallback(() => {
     setAaFlowOpen(false);
@@ -1154,11 +1220,12 @@ export default function OnboardingSim({
         {visibleSteps.map((step, i) => {
           const isLast = i === stepIndex;
 
-          // Skip path: hide the AA_LINKED_BUBBLE and the PLAYGROUND_INTRO_BUBBLES
-          // that live between aa-chips and playground. They were written to buy
-          // time during the AA fetch — irrelevant when the user opted out.
+          // Terminal paths (skip + connect): hide the AA_LINKED_BUBBLE and the
+          // PLAYGROUND_INTRO_BUBBLES between aa-chips and playground. On skip
+          // they're irrelevant; on connect the sync cruncher + salutation
+          // replace them.
           if (
-            aaSkipped &&
+            (aaSkipped || aaConnected) &&
             AA_CHIPS_STEP_INDEX >= 0 &&
             PLAYGROUND_STEP_INDEX >= 0 &&
             i > AA_CHIPS_STEP_INDEX &&
@@ -1363,6 +1430,84 @@ export default function OnboardingSim({
               );
             }
             return null;
+          }
+
+          if (step.kind === "playground" && aaConnected) {
+            // Jun 11 terminal connect path: a background sync cruncher pinned at
+            // the top, then the salutation, then a 3-tile spend mosaic. The
+            // cruncher is dismissable but the sync keeps running; once it
+            // finishes, Ryan posts a completion line. Tapping a tile reveals a
+            // viz inline, reusing the skip path's reveal machinery.
+            const showCruncher = !connectCruncherDismissed && !connectSyncDone;
+            return (
+              <div key={`connect-mosaic-${i}`} ref={connectTopRef}>
+                {showCruncher && (
+                  <div style={{ marginTop: SPACE_L }}>
+                    <PlanCruncherV2
+                      goalName="Reading your transactions"
+                      visible={showCruncher}
+                      statusText={connectSyncStatus}
+                      completed={false}
+                      onDismiss={() => setConnectCruncherDismissed(true)}
+                    />
+                  </div>
+                )}
+                <div ref={skipResponseRef} style={{ marginTop: SPACE_L }}>
+                  <RyanLine
+                    text={CONNECT_SALUTATION[voice]}
+                    active={isLast && skipReveals.length === 0 && !connectSyncDone}
+                    onDone={() => setSkipResponseStreamed(true)}
+                  />
+                </div>
+                {skipResponseStreamed && skipReveals.length === 0 && (
+                  <div className="animate-chat-message-in" style={{ marginTop: SPACE_L, display: "flex", flexDirection: "column", gap: 16 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                      <MosaicCard action={SKIP_SPEND_TILES[0]} onSelect={() => pickSpendTile(SKIP_SPEND_TILES[0].chipId)} style={{ aspectRatio: "1 / 1" }} />
+                      <MosaicCard action={SKIP_SPEND_TILES[1]} onSelect={() => pickSpendTile(SKIP_SPEND_TILES[1].chipId)} style={{ aspectRatio: "1 / 1" }} />
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                      <MosaicCard action={SKIP_SPEND_TILES[2]} onSelect={() => pickSpendTile(SKIP_SPEND_TILES[2].chipId)} style={{ aspectRatio: "1 / 1" }} />
+                    </div>
+                  </div>
+                )}
+                {skipReveals.map((chipId, j) => {
+                  const reveal = PLAYGROUND_REVEALS[chipId];
+                  if (!reveal) return null;
+                  const tile = SKIP_SPEND_TILES.find((t) => t.chipId === chipId);
+                  const isLastReveal = j === skipReveals.length - 1;
+                  return (
+                    <div key={`connect-reveal-${chipId}`}>
+                      <div
+                        ref={isLastReveal ? userBubbleRef : undefined}
+                        className="flex justify-end animate-chat-message-in"
+                        style={{ marginTop: SPACE_L }}
+                      >
+                        <div
+                          className="max-w-[75%] rounded-[16px] rounded-tr-lg"
+                          style={{ backgroundColor: VALENTINO_50, padding: "12px 16px" }}
+                        >
+                          <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>{tile?.title}</p>
+                        </div>
+                      </div>
+                      <div className="animate-chat-message-in" style={{ marginTop: SPACE_L }}>
+                        <ChatCard card={reveal.card} />
+                        {reveal.traits && <PlaygroundTraitsList traits={reveal.traits} />}
+                        <RyanLine
+                          text={reveal.quip[voice]}
+                          active={isLast && isLastReveal && !connectSyncDone}
+                          onDone={isLastReveal ? () => setSkipRevealDone(true) : undefined}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+                {connectSyncDone && (
+                  <div style={{ marginTop: SPACE_L }}>
+                    <RyanLine text={SYNC_DONE_LINE[voice]} active={isLast} />
+                  </div>
+                )}
+              </div>
+            );
           }
 
           if (step.kind === "playground" && aaSkipped) {
@@ -1962,9 +2107,10 @@ export default function OnboardingSim({
                     chrome is active (questionnaire / input bar / gesture
                     nav). Composing via flex means we don't hard-code offsets
                     per case. */}
-                {/* Terminal-skip "+" popover: same four options as the mosaic,
-                    anchored above the input bar's "+" button. */}
-                {terminalAtAa && aaSkipped && (
+                {/* Terminal "+" popover: same options as the mosaic, anchored
+                    above the input bar's "+" button. Skip path includes the
+                    reconnect tile; connect path shows only the 3 spend tiles. */}
+                {terminalAtAa && (aaSkipped || aaConnected) && (
                   <>
                     {skipMenuOpen && (
                       <div
@@ -1995,15 +2141,19 @@ export default function OnboardingSim({
                           illustration: t.illustration,
                           onSelect: () => pickSpendTile(t.chipId),
                         })),
-                        {
-                          key: "connect",
-                          label: SKIP_CONNECT_TILE.title,
-                          illustration: SKIP_CONNECT_TILE.illustration,
-                          onSelect: () => {
-                            setSkipMenuOpen(false);
-                            setAaFlowOpen(true);
-                          },
-                        },
+                        // Reconnect tile only on the skip path; the connect path
+                        // has already linked accounts.
+                        ...(aaConnected
+                          ? []
+                          : [{
+                              key: "connect",
+                              label: SKIP_CONNECT_TILE.title,
+                              illustration: SKIP_CONNECT_TILE.illustration,
+                              onSelect: () => {
+                                setSkipMenuOpen(false);
+                                setAaFlowOpen(true);
+                              },
+                            }]),
                       ].map((item) => (
                         <div
                           key={item.key}
@@ -2071,12 +2221,12 @@ export default function OnboardingSim({
                   ) : terminalAtAa ? (
                     // Jun 11 terminal path: the chat input bar only appears once
                     // onboarding is over - i.e. after the AA prompt, on the skip
-                    // mosaic (aaSkipped). Earlier steps keep just the gesture nav.
-                    !aaSkipped ? (
+                    // or connect mosaic. Earlier steps keep just the gesture nav.
+                    !(aaSkipped || aaConnected) ? (
                       <GestureNav backgroundColor="transparent" />
                     ) : (
-                    // Skip mosaic: open-ended "Ask Ryan" bar; the "+" button
-                    // re-opens the same four options as the mosaic.
+                    // Terminal mosaic: open-ended "Ask Ryan" bar; the "+" button
+                    // re-opens the same options as the mosaic.
                     <TypeBox
                       value={walkthroughDraft}
                       onChange={setWalkthroughDraft}
