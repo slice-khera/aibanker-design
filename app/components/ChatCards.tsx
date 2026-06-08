@@ -34,7 +34,7 @@ export type ChatCardData =
   | { type: "transaction-table"; title: string; transactions: { date: string; merchant: string; amount: number; category: string }[] }
   | { type: "confirm-list"; label?: string; items: { id: string; payee: string; amount: number; type: string; subtext?: string }[]; monthlyIncome?: number; onSubmit?: (selected: { id: string; amount: number; type: string }[]) => void; submitted?: boolean; defaultAllSelected?: boolean; onArrowTap?: () => void }
   | { type: "spend-trend"; month: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number }
-  | { type: "add-to-pot"; goalName: string; amount: number; fromAccount: string; activated?: boolean; variant?: "single" | "chips"; recommendedAmount?: number; amountOptions?: { label: string; value: number }[]; onAdd?: () => void }
+  | { type: "add-to-pot"; goalName: string; amount: number; fromAccount: string; activated?: boolean; variant?: "single" | "chips"; recommendedAmount?: number; amountOptions?: { label: string; value: number }[]; onAdd?: (amount: number) => void }
   | { type: "budget-summary"; plan: Pick<SpendingPlan, "income" | "obligations" | "savingsTarget" | "dailyPool"> }
   | { type: "category-budgets"; plan: Pick<SpendingPlan, "categoryBudgets"> };
 
@@ -861,7 +861,7 @@ function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-po
           </div>
           <button
             type="button"
-            onClick={() => { setTapped(true); onAdd?.(); }}
+            onClick={() => { setTapped(true); onAdd?.(selectedAmount); }}
             style={{
               ...typography.buttonSmall,
               border: "none",
@@ -1971,8 +1971,8 @@ function ConfirmListCard({ data }: { data: Extract<ChatCardData, { type: "confir
       <div
         style={{
           display: "grid",
-          gridTemplateRows: (!submitted && onSubmit && selected.size > 0) ? "1fr" : "0fr",
-          opacity: (!submitted && onSubmit && selected.size > 0) ? 1 : 0,
+          gridTemplateRows: (!submitted && onSubmit) ? "1fr" : "0fr",
+          opacity: (!submitted && onSubmit) ? 1 : 0,
           transition: "grid-template-rows 250ms ease, opacity 200ms ease",
         }}
       >

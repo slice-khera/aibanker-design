@@ -3765,6 +3765,42 @@ Be insightful, not just descriptive.`;
                     });
                     return;
                   }
+                  const g = opts?.goal;
+                  // Map the onboarding pace tier to the home goal's pace enum.
+                  const paceMap: Record<string, "aggressive" | "balanced" | "relaxed"> = {
+                    comfortable: "relaxed",
+                    realistic: "balanced",
+                    stretch: "aggressive",
+                    fixed: "balanced",
+                  };
+                  // Open-ended goals (save more) have no target/deadline \u2014 give the
+                  // pot a soft 1-year target off the monthly so the home card renders.
+                  const monthlyToEndLabel = (months: number) => {
+                    const d = new Date();
+                    d.setMonth(d.getMonth() + months);
+                    return `${d.toLocaleString("en-US", { month: "short" })} '${String(d.getFullYear()).slice(2)}`;
+                  };
+                  if (g) {
+                    const amountNum = g.amountNum ?? g.monthly * 12;
+                    const timelineMonths = g.timelineMonths ?? 12;
+                    mutate({
+                      onboardingComplete: true,
+                      currentStep: "home",
+                      goalStage: "pinned",
+                      goal: {
+                        name: g.name,
+                        timeline: monthlyToEndLabel(timelineMonths),
+                        timelineMonths,
+                        amount: `\u20b9${amountNum.toLocaleString("en-IN")}`,
+                        amountNum,
+                        savingsAllocated: g.initialFunded,
+                        paceId: paceMap[g.paceId ?? ""] ?? "balanced",
+                        createdAt: new Date().toISOString(),
+                      },
+                    });
+                    return;
+                  }
+                  // Fallback for non-funding completion paths that don't carry a goal.
                   mutate({
                     onboardingComplete: true,
                     currentStep: "home",

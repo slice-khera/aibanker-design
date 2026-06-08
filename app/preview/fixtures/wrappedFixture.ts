@@ -303,7 +303,7 @@ export const CLARIFY_CRUNCHER_STATUSES = [
 ];
 
 export const IDLE_CRUNCHER_TEXTS = [
-  "Comparing savings instruments",
+  "Checking your cashflow",
   "Optimising monthly allocation",
   "Building your plan",
 ];

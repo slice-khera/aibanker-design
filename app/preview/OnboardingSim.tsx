@@ -58,6 +58,7 @@ import {
 import {
   BUCKET_CONFIRM_LIST,
   LOCK_IN_CHIPS,
+  LADDER_OPTIONS,
   SPENDING_PLAN_FIXTURE,
 } from "./fixtures/gbpFlowFixture";
 import { SAVINGS_TIER_QUESTION } from "./fixtures/savingsTierQuestion";
@@ -248,6 +249,42 @@ function buildStepsForConfig(_config: OnboardingConfig | undefined): Step[] {
   return [...ALL_STEPS];
 }
 
+// The goal-type answer decides which follow-up questions make sense:
+//   trip      → where + by when + how much
+//   purchase  → what + by when + how much
+//   emergency → how much only (ongoing, no deadline)
+//   save-more → nothing further (straight to plan)
+// Returning a path-specific list keeps the overlay's "x of N" counter honest.
+function buildPrefQuestions(goalTypeId: string | undefined): Question[] {
+  const byId = (id: string) => GOAL_PREFERENCE_QUESTIONS.find((q) => q.id === id)!;
+  const goal = byId("goal-type");
+  const dest = byId("destination");
+  const timeline = byId("timeline");
+  const amount = byId("amount");
+  switch (goalTypeId) {
+    case "trip":
+      return [goal, { ...dest, text: "Where are you headed?" }, timeline, amount];
+    case "purchase":
+      return [goal, { ...dest, text: "What are you buying?" }, timeline, amount];
+    case "emergency":
+      return [goal, amount];
+    case "save-more":
+      return [goal];
+    default:
+      return [goal];
+  }
+}
+
+// Quiz answer → numbers. Amounts and timelines map to figures so the plan can
+// be computed from what the user actually picked (see the goal-aware derivation
+// in the component). Indian-format the result so highlightValues bolds it.
+const AMOUNT_MAP: Record<string, number> = { "50k": 50000, "1L": 100000, "2L": 200000, "5L+": 500000 };
+const TIMELINE_MONTHS: Record<string, number> = { "3m": 3, "6m": 6, "1y": 12 };
+const TIMELINE_LABELS: Record<string, string> = { "3m": "in 3 months", "6m": "in 6 months", "1y": "in 12 months" };
+function formatINR(n: number): string {
+  return `₹${Math.round(n).toLocaleString("en-IN")}`;
+}
+
 // Ryan's text line - plain text, typewriter on first reveal, full text afterwards
 function RyanLine({
   text,
@@ -324,11 +361,21 @@ const SKIP_TILE_RESPONSES: Record<"set-goal" | "analyse" | "roast" | "link", { r
   "link": { reply: "Link more accounts", ryan: "Smart. Let's pick up where we left off." },
 };
 
+export type GoalCompletionPayload = {
+  type: string;
+  name: string;
+  amountNum?: number;
+  timelineMonths?: number;
+  monthly: number;
+  initialFunded: number;
+  paceId?: string;
+};
+
 export default function OnboardingSim({
   onComplete,
   config,
 }: {
-  onComplete?: (opts?: { skipGoal?: boolean }) => void;
+  onComplete?: (opts?: { skipGoal?: boolean; goal?: GoalCompletionPayload }) => void;
   config?: OnboardingConfig;
 } = {}) {
   const STEPS = useMemo(
@@ -337,6 +384,8 @@ export default function OnboardingSim({
   );
   const LAST_STEP_INDEX = STEPS.length - 1;
   const PREFERENCES_STEP_INDEX = STEPS.findIndex((s) => s.kind === "preferences");
+  const LADDER_PICK_STEP_INDEX = STEPS.findIndex((s) => s.kind === "ladder-pick");
+  const LADDER_INTRO_STEP_INDEX = LADDER_PICK_STEP_INDEX - 1; // the "Now the pace" bot line
   const PLAYGROUND_STEP_INDEX = STEPS.findIndex((s) => s.kind === "playground");
   const AA_CHIPS_STEP_INDEX = STEPS.findIndex((s) => s.kind === "aa-chips");
   const POST_WRAPPED_STEP_INDEX = STEPS.findIndex((s) => s.kind === "wrapped") + 1;
@@ -422,7 +471,20 @@ export default function OnboardingSim({
   const [lockInChoice, setLockInChoice] = useState<"lock" | "tweak" | null>(null);
   const [tweakDraft, setTweakDraft] = useState("");
   const [tweakSubmitted, setTweakSubmitted] = useState(false);
-  const planLocked = lockInChoice === "lock" || tweakSubmitted;
+  // After the user confirms, they fund the pot + set the monthly on autopay
+  // (reusing the add-to-pot widget). Only once funded do we hand control back to
+  // the parent page so the home view can surface the real pot/goal.
+  const [potFunded, setPotFunded] = useState(false);
+  const planLocked = potFunded;
+  // Captures the amount the user actually funds (defaults to the recommended
+  // monthly) and the resolved goal payload, so closeOverlay can hand the real
+  // goal/pot back to the parent page without depending on render-scope values.
+  const fundedAmountRef = useRef<number | null>(null);
+  const goalPayloadRef = useRef<GoalCompletionPayload | undefined>(undefined);
+  // Once the walkthrough begins, the chat input bar is always available as a
+  // visual affordance. It's intentionally inert in this scripted sim: typing
+  // clears on send rather than driving a (faked) reply.
+  const [walkthroughDraft, setWalkthroughDraft] = useState("");
 
   // Ready signal
   const [ryanReady, setRyanReady] = useState(false);
@@ -437,6 +499,7 @@ export default function OnboardingSim({
   const byronBubbleRef = useRef<HTMLDivElement>(null);
   const ryanHandoffRef = useRef<HTMLDivElement>(null);
   const postPauseRef = useRef<HTMLDivElement>(null);
+  const walkthroughBotRef = useRef<HTMLDivElement>(null);
   const skipResponseRef = useRef<HTMLDivElement>(null);
   const [skipResponseStreamed, setSkipResponseStreamed] = useState(false);
   const [skipTileChoice, setSkipTileChoice] = useState<"set-goal" | "analyse" | "roast" | "link" | null>(null);
@@ -488,12 +551,57 @@ export default function OnboardingSim({
     }, delay);
   }, [cruncherVisible]);
 
-  // Map Question type for overlay
-  const prefQuestions: Question[] = GOAL_PREFERENCE_QUESTIONS.map((q) => ({
-    id: q.id,
-    text: q.text,
-    options: q.options,
-  }));
+  // Branch the question set off the chosen goal type (see buildPrefQuestions).
+  const prefQuestions: Question[] = useMemo(
+    () => buildPrefQuestions(prefAnswers["goal-type"]),
+    [prefAnswers],
+  );
+
+  // Goal-aware plan derivation. Everything downstream of the footprint walk
+  // (pace, plan numbers, verdict, lock-in copy, funding, handoff) keys off these
+  // instead of the old hardcoded "Trip to Japan, ₹12k" script.
+  const goalTypeId = prefAnswers["goal-type"];
+  const timelineId = prefAnswers["timeline"];
+  const goalAmountNum = AMOUNT_MAP[prefAnswers["amount"]];
+  const goalMonths = timelineId ? TIMELINE_MONTHS[timelineId] : undefined;
+  // Trip/purchase with a concrete amount AND deadline → one required monthly,
+  // no pace tiers (a fixed tenure can't have tiers). Flexible/no-timeline and the
+  // open-ended goals (emergency, save-more) keep the 3-tier picker.
+  const hasFixedTenure =
+    (goalTypeId === "trip" || goalTypeId === "purchase") && !!goalAmountNum && !!goalMonths;
+  const requiredMonthly = hasFixedTenure ? Math.round(goalAmountNum / goalMonths!) : null;
+  const tierMonthly = ladderTier
+    ? LADDER_OPTIONS.find((o) => o.tier === ladderTier)?.monthlyAmount ?? null
+    : null;
+  const savingsAmount = requiredMonthly ?? tierMonthly ?? SPENDING_PLAN_FIXTURE.savingsTarget;
+  const planAvailable = SPENDING_PLAN_FIXTURE.income - SPENDING_PLAN_FIXTURE.obligations;
+  const leftToSpend = planAvailable - savingsAmount;
+  // Some amount+timeline combos need more than the cashflow allows (e.g. ₹2L in
+  // 3 months). Flag it so the verdict doesn't falsely claim "this works".
+  const isPlanTight = savingsAmount >= planAvailable;
+  // What to call the pot. Never render "Just save more pot" / "Emergency fund"
+  // goalLabel quirks — map to clean labels.
+  const potLabel =
+    goalTypeId === "emergency" ? "Emergency fund"
+    : goalTypeId === "save-more" ? "Savings"
+    : goalLabel;
+  const spendingPlan = {
+    ...SPENDING_PLAN_FIXTURE,
+    savingsTarget: savingsAmount,
+    dailyPool: leftToSpend,
+  };
+  // Resolve the goal payload each render so closeOverlay can hand the real
+  // goal/pot back to the parent. save-more has no target/deadline (routes to a
+  // plain pot); the others carry an amount/timeline (routes to a pinned goal).
+  goalPayloadRef.current = {
+    type: goalTypeId ?? "save-more",
+    name: potLabel,
+    amountNum: goalAmountNum,
+    timelineMonths: goalMonths,
+    monthly: savingsAmount,
+    initialFunded: fundedAmountRef.current ?? savingsAmount,
+    paceId: ladderTier ?? (hasFixedTenure ? "fixed" : undefined),
+  };
 
   const advanceStep = useCallback(() => {
     setStepIndex((i) => Math.min(i + 1, LAST_STEP_INDEX));
@@ -517,7 +625,7 @@ export default function OnboardingSim({
       // page now that the slide-down has settled — that's the moment the home
       // view with the pinned goal should take over.
       if (planLocked) {
-        onComplete?.();
+        onComplete?.({ goal: goalPayloadRef.current });
         return;
       }
       // Otherwise: full-reset only if AA hasn't completed yet, so a user who
@@ -553,6 +661,7 @@ export default function OnboardingSim({
         setLockInChoice(null);
         setTweakDraft("");
         setTweakSubmitted(false);
+        setPotFunded(false);
         setUserActionCount(0);
         setGoalLabel("Your goal");
         setRyanReady(false);
@@ -615,6 +724,18 @@ export default function OnboardingSim({
       if (el) snapScrollTo(el);
     }));
   }, [userActionCount, snapScrollTo]);
+
+  // Footprint walk: when a card is confirmed, park Ryan's next transition line
+  // just below the chrome so the user reads it instead of it scrolling past
+  // toward the following card. Fires for each bucket (income/obligations/p2p/
+  // one-offs).
+  useEffect(() => {
+    if (footprintConfirmed.size === 0) return;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const el = walkthroughBotRef.current;
+      if (el) snapScrollTo(el, 0);
+    }));
+  }, [footprintConfirmed, snapScrollTo]);
 
   // Skip-mosaic path: park Ryan's "No problem..." bubble just below chrome
   // when the skip-mosaic step reveals. Without this, the stepIndex
@@ -723,9 +844,14 @@ export default function OnboardingSim({
   // ── Preference quiz actions ───────────────────────────
 
   const finishQuiz = useCallback((answers: Record<string, string>) => {
-    const goalType = GOAL_PREFERENCE_QUESTIONS[0].options.find((o) => o.id === answers["goal-type"])?.label || "Your goal";
-    const dest = answers["destination"] || "";
-    setGoalLabel(dest ? `Trip to ${dest}` : goalType);
+    const goalTypeId = answers["goal-type"];
+    const goalType = GOAL_PREFERENCE_QUESTIONS[0].options.find((o) => o.id === goalTypeId)?.label || "Your goal";
+    const detail = answers["destination"] || "";
+    const label =
+      goalTypeId === "trip" ? (detail ? `Trip to ${detail}` : goalType)
+      : goalTypeId === "purchase" ? (detail || goalType)
+      : goalType;
+    setGoalLabel(label);
     setPrefQuizOpen(false);
     setUserActionCount((c) => c + 1);
     advanceStep();
@@ -734,14 +860,13 @@ export default function OnboardingSim({
   const handlePrefSelect = useCallback((questionId: string, option: QuestionOption) => {
     const next = { ...prefAnswers, [questionId]: option.id };
     setPrefAnswers(next);
-    // Skip destination for non-trip goals
-    let nextIdx = prefQuizIndex + 1;
-    if (questionId === "goal-type" && option.id !== "trip") {
-      // destination is index 1 - skip it
-      const destIdx = prefQuestions.findIndex((q) => q.id === "destination");
-      if (destIdx === nextIdx) nextIdx += 1;
-    }
-    if (nextIdx < prefQuestions.length) {
+    // Picking the goal type reshapes the rest of the quiz, so size the next
+    // step against the freshly chosen branch rather than the stale list.
+    const questions = questionId === "goal-type"
+      ? buildPrefQuestions(option.id)
+      : prefQuestions;
+    const nextIdx = prefQuizIndex + 1;
+    if (nextIdx < questions.length) {
       setPrefQuizIndex(nextIdx);
     } else {
       finishQuiz(next);
@@ -786,13 +911,20 @@ export default function OnboardingSim({
   }, [stepIndex, prefQuizOpen, prefDismissed, prefAnswers]);
 
   // When the ladder-pick step becomes active, open the savings-tier picker
-  // overlay (same QuestionnaireOverlay variant the goal quiz uses).
+  // overlay (same QuestionnaireOverlay variant the goal quiz uses) — UNLESS the
+  // goal has a fixed tenure, in which case the monthly is determined and there's
+  // nothing to pick: skip straight past the step.
   useEffect(() => {
-    if (STEPS[stepIndex]?.kind === "ladder-pick" && !ladderQuizOpen && ladderTier == null) {
+    if (STEPS[stepIndex]?.kind !== "ladder-pick") return;
+    if (hasFixedTenure) {
+      const t = window.setTimeout(() => advanceStep(), 400);
+      return () => window.clearTimeout(t);
+    }
+    if (!ladderQuizOpen && ladderTier == null) {
       const t = window.setTimeout(() => setLadderQuizOpen(true), 400);
       return () => window.clearTimeout(t);
     }
-  }, [stepIndex, ladderQuizOpen, ladderTier]);
+  }, [stepIndex, ladderQuizOpen, ladderTier, hasFixedTenure, advanceStep]);
 
   // ── Playground: chip-tap & event handlers ────────────────────
   const appendPlaygroundEvent = useCallback((evt: PlaygroundEvent) => {
@@ -1014,11 +1146,25 @@ export default function OnboardingSim({
             const shouldAutoAdvance = isLast && (i + 1 !== PAUSE_STEP_INDEX + 1);
             const isPostWrapped = i === POST_WRAPPED_STEP_INDEX;
             const isPostPause = i === POST_PAUSE_STEP_INDEX;
-            const ref = isPostWrapped ? postWrappedRef : isPostPause ? postPauseRef : undefined;
+            const ref = isPostWrapped
+              ? postWrappedRef
+              : isPostPause
+                ? postPauseRef
+                : (isLast && stepIndex > PREFERENCES_STEP_INDEX)
+                  ? walkthroughBotRef
+                  : undefined;
+            // Fixed-tenure goals skip the tier picker, so the "Now the pace.
+            // Pick one." intro makes no sense — swap in the computed monthly.
+            const botText =
+              i === LADDER_INTRO_STEP_INDEX && hasFixedTenure
+                ? (voice === "byron"
+                    ? `Fixed target, fixed deadline — that's ${formatINR(savingsAmount)}/month, no haggling. Here's the damage.`
+                    : `To hit ${potLabel} ${TIMELINE_LABELS[timelineId] ?? ""}, you'll need about ${formatINR(savingsAmount)}/month. Here's how that lands.`)
+                : step.dv[voice];
             return (
               <div key={`bot-${i}`} ref={ref}>
                 <RyanLine
-                  text={step.dv[voice]}
+                  text={botText}
                   active={isLast}
                   onDone={shouldAutoAdvance ? advanceStep : undefined}
                 />
@@ -1492,12 +1638,14 @@ export default function OnboardingSim({
                     submitted: confirmed,
                     defaultAllSelected: true,
                     onSubmit: () => {
+                      // No setUserActionCount here: that would snap to the next
+                      // card (shared userBubbleRef). The footprintConfirmed
+                      // effect instead snaps to Ryan's transition line.
                       setFootprintConfirmed((prev) => {
                         const next = new Set(prev);
                         next.add(step.bucketIndex);
                         return next;
                       });
-                      setUserActionCount((c) => c + 1);
                       advanceStep();
                     },
                   }}
@@ -1529,18 +1677,49 @@ export default function OnboardingSim({
           }
 
           if (step.kind === "spending-plan") {
+            // Ryan-voice text block instead of the +/−/= table — ₹ amounts auto-bold
+            // via highlightValues, and the pot label is wrapped in ** so it stands out.
+            const planText = isPlanTight
+              ? (voice === "byron"
+                  ? `${formatINR(SPENDING_PLAN_FIXTURE.income)} in, ${formatINR(SPENDING_PLAN_FIXTURE.obligations)} already spoken for. ${formatINR(savingsAmount)} into **${potLabel}** leaves you next to nothing day-to-day. That's tight.`
+                  : `${formatINR(SPENDING_PLAN_FIXTURE.income)} comes in and ${formatINR(SPENDING_PLAN_FIXTURE.obligations)} is already committed. Putting ${formatINR(savingsAmount)} toward **${potLabel}** leaves almost nothing for everyday spending — that's tight.`)
+              : (voice === "byron"
+                  ? `${formatINR(SPENDING_PLAN_FIXTURE.income)} in, ${formatINR(SPENDING_PLAN_FIXTURE.obligations)} already spoken for, ${formatINR(savingsAmount)} into **${potLabel}**. ${formatINR(leftToSpend)} left to play with — don't blow it.`
+                  : `${formatINR(SPENDING_PLAN_FIXTURE.income)} comes in, ${formatINR(SPENDING_PLAN_FIXTURE.obligations)} is already committed, and ${formatINR(savingsAmount)} goes to **${potLabel}**. That leaves ${formatINR(leftToSpend)} for everyday spending.`);
             return (
               <div key={`plan-${i}`} className="animate-chat-message-in" style={{ marginTop: SPACE_L, display: "flex", flexDirection: "column", gap: SPACE_M }}>
-                <ChatCard card={{ type: "budget-summary", plan: SPENDING_PLAN_FIXTURE }} />
-                <ChatCard card={{ type: "category-budgets", plan: SPENDING_PLAN_FIXTURE }} />
+                <p style={{ ...typography.bodySmall, color: TEXT_PRIMARY }}>
+                  {highlightValues(planText)}
+                </p>
+                <ChatCard card={{ type: "category-budgets", plan: spendingPlan }} />
               </div>
             );
           }
 
           if (step.kind === "verdict") {
-            const verdictText = voice === "byron"
-              ? "Math checks out. ₹12k/month and you actually get there."
-              : "This works. ₹12k a month and the trip is on the calendar.";
+            const amt = formatINR(savingsAmount);
+            let verdictText: string;
+            if (isPlanTight) {
+              verdictText = voice === "byron"
+                ? `Real talk: ${amt}/month is more than you've got spare after the essentials. You can force it, but it'll hurt — give it more time.`
+                : `Heads up — ${amt} a month is more than your spare cash after the essentials. Doable, but tight. Stretching the timeline would ease it.`;
+            } else if (goalTypeId === "purchase") {
+              verdictText = voice === "byron"
+                ? `Math checks out. ${amt}/month and ${goalLabel} is yours.`
+                : `This works. ${amt} a month gets you ${goalLabel}.`;
+            } else if (goalTypeId === "emergency") {
+              verdictText = voice === "byron"
+                ? `Fine. ${amt}/month and you finally have a cushion.`
+                : `This works. ${amt} a month and your safety net builds steadily.`;
+            } else if (goalTypeId === "save-more") {
+              verdictText = voice === "byron"
+                ? `Math checks out. ${amt}/month put away without you feeling it.`
+                : `This works. ${amt} a month into savings, no strain on the rest.`;
+            } else {
+              verdictText = voice === "byron"
+                ? `Math checks out. ${amt}/month and ${goalLabel} actually happens.`
+                : `This works. ${amt} a month and ${goalLabel} is on the calendar.`;
+            }
             return (
               <div key={`verdict-${i}`} style={{ marginTop: SPACE_M }}>
                 <RyanLine
@@ -1588,13 +1767,26 @@ export default function OnboardingSim({
             // confirmation; "Tweak something" invites a reply via the input
             // bar (rendered in the bottom chrome below).
             const pickLabel = lockInChoice === "lock" ? "Lock it in" : "Tweak something";
+            const fund = (n: number) => Math.round(n / 500) * 500;
+            const fundOptions = [
+              { label: formatINR(fund(savingsAmount * 2)), value: fund(savingsAmount * 2) },
+              { label: formatINR(fund(savingsAmount * 3)), value: fund(savingsAmount * 3) },
+            ];
             const followUpText = lockInChoice === "lock"
               ? (voice === "byron"
-                  ? "Locked. Trip to Japan pot is live. I'll keep eyes on it and yell when you wobble."
-                  : "Locked in. Trip to Japan pot is live. I'll keep tabs and check in if anything drifts.")
+                  ? `Locked. Now fund **${potLabel}** and set the autopay — that's the whole point.`
+                  : `Locked in. One thing left — let's fund **${potLabel}** and put the monthly on autopay.`)
               : (voice === "byron"
                   ? "Sure. What needs changing?"
                   : "Tell me what feels off and I'll rework it.");
+            const reworkLine = voice === "byron"
+              ? `Noted. Reworked. Now fund **${potLabel}** and set the autopay.`
+              : `Got it. Updated and locked in. Now let's fund **${potLabel}** and set the autopay.`;
+            const fundedLine = voice === "byron"
+              ? `Done. **${potLabel}** funded, ${formatINR(savingsAmount)}/month on autopay. I'll yell when you wobble.`
+              : `Done. **${potLabel}** is funded and ${formatINR(savingsAmount)}/month is on autopay. I'll keep tabs and check in if anything drifts.`;
+            const reworkDone = lockInChoice === "tweak" && tweakSubmitted && !!tweakDraft;
+            const showFunding = lockInChoice === "lock" || reworkDone;
             return (
               <div key={`lock-in-${i}`}>
                 <div
@@ -1617,14 +1809,31 @@ export default function OnboardingSim({
                       </div>
                     </div>
                     <div style={{ marginTop: SPACE_M }}>
-                      <RyanLine
-                        text={voice === "byron"
-                          ? "Noted. Reworked. Trip to Japan pot is live with the tweak baked in."
-                          : "Got it. Updated and locked in. Trip to Japan pot is live."}
-                        active
-                      />
+                      <RyanLine text={reworkLine} active />
                     </div>
                   </>
+                )}
+                {showFunding && (
+                  <div className="animate-chat-message-in" style={{ marginTop: SPACE_L }}>
+                    <ChatCard
+                      card={{
+                        type: "add-to-pot",
+                        goalName: potLabel,
+                        amount: savingsAmount,
+                        recommendedAmount: savingsAmount,
+                        fromAccount: "Savings xx1234",
+                        variant: "chips",
+                        amountOptions: fundOptions,
+                        activated: potFunded,
+                        onAdd: (amt) => { fundedAmountRef.current = amt; setPotFunded(true); },
+                      }}
+                    />
+                  </div>
+                )}
+                {potFunded && (
+                  <div style={{ marginTop: SPACE_M }}>
+                    <RyanLine text={fundedLine} active />
+                  </div>
                 )}
               </div>
             );
@@ -1786,6 +1995,15 @@ export default function OnboardingSim({
                         placeholder={`Reply to ${voice === "byron" ? "Byron" : "Ryan"}...`}
                       />
                     </div>
+                  ) : stepIndex > PREFERENCES_STEP_INDEX ? (
+                    // Money walkthrough onward: surface the chat input bar so
+                    // the conversation always feels typeable (Option A: inert).
+                    <TypeBox
+                      value={walkthroughDraft}
+                      onChange={setWalkthroughDraft}
+                      onSubmit={() => setWalkthroughDraft("")}
+                      placeholder={`Reply to ${voice === "byron" ? "Byron" : "Ryan"}...`}
+                    />
                   ) : (
                     // Default: just the gesture nav. The lock-in path keeps
                     // the chat open until the user closes the overlay.
