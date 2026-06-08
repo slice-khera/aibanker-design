@@ -425,6 +425,12 @@ export default function OnboardingSim({
 
   // Cruncher
   const [cruncherVisible, setCruncherVisible] = useState(false);
+  // Mirror cruncherVisible into a ref so snapScrollTo can read the current
+  // chrome height without taking cruncherVisible as a dependency. Otherwise the
+  // function identity changes each time the cruncher toggles, which re-fires
+  // every snap effect (e.g. the footprint snap yanking scroll back up).
+  const cruncherVisibleRef = useRef(false);
+  cruncherVisibleRef.current = cruncherVisible;
   const [cruncherStatus, setCruncherStatus] = useState("Gathering your preferences");
   const [cruncherDone, setCruncherDone] = useState(false);
   const [goalLabel, setGoalLabel] = useState("Your goal");
@@ -523,7 +529,7 @@ export default function OnboardingSim({
       const elRect = el.getBoundingClientRect();
       const elTopInScroller = elRect.top - scrollerRect.top + scroller.scrollTop;
       // Position element just below the fixed chrome zone (app bar + cruncher if visible)
-      const chromeHeight = cruncherVisible ? 180 : 108;
+      const chromeHeight = cruncherVisibleRef.current ? 180 : 108;
       const target = Math.max(0, elTopInScroller - chromeHeight - 8);
 
       const minHeight = target + scroller.clientHeight;
@@ -549,7 +555,7 @@ export default function OnboardingSim({
       };
       requestAnimationFrame(step);
     }, delay);
-  }, [cruncherVisible]);
+  }, []);
 
   // Branch the question set off the chosen goal type (see buildPrefQuestions).
   const prefQuestions: Question[] = useMemo(
@@ -1783,8 +1789,8 @@ export default function OnboardingSim({
               ? `Noted. Reworked. Now fund **${potLabel}** and set the autopay.`
               : `Got it. Updated and locked in. Now let's fund **${potLabel}** and set the autopay.`;
             const fundedLine = voice === "byron"
-              ? `Done. **${potLabel}** funded, ${formatINR(savingsAmount)}/month on autopay. I'll yell when you wobble.`
-              : `Done. **${potLabel}** is funded and ${formatINR(savingsAmount)}/month is on autopay. I'll keep tabs and check in if anything drifts.`;
+              ? `Done. **${potLabel}** is live. I'll yell when you wobble.`
+              : `Done — **${potLabel}** is live. I'll keep tabs and check in if anything drifts.`;
             const reworkDone = lockInChoice === "tweak" && tweakSubmitted && !!tweakDraft;
             const showFunding = lockInChoice === "lock" || reworkDone;
             return (
@@ -1826,6 +1832,7 @@ export default function OnboardingSim({
                         amountOptions: fundOptions,
                         activated: potFunded,
                         onAdd: (amt) => { fundedAmountRef.current = amt; setPotFunded(true); },
+                        onArrowTap: potFunded ? closeOverlay : undefined,
                       }}
                     />
                   </div>

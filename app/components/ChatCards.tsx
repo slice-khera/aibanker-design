@@ -34,7 +34,7 @@ export type ChatCardData =
   | { type: "transaction-table"; title: string; transactions: { date: string; merchant: string; amount: number; category: string }[] }
   | { type: "confirm-list"; label?: string; items: { id: string; payee: string; amount: number; type: string; subtext?: string }[]; monthlyIncome?: number; onSubmit?: (selected: { id: string; amount: number; type: string }[]) => void; submitted?: boolean; defaultAllSelected?: boolean; onArrowTap?: () => void }
   | { type: "spend-trend"; month: string; chartData: { label: string; value: number }[]; average: number; highlightIndex: number }
-  | { type: "add-to-pot"; goalName: string; amount: number; fromAccount: string; activated?: boolean; variant?: "single" | "chips"; recommendedAmount?: number; amountOptions?: { label: string; value: number }[]; onAdd?: (amount: number) => void }
+  | { type: "add-to-pot"; goalName: string; amount: number; fromAccount: string; activated?: boolean; variant?: "single" | "chips"; recommendedAmount?: number; amountOptions?: { label: string; value: number }[]; onAdd?: (amount: number) => void; onArrowTap?: () => void }
   | { type: "budget-summary"; plan: Pick<SpendingPlan, "income" | "obligations" | "savingsTarget" | "dailyPool"> }
   | { type: "category-budgets"; plan: Pick<SpendingPlan, "categoryBudgets"> };
 
@@ -818,15 +818,38 @@ function InvestmentProductCard({ data }: { data: Extract<ChatCardData, { type: "
 // ─── Add to Pot Card (simplified one-tap action) ──────────
 
 function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-pot" }> }) {
-  const { goalName, amount, fromAccount, activated, variant, recommendedAmount, amountOptions, onAdd } = data;
+  const { goalName, amount, fromAccount, activated, variant, recommendedAmount, amountOptions, onAdd, onArrowTap } = data;
   const isChips = variant === "chips";
   const baseAmount = recommendedAmount ?? amount;
 
   const [selectedAmount, setSelectedAmount] = useState<number>(baseAmount);
   const [tapped, setTapped] = useState(false);
   const done = activated || tapped;
+  const confirmedAmount = isChips ? selectedAmount : amount;
 
   const shell = { backgroundColor: BG_PRIMARY, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: CARD_PAD, boxShadow: CARD_SHADOW };
+
+  // Confirmed state - collapse into a receipt (no chips, no action row)
+  if (done) {
+    return (
+      <div style={shell}>
+        <CardHeader label={goalName} onArrowTap={onArrowTap} />
+        <p style={{ ...typography.headerH1, color: TEXT_PRIMARY, margin: 0 }}>
+          {formatINRFull(confirmedAmount)}
+        </p>
+        {isChips && (
+          <div style={{ paddingTop: 16, marginTop: 16, borderTop: `1px solid ${OUTLINE_SUBTLE}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <p style={{ ...typography.bodyNormal, color: TEXT_SECONDARY, margin: 0 }}>
+              Monthly autopay
+            </p>
+            <span style={{ ...typography.bodyNormal, color: TEXT_PRIMARY, whiteSpace: "nowrap" }}>
+              {formatINRFull(baseAmount)}<span style={{ ...typography.bodySmall, color: TEXT_TERTIARY }}>/mo</span>
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div style={shell}>
@@ -847,35 +870,31 @@ function AddToPotCard({ data }: { data: Extract<ChatCardData, { type: "add-to-po
         </>
       )}
 
-      {done ? (
-        <ConfirmedRow label={isChips ? `Added ${formatINRFull(selectedAmount)} + monthly autopay set up` : "Added to pot"} />
-      ) : (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4 }}>
-              Paying from
-            </p>
-            <p style={{ ...typography.buttonSmall, color: TEXT_SECONDARY }}>
-              {fromAccount}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => { setTapped(true); onAdd?.(selectedAmount); }}
-            style={{
-              ...typography.buttonSmall,
-              border: "none",
-              background: "transparent",
-              color: VALENTINO_500,
-              cursor: "pointer",
-              padding: "4px 0",
-              flexShrink: 0,
-            }}
-          >
-            {isChips ? "Add & set up autopay" : "Add"}
-          </button>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div>
+          <p style={{ ...typography.metadata, textTransform: "uppercase", color: ALPHA_BLACK_30, marginBottom: 4 }}>
+            Paying from
+          </p>
+          <p style={{ ...typography.buttonSmall, color: TEXT_SECONDARY }}>
+            {fromAccount}
+          </p>
         </div>
-      )}
+        <button
+          type="button"
+          onClick={() => { setTapped(true); onAdd?.(selectedAmount); }}
+          style={{
+            ...typography.buttonSmall,
+            border: "none",
+            background: "transparent",
+            color: VALENTINO_500,
+            cursor: "pointer",
+            padding: "4px 0",
+            flexShrink: 0,
+          }}
+        >
+          {isChips ? "Add & set up autopay" : "Add"}
+        </button>
+      </div>
     </div>
   );
 }
