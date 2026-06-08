@@ -19,7 +19,8 @@ import QuestionnaireOverlay from "../components/QuestionnaireOverlay";
 import type { Question, QuestionOption } from "../components/QuestionnaireOverlay";
 import PlanCruncherV2 from "../components/PlanCruncherV2";
 import type { Persona } from "../components/PersonaToggle";
-import { TypeBox, MosaicCard, MOSAIC_ROW1, MOSAIC_TALL, MOSAIC_TALL_RIGHT } from "../components/Chat";
+import { TypeBox, MosaicCard, type QuickAction } from "../components/Chat";
+import { ILLUST_AFFORD_IT, ILLUST_MY_SPENDS, ILLUST_FEEDBACK } from "../lib/illustrations";
 import ChatCard from "../components/ChatCards";
 import { highlightValues } from "../lib/chat-highlight";
 
@@ -303,6 +304,17 @@ const PDP_FEATURES = [
   { title: "Goals on autopilot", subtitle: "Set a target, get a plan, stay on track" },
 ];
 
+// Skip-only mosaic shown after the user opts out of AA linking. Tuned for a
+// user who hasn't connected anything yet, so the tiles surface setup-ish
+// actions (goal, accounts) alongside lightweight previews of what Ryan can do.
+// The on-track review variant keeps its own MOSAIC_* constants in Chat.tsx.
+const SKIP_MOSAIC_ROW1: QuickAction[] = [
+  { category: "Goals", title: "Set a goal", illustration: ILLUST_AFFORD_IT, bg: "linear-gradient(160deg, #ffffff 40%, #e6edf9 100%)" },
+  { category: "Last month", title: "Spending pattern", illustration: ILLUST_MY_SPENDS, bg: "linear-gradient(160deg, #ffffff 40%, #fff3e3 100%)" },
+];
+const SKIP_MOSAIC_TALL: QuickAction = { category: "Just for laughs", title: "Roast me", bg: "linear-gradient(160deg, #ffffff 40%, #f9e4e5 100%)" };
+const SKIP_MOSAIC_TALL_RIGHT: QuickAction = { category: "Accounts", title: "Connect more accounts", illustration: ILLUST_FEEDBACK, bg: "linear-gradient(160deg, #ffffff 40%, #fae2fa 100%)" };
+
 export default function OnboardingSim({
   onComplete,
   config,
@@ -414,6 +426,8 @@ export default function OnboardingSim({
   const byronBubbleRef = useRef<HTMLDivElement>(null);
   const ryanHandoffRef = useRef<HTMLDivElement>(null);
   const postPauseRef = useRef<HTMLDivElement>(null);
+  const skipResponseRef = useRef<HTMLDivElement>(null);
+  const [skipResponseStreamed, setSkipResponseStreamed] = useState(false);
   const isSnappingRef = useRef(false);
   const snapTimeoutRef = useRef<number | null>(null);
   const overlayAnimatingRef = useRef(false);
@@ -586,6 +600,18 @@ export default function OnboardingSim({
       if (el) snapScrollTo(el);
     }));
   }, [userActionCount, snapScrollTo]);
+
+  // Skip-mosaic path: park Ryan's "No problem..." bubble just below chrome
+  // when the skip-mosaic step reveals. Without this, the stepIndex
+  // auto-scroll-to-bottom (and the shared userBubbleRef snap) pushes Ryan's
+  // text up under the floating app bar once the mosaic appears.
+  useEffect(() => {
+    if (!aaSkipped) return;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const el = skipResponseRef.current;
+      if (el) snapScrollTo(el, 0);
+    }));
+  }, [aaSkipped, snapScrollTo]);
 
   // Flip the pay-screen pill into its "ready" state once the user first opens
   // the chat. The old pause-based trigger (exit during mosaic, wait 5s) is
@@ -1141,76 +1167,83 @@ export default function OnboardingSim({
 
           if (step.kind === "playground" && aaSkipped) {
             // Skip path: no time-buying playground reveal, no Byron handoff.
-            // Show a single Ryan bubble explaining the trade-off, then the
-            // post-onboarding mosaic so the user can preview Ryan's capabilities
-            // (or hit the goal/home chip below).
+            // Show a single Ryan bubble explaining the trade-off, then gate
+            // the post-onboarding mosaic + footer button on Ryan's stream
+            // finishing (universal streaming-before-actions rule).
             return (
               <div key={`skip-mosaic-${i}`}>
-                <RyanLine
-                  text="No problem. Linking later gives me the sharpest read on where your money actually goes, but I can still show you around in the meantime."
-                  active={isLast}
-                />
-                <div ref={userBubbleRef} style={{ marginTop: SPACE_L, display: "flex", flexDirection: "column", gap: 16 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                    {MOSAIC_ROW1.map((a) => (
-                      <MosaicCard
-                        key={a.title}
-                        action={a}
-                        onSelect={() => onComplete?.({ skipGoal: !goalRequired })}
-                        style={{ aspectRatio: "1 / 1" }}
-                      />
-                    ))}
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                    <MosaicCard
-                      action={MOSAIC_TALL}
-                      onSelect={() => onComplete?.({ skipGoal: !goalRequired })}
-                      style={{ aspectRatio: "1 / 1" }}
-                    />
-                    <MosaicCard
-                      action={MOSAIC_TALL_RIGHT}
-                      onSelect={() => onComplete?.({ skipGoal: !goalRequired })}
-                      style={{ aspectRatio: "1 / 1" }}
-                    />
-                  </div>
+                <div ref={skipResponseRef}>
+                  <RyanLine
+                    text="No problem. Linking later gives me the sharpest read on where your money actually goes, but I can still show you around in the meantime."
+                    active={isLast}
+                    onDone={() => setSkipResponseStreamed(true)}
+                  />
                 </div>
-                <div className="flex flex-wrap gap-3 animate-chat-message-in" style={{ marginTop: SPACE_L }}>
-                  {goalRequired ? (
-                    <button
-                      type="button"
-                      onClick={handlePlaygroundAcceptGoal}
-                      className="transition-transform active:scale-[0.97]"
-                      style={{
-                        ...typography.buttonSmall,
-                        color: TEXT_PRIMARY,
-                        backgroundColor: BG_SECONDARY,
-                        border: `1px solid ${OUTLINE_SUBTLE}`,
-                        borderRadius: RADIUS_CIRCLE,
-                        padding: `${SPACE_XS}px ${SPACE_M}px`,
-                        cursor: "pointer",
-                      }}
-                    >
-                      Yes, set up a goal
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handlePlaygroundTakeMeHome}
-                      className="transition-transform active:scale-[0.97]"
-                      style={{
-                        ...typography.buttonSmall,
-                        color: TEXT_PRIMARY,
-                        backgroundColor: BG_SECONDARY,
-                        border: `1px solid ${OUTLINE_SUBTLE}`,
-                        borderRadius: RADIUS_CIRCLE,
-                        padding: `${SPACE_XS}px ${SPACE_M}px`,
-                        cursor: "pointer",
-                      }}
-                    >
-                      Take me home
-                    </button>
-                  )}
-                </div>
+                {skipResponseStreamed && (
+                  <>
+                    <div className="animate-chat-message-in" style={{ marginTop: SPACE_L, display: "flex", flexDirection: "column", gap: 16 }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                        {SKIP_MOSAIC_ROW1.map((a) => (
+                          <MosaicCard
+                            key={a.title}
+                            action={a}
+                            onSelect={() => onComplete?.({ skipGoal: !goalRequired })}
+                            style={{ aspectRatio: "1 / 1" }}
+                          />
+                        ))}
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                        <MosaicCard
+                          action={SKIP_MOSAIC_TALL}
+                          onSelect={() => onComplete?.({ skipGoal: !goalRequired })}
+                          style={{ aspectRatio: "1 / 1" }}
+                        />
+                        <MosaicCard
+                          action={SKIP_MOSAIC_TALL_RIGHT}
+                          onSelect={() => onComplete?.({ skipGoal: !goalRequired })}
+                          style={{ aspectRatio: "1 / 1" }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-3 animate-chat-message-in" style={{ marginTop: SPACE_L }}>
+                      {goalRequired ? (
+                        <button
+                          type="button"
+                          onClick={handlePlaygroundAcceptGoal}
+                          className="transition-transform active:scale-[0.97]"
+                          style={{
+                            ...typography.buttonSmall,
+                            color: TEXT_PRIMARY,
+                            backgroundColor: BG_SECONDARY,
+                            border: `1px solid ${OUTLINE_SUBTLE}`,
+                            borderRadius: RADIUS_CIRCLE,
+                            padding: `${SPACE_XS}px ${SPACE_M}px`,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Yes, set up a goal
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handlePlaygroundTakeMeHome}
+                          className="transition-transform active:scale-[0.97]"
+                          style={{
+                            ...typography.buttonSmall,
+                            color: TEXT_PRIMARY,
+                            backgroundColor: BG_SECONDARY,
+                            border: `1px solid ${OUTLINE_SUBTLE}`,
+                            borderRadius: RADIUS_CIRCLE,
+                            padding: `${SPACE_XS}px ${SPACE_M}px`,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Take me home
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             );
           }
