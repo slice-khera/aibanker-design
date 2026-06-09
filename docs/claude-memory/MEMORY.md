@@ -21,7 +21,7 @@
 - [feedback_slice_lowercase.md](feedback_slice_lowercase.md) - "slice" and slice product names (monies, sparks, slice in 3, etc.) are always lowercase, everywhere
 
 ## Foundation Tokens
-- [reference_dls_colors.md](reference_dls_colors.md) - Primitives, semantic, extended, component color tokens
+- [reference_dls_colors.md](reference_dls_colors.md) - Primitives, semantic, extended, component color tokens + full light/dark values & theming mechanism (CSS vars + .dark on frame)
 - [reference_dls_spacing.md](reference_dls_spacing.md) - Padding scale: 2px to 64px
 - [reference_dls_corner_radius.md](reference_dls_corner_radius.md) - S(8), M(16), L(24), Circle(100)
 - [reference_dls_elevation.md](reference_dls_elevation.md) - Card, Above, Below shadow tokens
